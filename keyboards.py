@@ -17,7 +17,7 @@ def KB_admin():
         keyboard=[
             [KeyboardButton(text='Результаты')],
             [KeyboardButton(text='Кнопка 2')],
-            [KeyboardButton(text='Добавить пользователя')],
+            [KeyboardButton(text='Пользователи')],
             [KeyboardButton(text='Справка о работе приложения')]
         ],
     )
@@ -28,7 +28,13 @@ def KB_admin_choose():
                                            KeyboardButton(text='1'),
                                            KeyboardButton(text='2'),
                                            KeyboardButton(text='3'),
-                                           KeyboardButton(text='4')]])
+                                           KeyboardButton(text='4'),
+                                           KeyboardButton(text='Назад')]])
+
+def KB_admin_users():
+    return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Список пользователей'),
+                                           KeyboardButton(text='Добавить ученика'),
+                                           KeyboardButton(text='Добавить работника')]])
 
 
 KB_1234 = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='1'),

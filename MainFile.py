@@ -13,7 +13,7 @@ from db import init_db, save_answers, pdf_report, pdf_report_course, check_user_
 from openpyxl import Workbook
 from keyboards import (KB_05_1_15_2, KB_1234, KB_druzya, KB_kachestvo,
                        KB_legko, KB_yes_no, KB_ves, KB_chastota_1, KB_chastota_2,
-                       KB_chastota_3, KB_admin, KB_main_menu, KB_admin_choose)
+                       KB_chastota_3, KB_admin, KB_main_menu, KB_admin_choose, KB_admin_users)
 
 bot = Bot(token='6735071514:AAHE1uVzht-JYxDEHoCvd7s7nvtwJQ5Vzls')
 dp = Dispatcher()
@@ -144,10 +144,12 @@ async def admin_menu(message: types.Message, state: FSMContext):
         await state.set_state('course_choose')
     elif message.text == "Кнопка 2":
         await message.answer("Кнопка 2")
-    elif message.text == "Добавить пользователя":
-        await message.answer("тут будет добавление пользователя")
+    elif message.text == "Пользователи":
+        await message.answer("Меню для работы с пользователями бота", reply_markup=KB_admin_users())
+        await state.set_state('users_work')
     elif message.text == "Справка о работе приложения":
         await message.answer("тут будет справка о работе приложения")
+
 
 
 @dp.message(StateFilter("course_choose"))
@@ -177,6 +179,21 @@ async def course_choose(message: types.Message, state: FSMContext):
         pdf_file = FSInputFile("Answers_report_course4.pdf")
         await message.answer("Отчет по четвертому курсу")
         await message.answer_document(pdf_file)
+    elif message.text == "Назад":
+        await state.set_state('admin_menu')
+        await message.answer(f'Выберите одну из опции.', reply_markup=KB_admin())
+
+
+
+@dp.message(StateFilter("users_work"))
+async def course_choose(message: types.Message, state: FSMContext):
+    if message.text == "Список пользователей":
+        await message.answer("ТУТ БУДЕТ СПИСОК ПОЛЬЗОВАТЕЛЕЙ")
+    elif message.text == "Добавить ученика":
+        await message.answer("ТУТ БУДЕТ ДОБАВЛЕНИЕ ученика")
+    elif message.text == "Добавить работника":
+        await message.answer("ТУТ БУДЕТ ДОБАВЛЕНИЕ работника")
+
 
 @dp.message(StateFilter("main_menu"))
 async def handle_main_menu(message: types.Message, state: FSMContext):
