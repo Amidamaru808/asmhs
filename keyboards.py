@@ -1,6 +1,14 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 
+
+def KB_back_users():
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="Вернутся в меню работы с пользователями")]
+        ],
+    )
+
 def KB_main_menu():
     return ReplyKeyboardMarkup(
         keyboard=[
@@ -21,6 +29,7 @@ def KB_admin():
             [KeyboardButton(text='Справка о работе приложения')]
         ],
     )
+
 
 
 def KB_admin_choose():

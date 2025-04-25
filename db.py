@@ -1,7 +1,8 @@
 import sqlite3
 import json
 from fpdf import FPDF
-
+import random
+import string
 
 def init_db():
     conn = sqlite3.connect('main_database.db')
@@ -278,6 +279,11 @@ def pdf_report_course(course):
     print(f"pdf course: {filename}")
 
 
+def generate_password():
+    characters = string.ascii_letters + string.digits
+    password = ''.join(random.choices(characters, k=8))
+    return password
+
+
 if __name__ == "__main__":
     init_db()
-

@@ -9,11 +9,12 @@ from aiogram.types import ReplyKeyboardRemove
 import sqlite3
 import json
 from fpdf import FPDF
-from db import init_db, save_answers, pdf_report, pdf_report_course, check_user_in_db, check_admin_in_db, check_admin_password
+from db import init_db, save_answers, pdf_report, pdf_report_course, check_user_in_db, check_admin_in_db,\
+                check_admin_password, add_user_to_db, generate_password
 from openpyxl import Workbook
 from keyboards import (KB_05_1_15_2, KB_1234, KB_druzya, KB_kachestvo,
                        KB_legko, KB_yes_no, KB_ves, KB_chastota_1, KB_chastota_2,
-                       KB_chastota_3, KB_admin, KB_main_menu, KB_admin_choose, KB_admin_users)
+                       KB_chastota_3, KB_admin, KB_main_menu, KB_admin_choose, KB_admin_users, KB_back_users)
 
 bot = Bot(token='6735071514:AAHE1uVzht-JYxDEHoCvd7s7nvtwJQ5Vzls')
 dp = Dispatcher()
@@ -23,6 +24,14 @@ class Autorization(StatesGroup):
     Login = State()
     Password = State()
     AdminPassword = State()
+
+class AddStudent(StatesGroup):
+    first_name = State()
+    last_name = State()
+    password = State()
+    group = State()
+    course = State()
+
 
 class Questions(StatesGroup):
     question_1 = State()
@@ -184,15 +193,75 @@ async def course_choose(message: types.Message, state: FSMContext):
         await message.answer(f'Выберите одну из опции.', reply_markup=KB_admin())
 
 
-
 @dp.message(StateFilter("users_work"))
 async def course_choose(message: types.Message, state: FSMContext):
     if message.text == "Список пользователей":
         await message.answer("ТУТ БУДЕТ СПИСОК ПОЛЬЗОВАТЕЛЕЙ")
     elif message.text == "Добавить ученика":
-        await message.answer("ТУТ БУДЕТ ДОБАВЛЕНИЕ ученика")
+        await message.answer("Введите имя пользователя:",  reply_markup=KB_back_users())
+        await state.set_state(AddStudent.first_name)
     elif message.text == "Добавить работника":
         await message.answer("ТУТ БУДЕТ ДОБАВЛЕНИЕ работника")
+
+
+@dp.message(AddStudent.first_name)
+async def get_first_name(message: Message, state: FSMContext):
+    if message.text == "Назад":
+        await message.answer("Меню для работы с пользователями бота", reply_markup=KB_admin_users())
+        await state.set_state('users_work')
+        return
+
+    await state.update_data(first_name=message.text.strip())
+    await message.answer("Введите фамилию пользователя:")
+    await state.set_state(AddStudent.last_name)
+
+
+
+@dp.message(AddStudent.last_name)
+async def get_last_name(message: Message, state: FSMContext):
+    if message.text == "Назад":
+        await message.answer("Меню для работы с пользователями бота", reply_markup=KB_admin_users())
+        await state.set_state('users_work')
+        return
+
+    await state.update_data(last_name=message.text.strip())
+    await message.answer("Введите группу пользователя:")
+    await state.set_state(AddStudent.group)
+
+
+@dp.message(AddStudent.group)
+async def get_group(message: Message, state: FSMContext):
+    if message.text == "Назад":
+        await message.answer("Меню для работы с пользователями бота", reply_markup=KB_admin_users())
+        await state.set_state('users_work')
+        return
+
+    await state.update_data(group=message.text.strip())
+    await message.answer("Введите курс пользователя:")
+    await state.set_state(AddStudent.course)
+
+
+@dp.message(AddStudent.course)
+async def get_course(message: Message, state: FSMContext):
+    if message.text == "Назад":
+        await message.answer("Меню для работы с пользователями бота", reply_markup=KB_admin_users())
+        await state.set_state('users_work')
+        return
+
+    await state.update_data(course=message.text.strip())
+    data = await state.get_data()
+
+    add_user_to_db(
+        first_name=data['first_name'],
+        last_name=data['last_name'],
+        password=generate_password(),
+        group=data['group'],
+        course=int(data['course'])
+    )
+
+    await message.answer("Пользователь добавлен в базу.")
+    await state.clear()
+
 
 
 @dp.message(StateFilter("main_menu"))
