@@ -43,7 +43,8 @@ def KB_admin_choose():
 def KB_admin_users():
     return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Список пользователей'),
                                            KeyboardButton(text='Добавить ученика'),
-                                           KeyboardButton(text='Добавить работника')]])
+                                           KeyboardButton(text='Добавить работника'),
+                                          KeyboardButton(text="Назад")]])
 
 
 KB_1234 = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='1'),

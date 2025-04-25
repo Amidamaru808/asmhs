@@ -10,7 +10,8 @@ import sqlite3
 import json
 from fpdf import FPDF
 from db import init_db, save_answers, pdf_report, pdf_report_course, check_user_in_db, check_admin_in_db,\
-                check_admin_password, add_user_to_db, generate_password
+                check_admin_password, add_user_to_db, generate_password, add_admin_to_db
+
 from openpyxl import Workbook
 from keyboards import (KB_05_1_15_2, KB_1234, KB_druzya, KB_kachestvo,
                        KB_legko, KB_yes_no, KB_ves, KB_chastota_1, KB_chastota_2,
@@ -25,12 +26,17 @@ class Autorization(StatesGroup):
     Password = State()
     AdminPassword = State()
 
+
 class AddStudent(StatesGroup):
-    first_name = State()
-    last_name = State()
-    password = State()
-    group = State()
-    course = State()
+    user_first_name = State()
+    user_last_name = State()
+    user_group = State()
+    user_course = State()
+
+
+class AddAdmin(StatesGroup):
+    admin_first_name = State()
+    admin_last_name = State()
 
 
 class Questions(StatesGroup):
@@ -65,10 +71,12 @@ class Questions(StatesGroup):
     question_29 = State()
     question_30 = State()
 
+
 def load_questions():
     with open('TestQuestions.json', 'r', encoding='utf-8') as file:
         questions = json.load(file)
     return questions
+
 
 questions = load_questions()
 init_db()
@@ -114,7 +122,6 @@ async def handle_name(message: Message, state: FSMContext):
         await state.set_state(Autorization.Login)
 
 
-
 @dp.message(Autorization.Password)
 async def handle_password(message: Message, state: FSMContext):
     password = message.text.strip()
@@ -145,7 +152,6 @@ async def handle_password(message: Message, state: FSMContext):
     await state.set_state(Autorization.Password)
 
 
-
 @dp.message(StateFilter("admin_menu"))
 async def admin_menu(message: types.Message, state: FSMContext):
     if message.text == "Результаты":
@@ -158,7 +164,6 @@ async def admin_menu(message: types.Message, state: FSMContext):
         await state.set_state('users_work')
     elif message.text == "Справка о работе приложения":
         await message.answer("тут будет справка о работе приложения")
-
 
 
 @dp.message(StateFilter("course_choose"))
@@ -199,13 +204,17 @@ async def course_choose(message: types.Message, state: FSMContext):
         await message.answer("ТУТ БУДЕТ СПИСОК ПОЛЬЗОВАТЕЛЕЙ")
     elif message.text == "Добавить ученика":
         await message.answer("Введите имя пользователя:",  reply_markup=KB_back_users())
-        await state.set_state(AddStudent.first_name)
+        await state.set_state(AddStudent.user_first_name)
     elif message.text == "Добавить работника":
-        await message.answer("ТУТ БУДЕТ ДОБАВЛЕНИЕ работника")
+        await message.answer("Введите имя работника:", reply_markup=KB_back_users())
+        await state.set_state(AddAdmin.admin_first_name)
+    elif message.text == "Назад":
+        await message.answer("Меню для работы с пользователями бота", reply_markup=KB_admin_users())
+        await state.set_state('users_work')
 
 
-@dp.message(AddStudent.first_name)
-async def get_first_name(message: Message, state: FSMContext):
+@dp.message(AddStudent.user_first_name)
+async def get_user_first_name(message: Message, state: FSMContext):
     if message.text == "Назад":
         await message.answer("Меню для работы с пользователями бота", reply_markup=KB_admin_users())
         await state.set_state('users_work')
@@ -213,12 +222,11 @@ async def get_first_name(message: Message, state: FSMContext):
 
     await state.update_data(first_name=message.text.strip())
     await message.answer("Введите фамилию пользователя:")
-    await state.set_state(AddStudent.last_name)
+    await state.set_state(AddStudent.user_last_name)
 
 
-
-@dp.message(AddStudent.last_name)
-async def get_last_name(message: Message, state: FSMContext):
+@dp.message(AddStudent.user_last_name)
+async def get_user_last_name(message: Message, state: FSMContext):
     if message.text == "Назад":
         await message.answer("Меню для работы с пользователями бота", reply_markup=KB_admin_users())
         await state.set_state('users_work')
@@ -226,11 +234,11 @@ async def get_last_name(message: Message, state: FSMContext):
 
     await state.update_data(last_name=message.text.strip())
     await message.answer("Введите группу пользователя:")
-    await state.set_state(AddStudent.group)
+    await state.set_state(AddStudent.user_group)
 
 
-@dp.message(AddStudent.group)
-async def get_group(message: Message, state: FSMContext):
+@dp.message(AddStudent.user_group)
+async def get_user_group(message: Message, state: FSMContext):
     if message.text == "Назад":
         await message.answer("Меню для работы с пользователями бота", reply_markup=KB_admin_users())
         await state.set_state('users_work')
@@ -238,11 +246,11 @@ async def get_group(message: Message, state: FSMContext):
 
     await state.update_data(group=message.text.strip())
     await message.answer("Введите курс пользователя:")
-    await state.set_state(AddStudent.course)
+    await state.set_state(AddStudent.user_course)
 
 
-@dp.message(AddStudent.course)
-async def get_course(message: Message, state: FSMContext):
+@dp.message(AddStudent.user_course)
+async def get_user_course(message: Message, state: FSMContext):
     if message.text == "Назад":
         await message.answer("Меню для работы с пользователями бота", reply_markup=KB_admin_users())
         await state.set_state('users_work')
@@ -252,16 +260,45 @@ async def get_course(message: Message, state: FSMContext):
     data = await state.get_data()
 
     add_user_to_db(
-        first_name=data['first_name'],
-        last_name=data['last_name'],
-        password=generate_password(),
-        group=data['group'],
-        course=int(data['course'])
-    )
+        data['first_name'],
+        data['last_name'],
+        generate_password(),
+        data['group'],
+        int(data['course']))
 
-    await message.answer("Пользователь добавлен в базу.")
-    await state.clear()
+    await message.answer("Пользователь добавлен в базу.", reply_markup=KB_admin_users())
+    await state.set_state('users_work')
 
+
+@dp.message(AddAdmin.admin_first_name)
+async def get_admin_first_name(message: Message, state: FSMContext):
+    if message.text == "Назад":
+        await message.answer("Меню для работы с пользователями бота", reply_markup=KB_admin_users())
+        await state.set_state('users_work')
+        return
+
+    await state.update_data(admin_first_name=message.text.strip())
+    await message.answer("Введите фамилию пользователя:")
+    await state.set_state(AddAdmin.admin_last_name)
+
+
+@dp.message(AddAdmin.admin_last_name)
+async def get_admin_last_name(message: Message, state: FSMContext):
+    if message.text == "Назад":
+        await message.answer("Меню для работы с пользователями бота", reply_markup=KB_admin_users())
+        await state.set_state('users_work')
+        return
+
+    await state.update_data(admin_last_name=message.text.strip())
+    data = await state.get_data()
+
+    add_admin_to_db(
+        data['admin_first_name'],
+        data['admin_last_name'],
+        generate_password())
+
+    await message.answer("Работник добавлен в базу.", reply_markup=KB_admin_users())
+    await state.set_state('users_work')
 
 
 @dp.message(StateFilter("main_menu"))
