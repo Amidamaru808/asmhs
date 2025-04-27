@@ -336,7 +336,7 @@ async def handle_main_menu(message: types.Message, state: FSMContext):
         await ask_question(message, state, 1, KB_1234)
         await state.set_state(Questions.question_1)
     elif message.text == "Прикрепить справку":
-        await message.answer("Укажите дату болезни в формате XX.XX.XXXX")
+        await message.answer("Укажите дату начала и конца болезни в формате XX.XX.XXXX - XX.XX.XXXX")
         await state.set_state("send_date")
     elif message.text == "3":
         await message.answer("3")
@@ -347,9 +347,13 @@ async def handle_main_menu(message: types.Message, state: FSMContext):
 @dp.message(StateFilter("send_date"))
 async def send_date(message: types.Message, state: FSMContext):
     date = message.text.strip()
-    await state.update_data(date=date)
-    await message.answer("Прикрепите справку")
-    await state.set_state("send_photo")
+    if len(date) == 23:
+        await state.update_data(date=date)
+        await message.answer("Прикрепите справку")
+        await state.set_state("send_photo")
+    else:
+        await message.answer("Неправильный формат даты!"
+                             "Укажите дату начала и конца болезни в формате XX.XX.XXXX - XX.XX.XXXX")
 
 
 @dp.message(StateFilter("send_photo"))
