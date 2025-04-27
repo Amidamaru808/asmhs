@@ -13,13 +13,13 @@ import json
 from fpdf import FPDF
 from db import (init_db, save_answers, pdf_report, pdf_report_course, check_user_in_db, check_admin_in_db,
                 check_admin_password, add_user_to_db, generate_password, add_admin_to_db, generate_users_pdf,
-                generate_admins_pdf)
+                generate_admins_pdf, add_illness)
 
 from openpyxl import Workbook
 from keyboards import (KB_05_1_15_2, KB_1234, KB_druzya, KB_kachestvo,
                        KB_legko, KB_yes_no, KB_ves, KB_chastota_1, KB_chastota_2,
                        KB_chastota_3, KB_admin, KB_main_menu, KB_admin_choose, KB_admin_users, KB_back_users,
-                       KB_students_admins)
+                       KB_students_admins, KB_back)
 
 bot = Bot(token='6735071514:AAHE1uVzht-JYxDEHoCvd7s7nvtwJQ5Vzls')
 dp = Dispatcher()
@@ -336,7 +336,8 @@ async def handle_main_menu(message: types.Message, state: FSMContext):
         await ask_question(message, state, 1, KB_1234)
         await state.set_state(Questions.question_1)
     elif message.text == "Прикрепить справку":
-        await message.answer("Укажите дату начала и конца болезни в формате XX.XX.XXXX - XX.XX.XXXX")
+        await message.answer("Укажите дату начала и конца болезни в формате XX.XX.XXXX - XX.XX.XXXX",
+                             reply_markup=KB_back())
         await state.set_state("send_date")
     elif message.text == "3":
         await message.answer("3")
@@ -347,9 +348,14 @@ async def handle_main_menu(message: types.Message, state: FSMContext):
 @dp.message(StateFilter("send_date"))
 async def send_date(message: types.Message, state: FSMContext):
     date = message.text.strip()
+    if date == "Назад":
+        await message.answer('Выберите одну из опции.',
+                             reply_markup=KB_main_menu())
+        await state.set_state('main_menu')
+        return
     if len(date) == 23:
         await state.update_data(date=date)
-        await message.answer("Прикрепите справку")
+        await message.answer("Прикрепите справку", reply_markup=KB_back())
         await state.set_state("send_photo")
     else:
         await message.answer("Неправильный формат даты!"
@@ -366,12 +372,18 @@ async def send_photo(message: types.Message, state: FSMContext):
         name = data.get('name')
         surname = data.get('surname')
         date = datetime.now().date()
-        filename = f"{date}_{name}_{surname}_{date}.jpg"
+        add_illness(name + " " + surname, data.get('group'), data.get('course'), data.get('date'))
+        filename = f"{date}_{name}_{surname}.jpg"
         save_path = os.path.join(save_folder, filename)
         await message.bot.download_file(file_path, save_path)
         await message.answer("Справка отправлена")
-        lul = data.get('date')
-        print(lul)
+        await message.answer('Выберите одну из опции.',
+                             reply_markup=KB_main_menu())
+        await state.set_state('main_menu')
+    elif message.text == "Назад":
+        await message.answer('Выберите одну из опции.',
+                             reply_markup=KB_main_menu())
+        await state.set_state('main_menu')
 
 
 async def ask_question(message: Message, state: FSMContext, question_number: int, markup):

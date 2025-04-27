@@ -28,6 +28,16 @@ def init_db():
         ''')
 
     c.execute('''
+            CREATE TABLE IF NOT EXISTS illnesses (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                "group" TEXT NOT NULL,
+                course INTEGER NOT NULL,
+                date TEXT NOT NULL
+            )
+        ''')
+
+    c.execute('''
         CREATE TABLE IF NOT EXISTS answers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER,
@@ -83,12 +93,21 @@ def add_user_to_db(first_name, last_name, password, group, course):
 def add_admin_to_db(first_name, last_name, password):
     conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
-
     c.execute('''
         INSERT INTO admins (first_name, last_name, password)
         VALUES (?, ?, ?)
     ''', (first_name, last_name, password))
+    conn.commit()
+    conn.close()
 
+
+def add_illness(name, group, course, date):
+    conn = sqlite3.connect('main_database.db')
+    c = conn.cursor()
+    c.execute('''
+        INSERT INTO illnesses (name, "group", course, date)
+        VALUES (?, ?, ?, ?)
+    ''', (name, group, course, date))
     conn.commit()
     conn.close()
 
@@ -148,6 +167,7 @@ def load_questions(file_path='TestQuestions.json'):
     with open(file_path, 'r', encoding='utf-8') as file:
         questions = json.load(file)
     return questions
+
 
 def fetch_all_answers():
     conn = sqlite3.connect('answers.db')
@@ -228,7 +248,6 @@ def pdf_report():
             pdf.cell(200, 5, txt=f"  Ответ: {answer} - {percentage}", ln=True)
 
     pdf.output(filename)
-    print(f"pdf all: {filename}")
 
 
 def pdf_report_course(course):
@@ -267,8 +286,6 @@ def pdf_report_course(course):
             pdf.cell(200, 5, txt=f"  Ответ: {answer} - {percentage}", ln=True)
 
     pdf.output(filename)
-
-    print(f"pdf course: {filename}")
 
 
 def generate_password():

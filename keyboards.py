@@ -9,6 +9,15 @@ def KB_back_users():
         ],
     )
 
+
+def KB_back():
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="Назад")]
+        ],
+    )
+
+
 def KB_main_menu():
     return ReplyKeyboardMarkup(
         keyboard=[
@@ -41,18 +50,19 @@ def KB_students_admins():
 
 
 def KB_admin_choose():
-    return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Все курсы'),
-                                           KeyboardButton(text='1'),
-                                           KeyboardButton(text='2'),
-                                           KeyboardButton(text='3'),
-                                           KeyboardButton(text='4'),
-                                           KeyboardButton(text='Назад')]])
+    return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Все курсы')],
+                                           [KeyboardButton(text='1')],
+                                           [KeyboardButton(text='2')],
+                                           [KeyboardButton(text='3')],
+                                           [KeyboardButton(text='4')],
+                                           [KeyboardButton(text='Назад')]])
+
 
 def KB_admin_users():
-    return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Список пользователей'),
-                                           KeyboardButton(text='Добавить ученика'),
-                                           KeyboardButton(text='Добавить работника'),
-                                          KeyboardButton(text="Назад")]])
+    return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Список пользователей')],
+                                           [KeyboardButton(text='Добавить ученика')],
+                                           [KeyboardButton(text='Добавить работника')],
+                                          [KeyboardButton(text="Назад")]])
 
 
 KB_1234 = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='1'),
