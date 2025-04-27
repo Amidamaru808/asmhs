@@ -1,4 +1,6 @@
 import asyncio
+import os
+from datetime import datetime
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import Message
 from aiogram.types.input_file import FSInputFile
@@ -21,6 +23,8 @@ from keyboards import (KB_05_1_15_2, KB_1234, KB_druzya, KB_kachestvo,
 
 bot = Bot(token='6735071514:AAHE1uVzht-JYxDEHoCvd7s7nvtwJQ5Vzls')
 dp = Dispatcher()
+save_folder = 'Справки'
+os.makedirs(save_folder, exist_ok=True)
 
 
 class Autorization(StatesGroup):
@@ -331,14 +335,39 @@ async def handle_main_menu(message: types.Message, state: FSMContext):
         await state.set_state('test_health')
         await ask_question(message, state, 1, KB_1234)
         await state.set_state(Questions.question_1)
-    elif message.text == "2":
-        await message.answer("2")
+    elif message.text == "Прикрепить справку":
+        await message.answer("Укажите дату болезни в формате XX.XX.XXXX")
+        await state.set_state("send_date")
     elif message.text == "3":
         await message.answer("3")
     elif message.text == "4":
         await message.answer("4")
 
 
+@dp.message(StateFilter("send_date"))
+async def send_date(message: types.Message, state: FSMContext):
+    date = message.text.strip()
+    await state.update_data(date=date)
+    await message.answer("Прикрепите справку")
+    await state.set_state("send_photo")
+
+
+@dp.message(StateFilter("send_photo"))
+async def send_photo(message: types.Message, state: FSMContext):
+    if message.photo:
+        photo = message.photo[-1]
+        file = await message.bot.get_file(photo.file_id)
+        file_path = file.file_path
+        data = await state.get_data()
+        name = data.get('name')
+        surname = data.get('surname')
+        date = datetime.now().date()
+        filename = f"{date}_{name}_{surname}_{date}.jpg"
+        save_path = os.path.join(save_folder, filename)
+        await message.bot.download_file(file_path, save_path)
+        await message.answer("Справка отправлена")
+        lul = data.get('date')
+        print(lul)
 
 
 async def ask_question(message: Message, state: FSMContext, question_number: int, markup):
@@ -599,12 +628,10 @@ async def question_30(message: types.Message, state: FSMContext):
 
     await state.set_state('main_menu')
 
+
 async def main():
     await dp.start_polling(bot)
 
 
 if __name__ == '__main__':
     asyncio.run(main())
-
-
-

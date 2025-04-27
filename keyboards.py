@@ -13,7 +13,7 @@ def KB_main_menu():
     return ReplyKeyboardMarkup(
         keyboard=[
             [KeyboardButton(text="Пройти тестирование о здоровье")],
-            [KeyboardButton(text="2")],
+            [KeyboardButton(text="Прикрепить справку")],
             [KeyboardButton(text="3")],
             [KeyboardButton(text="4")]
         ],
