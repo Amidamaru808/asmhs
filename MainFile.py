@@ -9,13 +9,15 @@ from aiogram.types import ReplyKeyboardRemove
 import sqlite3
 import json
 from fpdf import FPDF
-from db import init_db, save_answers, pdf_report, pdf_report_course, check_user_in_db, check_admin_in_db,\
-                check_admin_password, add_user_to_db, generate_password, add_admin_to_db
+from db import (init_db, save_answers, pdf_report, pdf_report_course, check_user_in_db, check_admin_in_db,
+                check_admin_password, add_user_to_db, generate_password, add_admin_to_db, generate_users_pdf,
+                generate_admins_pdf)
 
 from openpyxl import Workbook
 from keyboards import (KB_05_1_15_2, KB_1234, KB_druzya, KB_kachestvo,
                        KB_legko, KB_yes_no, KB_ves, KB_chastota_1, KB_chastota_2,
-                       KB_chastota_3, KB_admin, KB_main_menu, KB_admin_choose, KB_admin_users, KB_back_users)
+                       KB_chastota_3, KB_admin, KB_main_menu, KB_admin_choose, KB_admin_users, KB_back_users,
+                       KB_students_admins)
 
 bot = Bot(token='6735071514:AAHE1uVzht-JYxDEHoCvd7s7nvtwJQ5Vzls')
 dp = Dispatcher()
@@ -175,22 +177,22 @@ async def course_choose(message: types.Message, state: FSMContext):
         await message.answer_document(pdf_file)
     elif message.text == "1":
         pdf_report_course(1)
-        pdf_file = FSInputFile("Answers_report_course1.pdf")
+        pdf_file = FSInputFile("Statistic_1_course.pdf")
         await message.answer("Отчет по первому курсу")
         await message.answer_document(pdf_file)
     elif message.text == "2":
         pdf_report_course(2)
-        pdf_file = FSInputFile("Answers_report_course2.pdf")
+        pdf_file = FSInputFile("Statistic_2_course.pdf")
         await message.answer("Отчет по второму курсу")
         await message.answer_document(pdf_file)
     elif message.text == "3":
         pdf_report_course(3)
-        pdf_file = FSInputFile("Answers_report_course3.pdf")
+        pdf_file = FSInputFile("Statistic_3_course.pdf")
         await message.answer("Отчет по третьему курсу")
         await message.answer_document(pdf_file)
     elif message.text == "4":
         pdf_report_course(4)
-        pdf_file = FSInputFile("Answers_report_course4.pdf")
+        pdf_file = FSInputFile("Statistic_4_course.pdf")
         await message.answer("Отчет по четвертому курсу")
         await message.answer_document(pdf_file)
     elif message.text == "Назад":
@@ -199,9 +201,10 @@ async def course_choose(message: types.Message, state: FSMContext):
 
 
 @dp.message(StateFilter("users_work"))
-async def course_choose(message: types.Message, state: FSMContext):
+async def users_work(message: types.Message, state: FSMContext):
     if message.text == "Список пользователей":
-        await message.answer("ТУТ БУДЕТ СПИСОК ПОЛЬЗОВАТЕЛЕЙ")
+        await message.answer("Выберите список пользователей", reply_markup=KB_students_admins())
+        await state.set_state("choose_admin_user")
     elif message.text == "Добавить ученика":
         await message.answer("Введите имя пользователя:",  reply_markup=KB_back_users())
         await state.set_state(AddStudent.user_first_name)
@@ -209,13 +212,31 @@ async def course_choose(message: types.Message, state: FSMContext):
         await message.answer("Введите имя работника:", reply_markup=KB_back_users())
         await state.set_state(AddAdmin.admin_first_name)
     elif message.text == "Назад":
+        await message.answer(f'Вы авторизовались как администратор. Выберите одну из опции.',
+                             reply_markup=KB_admin())
+        await state.set_state('admin_menu')
+
+
+@dp.message(StateFilter("choose_admin_user"))
+async def choose_admin_user(message: types.Message, state: FSMContext):
+    if message.text == "Студенты":
+        generate_users_pdf()
+        pdf_file = FSInputFile("users.pdf")
+        await message.answer("Список студентов")
+        await message.answer_document(pdf_file)
+    elif message.text == "Администраторы":
+        generate_admins_pdf()
+        pdf_file = FSInputFile("admins.pdf")
+        await message.answer("Список администраторов")
+        await message.answer_document(pdf_file)
+    elif message.text == "Назад":
         await message.answer("Меню для работы с пользователями бота", reply_markup=KB_admin_users())
         await state.set_state('users_work')
 
 
 @dp.message(AddStudent.user_first_name)
 async def get_user_first_name(message: Message, state: FSMContext):
-    if message.text == "Назад":
+    if message.text == "Вернутся в меню работы с пользователями":
         await message.answer("Меню для работы с пользователями бота", reply_markup=KB_admin_users())
         await state.set_state('users_work')
         return
@@ -227,7 +248,7 @@ async def get_user_first_name(message: Message, state: FSMContext):
 
 @dp.message(AddStudent.user_last_name)
 async def get_user_last_name(message: Message, state: FSMContext):
-    if message.text == "Назад":
+    if message.text == "Вернутся в меню работы с пользователями":
         await message.answer("Меню для работы с пользователями бота", reply_markup=KB_admin_users())
         await state.set_state('users_work')
         return
@@ -239,7 +260,7 @@ async def get_user_last_name(message: Message, state: FSMContext):
 
 @dp.message(AddStudent.user_group)
 async def get_user_group(message: Message, state: FSMContext):
-    if message.text == "Назад":
+    if message.text == "Вернутся в меню работы с пользователями":
         await message.answer("Меню для работы с пользователями бота", reply_markup=KB_admin_users())
         await state.set_state('users_work')
         return
@@ -251,7 +272,7 @@ async def get_user_group(message: Message, state: FSMContext):
 
 @dp.message(AddStudent.user_course)
 async def get_user_course(message: Message, state: FSMContext):
-    if message.text == "Назад":
+    if message.text == "Вернутся в меню работы с пользователями":
         await message.answer("Меню для работы с пользователями бота", reply_markup=KB_admin_users())
         await state.set_state('users_work')
         return
@@ -272,7 +293,7 @@ async def get_user_course(message: Message, state: FSMContext):
 
 @dp.message(AddAdmin.admin_first_name)
 async def get_admin_first_name(message: Message, state: FSMContext):
-    if message.text == "Назад":
+    if message.text == "Вернутся в меню работы с пользователями":
         await message.answer("Меню для работы с пользователями бота", reply_markup=KB_admin_users())
         await state.set_state('users_work')
         return
@@ -284,7 +305,7 @@ async def get_admin_first_name(message: Message, state: FSMContext):
 
 @dp.message(AddAdmin.admin_last_name)
 async def get_admin_last_name(message: Message, state: FSMContext):
-    if message.text == "Назад":
+    if message.text == "Вернутся в меню работы с пользователями":
         await message.answer("Меню для работы с пользователями бота", reply_markup=KB_admin_users())
         await state.set_state('users_work')
         return
@@ -310,12 +331,14 @@ async def handle_main_menu(message: types.Message, state: FSMContext):
         await state.set_state('test_health')
         await ask_question(message, state, 1, KB_1234)
         await state.set_state(Questions.question_1)
-    elif message.text == "Анкетирование":
-        await message.answer("тут начинается заполнение анкеты о здоровье")
-    elif message.text == "Отправить справку о болезни":
-        await message.answer("тут будет отправка справки о болезни")
-    elif message.text == "Справка о работе приложения":
-        await message.answer("тут будет справка о работе приложения")
+    elif message.text == "2":
+        await message.answer("2")
+    elif message.text == "3":
+        await message.answer("3")
+    elif message.text == "4":
+        await message.answer("4")
+
+
 
 
 async def ask_question(message: Message, state: FSMContext, question_number: int, markup):

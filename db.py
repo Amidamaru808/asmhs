@@ -191,19 +191,16 @@ def pdf_report():
     filename = "Answers_Report.pdf"
     with open('TestQuestions.json', 'r', encoding='utf-8') as f:
         questions = json.load(f)
-
     conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
     survey_data = []
     for question_num in range(1, 31):
         question_column = f'answer_{question_num}'
-
         question_text = questions.get(str(question_num), f"Вопрос {question_num}")
         c.execute(f"SELECT {question_column} FROM answers")
         answers = c.fetchall()
         answer_counts = {}
         total_answers = len(answers)
-
         if total_answers == 0:
             survey_data.append((question_text, {}))
             continue
@@ -224,7 +221,6 @@ def pdf_report():
     pdf.add_page()
     pdf.add_font('font', '', 'Bounded-Regular.ttf', uni=True)
     pdf.set_font('font', size=14)
-
     for question_text, answer_percentages in survey_data:
         pdf.cell(200, 10, txt=f"{question_text}", ln=True)
         pdf.set_font('font', size=14)
@@ -248,11 +244,9 @@ def pdf_report_course(course):
         answers = c.fetchall()
         answer_counts = {}
         total_answers = len(answers)
-
         for answer in answers:
             answer = answer[0]
             answer_counts[answer] = answer_counts.get(answer, 0) + 1
-
         answer_percentages = {
             answer: f"{(count / total_answers) * 100:.2f}% ({count})" for answer, count in answer_counts.items()
         }
@@ -267,10 +261,8 @@ def pdf_report_course(course):
     pdf.set_font('font', size=14)
     pdf.cell(200, 10, txt=f"Отчет по вопросам для  {course} курса", ln=True)
     pdf.set_font('font', size=14)
-
     for question_text, answer_percentages in survey_data:
         pdf.cell(200, 10, txt=f"{question_text}", ln=True)
-
         for answer, percentage in answer_percentages.items():
             pdf.cell(200, 5, txt=f"  Ответ: {answer} - {percentage}", ln=True)
 
@@ -283,6 +275,59 @@ def generate_password():
     characters = string.ascii_letters + string.digits
     password = ''.join(random.choices(characters, k=8))
     return password
+
+
+def generate_users_pdf():
+    conn = sqlite3.connect('main_database.db')
+    c = conn.cursor()
+    c.execute('SELECT first_name, last_name, password, "group", course FROM users')
+    students = c.fetchall()
+    conn.close()
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font('Bounded', '', 'Bounded-Regular.ttf', uni=True)
+    pdf.set_font('Bounded', '', 12)
+    pdf.cell(0, 10, txt="Список студентов", ln=True, align="C")
+    pdf.ln(10)
+    pdf.set_font('Bounded', '', 12)
+    pdf.cell(80, 10, "Логин", border=1, align="C")
+    pdf.cell(40, 10, "Пароль", border=1, align="C")
+    pdf.cell(20, 10, "Группа", border=1, align="C")
+    pdf.cell(15, 10, "Курс", border=1, align="C")
+    pdf.ln()
+    for first_name, last_name, password, group_name, course in students:
+        login = first_name + last_name
+        pdf.cell(80, 10, login, border=1)
+        pdf.cell(40, 10, password, border=1)
+        pdf.cell(20, 10, group_name, border=1)
+        pdf.cell(15, 10, str(course), border=1)
+        pdf.ln()
+
+    pdf.output("users.pdf")
+
+
+def generate_admins_pdf():
+    conn = sqlite3.connect('main_database.db')
+    c = conn.cursor()
+    c.execute('SELECT first_name, last_name, password FROM admins')
+    admins = c.fetchall()
+    conn.close()
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font('Bounded', '', 'Bounded-Regular.ttf', uni=True)
+    pdf.set_font('Bounded', '', 12)
+    pdf.cell(0, 10, txt="Список администраторов", ln=True, align="C")
+    pdf.ln(10)
+    pdf.cell(100, 10, "Логин", border=1, align="C")
+    pdf.cell(50, 10, "Пароль", border=1, align="C")
+    pdf.ln()
+    for first_name, last_name, password in admins:
+        login = first_name + last_name
+        pdf.cell(100, 10, login, border=1)
+        pdf.cell(50, 10, password, border=1)
+        pdf.ln()
+
+    pdf.output("admins.pdf")
 
 
 if __name__ == "__main__":

@@ -12,10 +12,10 @@ def KB_back_users():
 def KB_main_menu():
     return ReplyKeyboardMarkup(
         keyboard=[
-            [KeyboardButton(text="Запустить тестирование")],
-            [KeyboardButton(text="Кнопка 2")],
-            [KeyboardButton(text="Кнопка 3")],
-            [KeyboardButton(text="Кнопка 4")]
+            [KeyboardButton(text="Пройти тестирование о здоровье")],
+            [KeyboardButton(text="2")],
+            [KeyboardButton(text="3")],
+            [KeyboardButton(text="4")]
         ],
     )
 
@@ -30,6 +30,14 @@ def KB_admin():
         ],
     )
 
+def KB_students_admins():
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text='Студенты')],
+            [KeyboardButton(text='Администраторы')],
+            [KeyboardButton(text='Назад')]
+        ],
+    )
 
 
 def KB_admin_choose():
