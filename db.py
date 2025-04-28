@@ -4,6 +4,11 @@ from fpdf import FPDF
 import random
 import string
 
+import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
+from datetime import datetime
+
 def init_db():
     conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
@@ -347,5 +352,51 @@ def generate_admins_pdf():
     pdf.output("admins.pdf")
 
 
+def generate_illness_stats():
+    conn = sqlite3.connect('main_database.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT date FROM illnesses')
+    dates = cursor.fetchall()
+    conn.close()
+
+    month_counts = {i: 0 for i in range(1, 13)}
+
+    for d in dates:
+        date = d[0]
+        start_date = date.split(' - ')[0]
+        day, month, year = start_date.split('.')
+        month = int(month)
+        month_counts[month] += 1
+
+    print(month_counts)
+
+    months = [
+        "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+        "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"
+    ]
+    counts = [month_counts[m] for m in range(1, 13)]
+
+    plt.figure(figsize=(10, 4))
+    plt.plot(months, counts, marker='o')
+    plt.xticks(months)
+    plt.gca().yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
+    date = datetime.now().date()
+    plt.savefig(f'illness_stats_{date}.png')
+    plt.close()
+
+    pdf = FPDF(orientation='L')
+    pdf.add_page()
+    pdf.add_font('Bounded', '', 'Bounded-Regular.ttf', uni=True)
+    pdf.set_font('Bounded', '', 12)
+    pdf.cell(0, 5, txt="График заболеваний по месяцам", ln=True, align="C")
+    pdf.ln(2)
+    pdf.image(f"illness_stats_{date}.png", x=-30)
+    pdf.output(f'illness_stats_{date}.pdf')
+
+
+
 if __name__ == "__main__":
     init_db()
+
+
+generate_illness_stats()
