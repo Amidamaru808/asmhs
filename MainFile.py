@@ -13,13 +13,13 @@ import json
 from fpdf import FPDF
 from db import (init_db, save_answers, pdf_report, pdf_report_course, check_user_in_db, check_admin_in_db,
                 check_admin_password, add_user_to_db, generate_password, add_admin_to_db, generate_users_pdf,
-                generate_admins_pdf, add_illness)
+                generate_admins_pdf, add_illness, generate_illness_stats)
 
 from openpyxl import Workbook
 from keyboards import (KB_05_1_15_2, KB_1234, KB_druzya, KB_kachestvo,
                        KB_legko, KB_yes_no, KB_ves, KB_chastota_1, KB_chastota_2,
-                       KB_chastota_3, KB_admin, KB_main_menu, KB_admin_choose, KB_admin_users, KB_back_users,
-                       KB_students_admins, KB_back)
+                       KB_chastota_3, KB_admin, KB_main_menu, KB_admin_test_choose, KB_admin_users, KB_back_users,
+                       KB_students_admins, KB_back, KB_choose_type, KB_admin_ill_choose)
 
 bot = Bot(token='6735071514:AAHE1uVzht-JYxDEHoCvd7s7nvtwJQ5Vzls')
 dp = Dispatcher()
@@ -161,8 +161,8 @@ async def handle_password(message: Message, state: FSMContext):
 @dp.message(StateFilter("admin_menu"))
 async def admin_menu(message: types.Message, state: FSMContext):
     if message.text == "Результаты":
-        await message.answer("Выберите по какому курсы хотите посмотреть ответы.", reply_markup=KB_admin_choose())
-        await state.set_state('course_choose')
+        await message.answer("Раздел просмотра информации о пользователях.", reply_markup=KB_choose_type())
+        await state.set_state('test_or_illness')
     elif message.text == "Кнопка 2":
         await message.answer("Кнопка 2")
     elif message.text == "Пользователи":
@@ -170,6 +170,25 @@ async def admin_menu(message: types.Message, state: FSMContext):
         await state.set_state('users_work')
     elif message.text == "Справка о работе приложения":
         await message.answer("тут будет справка о работе приложения")
+
+
+@dp.message(StateFilter('test_or_illness'))
+async def test_or_illness(message: types.Message, state: FSMContext):
+    if message.text == "Тестирование":
+        await message.answer("Раздел просмотра аналтики тестирования.", reply_markup=KB_admin_test_choose())
+        await state.set_state("course_choose")
+    elif message.text == "Болезни":
+        await message.answer("Раздел просмотра аналтики болезней.", reply_markup=KB_admin_ill_choose())
+        await state.set_state("illness_choose")
+
+
+@dp.message(StateFilter("illness_choose"))
+async def course_choose(message: types.Message, state: FSMContext):
+    if message.text == "Статистика по месяцам за год":
+        generate_illness_stats()
+        pdf_file = FSInputFile('illness_stats.pdf')
+        await message.answer("Статистика заболеваний по месяцам за год")
+        await message.answer_document(pdf_file)
 
 
 @dp.message(StateFilter("course_choose"))
@@ -200,8 +219,8 @@ async def course_choose(message: types.Message, state: FSMContext):
         await message.answer("Отчет по четвертому курсу")
         await message.answer_document(pdf_file)
     elif message.text == "Назад":
-        await state.set_state('admin_menu')
-        await message.answer(f'Выберите одну из опции.', reply_markup=KB_admin())
+        await state.set_state('test_or_illness')
+        await message.answer("Раздел просмотра информации о пользователях.", reply_markup=KB_choose_type())
 
 
 @dp.message(StateFilter("users_work"))
@@ -332,7 +351,6 @@ async def handle_main_menu(message: types.Message, state: FSMContext):
         await message.answer("Тестирование начинается. Тест состоит из 30 вопросов. Хорошо подумайте над ответами."
                              "После завершения тестирования ответы запишутся. Тестирование можно пройти повторно,"
                              "предыдущие ответы будут перезаписаны.")
-        await state.set_state('test_health')
         await ask_question(message, state, 1, KB_1234)
         await state.set_state(Questions.question_1)
     elif message.text == "Прикрепить справку":

@@ -391,12 +391,10 @@ def generate_illness_stats():
     pdf.cell(0, 5, txt="График заболеваний по месяцам", ln=True, align="C")
     pdf.ln(2)
     pdf.image(f"illness_stats_{date}.png", x=-30)
-    pdf.output(f'illness_stats_{date}.pdf')
+    pdf.output('illness_stats.pdf')
+
 
 
 
 if __name__ == "__main__":
     init_db()
-
-
-generate_illness_stats()
