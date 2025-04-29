@@ -367,7 +367,7 @@ def generate_illness_stats(years):
         date = d[0]
         start_date = date.split(' - ')[0]
         day, month, year = start_date.split('.')
-        if(year == first_year or year == second_year):
+        if year == first_year or year == second_year:
             month = int(month) + 4
             month_counts[month] += 1
 
@@ -389,33 +389,34 @@ def generate_illness_stats(years):
     pdf.add_page()
     pdf.add_font('Bounded', '', 'Bounded-Regular.ttf', uni=True)
     pdf.set_font('Bounded', '', 12)
-    pdf.cell(0, 5, txt="График заболеваний по месяцам", ln=True, align="C")
+    pdf.cell(0, 5, txt=f"График заболеваний по месяцам {first_year} - {second_year}", ln=True, align="C")
     pdf.ln(2)
     pdf.image(f"illness_stats_{date}.png", x=-30)
-    pdf.output('illness_stats.pdf')
+    pdf.output(f'illness_stats{first_year}-{second_year}.pdf')
 
 
-def generate_illness_stats_by_course(course):
+def generate_illness_stats_by_course(course, years):
     conn = sqlite3.connect('main_database.db')
     cursor = conn.cursor()
     cursor.execute('SELECT date FROM illnesses WHERE course = ?', (course,))
     dates = cursor.fetchall()
     conn.close()
-
-    month_counts = {i: 0 for i in range(1, 13)}
+    first_year = years.split(' - ')[0]
+    second_year = years.split(' - ')[1]
+    month_counts = {i: 0 for i in range(1, 11)}
 
     for d in dates:
         date = d[0]
         start_date = date.split(' - ')[0]
         day, month, year = start_date.split('.')
-        month = int(month)
-        month_counts[month] += 1
+        if year == first_year or year == second_year:
+            month = int(month) + 4
+            month_counts[month] += 1
 
     months = [
-        "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
-        "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"
+        "Сентябрь", "Октябрь", "Ноябрь", "Декабрь", "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь"
     ]
-    counts = [month_counts[m] for m in range(1, 13)]
+    counts = [month_counts[m] for m in range(1, 11)]
 
     plt.figure(figsize=(10, 4))
     plt.plot(months, counts, marker='o')
@@ -428,11 +429,14 @@ def generate_illness_stats_by_course(course):
     pdf.add_page()
     pdf.add_font('Bounded', '', 'Bounded-Regular.ttf', uni=True)
     pdf.set_font('Bounded', '', 12)
-    pdf.cell(0, 5, txt=f"График заболеваний по месяцам {course} курс", ln=True, align="C")
+    pdf.cell(0, 5, txt=f"График заболеваний по месяцам {course} курс {first_year} - {second_year}", ln=True, align="C")
     pdf.ln(2)
     pdf.image(f'illness_stats_course_{course}_{date}.png', x=-30)
-    pdf.output(f'illness_stats_course_{course}.pdf')
+    pdf.output(f'illness_stats_course_{course}_{first_year}-{second_year}.pdf')
 
 
 if __name__ == "__main__":
     init_db()
+
+generate_illness_stats(str("2023 - 2024"))
+generate_illness_stats_by_course(2, str("2024 - 2025"))
