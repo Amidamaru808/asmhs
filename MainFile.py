@@ -25,6 +25,10 @@ bot = Bot(token='6735071514:AAHE1uVzht-JYxDEHoCvd7s7nvtwJQ5Vzls')
 dp = Dispatcher()
 save_folder = 'Справки'
 os.makedirs(save_folder, exist_ok=True)
+pdf_folder = 'Файлы pdf'
+os.makedirs(pdf_folder, exist_ok=True)
+png_folder = 'Файлы png'
+os.makedirs(png_folder, exist_ok=True)
 
 
 class Autorization(StatesGroup):
@@ -186,7 +190,6 @@ async def test_or_illness(message: types.Message, state: FSMContext):
         await state.set_state('admin_menu')
 
 
-
 @dp.message(StateFilter("illness_choose"))
 async def course_choose(message: types.Message, state: FSMContext):
     if message.text == "Статистика по месяцам за год все курсы":
@@ -212,34 +215,35 @@ async def course_choose(message: types.Message, state: FSMContext):
         await message.answer("Раздел просмотра информации о пользователях.", reply_markup=KB_choose_type())
         await state.set_state('test_or_illness')
 
+
 @dp.message(StateFilter("illness_choose_year_course"))
 async def illness_choose_year_course(message: types.Message, state: FSMContext):
     if message.text == "2023 - 2024":
         data = await state.get_data()
         course_num = data.get('ill_course')
         generate_illness_stats_by_course(course_num, str("2023 - 2024"))
-        pdf_file = FSInputFile(f'illness_stats_course_{course_num}_2023 - 2024.pdf')
+        pdf_file = FSInputFile(f'Файлы pdf/illness_stats_course_{course_num}_2023 - 2024.pdf')
         await message.answer(f"Статистика заболеваний по месяцам за год {course_num} курс 2023 - 2024")
         await message.answer_document(pdf_file)
     if message.text == "2024 - 2025":
         data = await state.get_data()
         course_num = data.get('ill_course')
         generate_illness_stats_by_course(course_num, str("2024 - 2025"))
-        pdf_file = FSInputFile(f'illness_stats_course_{course_num}_2024 - 2025.pdf')
+        pdf_file = FSInputFile(f'Файлы pdf/illness_stats_course_{course_num}_2024 - 2025.pdf')
         await message.answer(f"Статистика заболеваний по месяцам за год {course_num} курс 2024 - 2025")
         await message.answer_document(pdf_file)
     if message.text == "2025 - 2026":
         data = await state.get_data()
         course_num = data.get('ill_course')
         generate_illness_stats_by_course(course_num, str("2025 - 2026"))
-        pdf_file = FSInputFile(f'illness_stats_course_{course_num}_2025 - 2026.pdf')
+        pdf_file = FSInputFile(f'Файлы pdf/illness_stats_course_{course_num}_2025 - 2026.pdf')
         await message.answer(f"Статистика заболеваний по месяцам за год {course_num} курс 2025 - 2026")
         await message.answer_document(pdf_file)
     if message.text == "2026 - 2027":
         data = await state.get_data()
         course_num = data.get('ill_course')
         generate_illness_stats_by_course(course_num, str("2026 - 2027"))
-        pdf_file = FSInputFile(f'illness_stats_course_{course_num}_2026 - 2027.pdf')
+        pdf_file = FSInputFile(f'Файлы pdf/illness_stats_course_{course_num}_2026 - 2027.pdf')
         await message.answer(f"Статистика заболеваний по месяцам за год {course_num} курс 2026 - 2027")
         await message.answer_document(pdf_file)
     if message.text == "Назад":
@@ -251,22 +255,22 @@ async def illness_choose_year_course(message: types.Message, state: FSMContext):
 async def illness_choose_year(message: types.Message, state: FSMContext):
     if message.text == "2023 - 2024":
         generate_illness_stats(str("2023 - 2024"))
-        pdf_file = FSInputFile(f'illness_stats2023-2024.pdf')
+        pdf_file = FSInputFile(f'Файлы pdf/illness_stats2023-2024.pdf')
         await message.answer(f"Статистика заболеваний по месяцам за 2023 - 2024 год")
         await message.answer_document(pdf_file)
     if message.text == "2024 - 2025":
         generate_illness_stats(str("2024 - 2025"))
-        pdf_file = FSInputFile(f'illness_stats2024-2025.pdf')
+        pdf_file = FSInputFile(f'Файлы pdf/illness_stats2024-2025.pdf')
         await message.answer(f"Статистика заболеваний по месяцам за 2024 - 2025 год")
         await message.answer_document(pdf_file)
     if message.text == "2025 - 2026":
         generate_illness_stats(str("2025 - 2026"))
-        pdf_file = FSInputFile(f'illness_stats2025-2026.pdf')
+        pdf_file = FSInputFile(f'Файлы pdf/illness_stats2025-2026.pdf')
         await message.answer(f"Статистика заболеваний по месяцам за 2025 - 2026 год")
         await message.answer_document(pdf_file)
     if message.text == "2026 - 2027":
         generate_illness_stats(str("2026 - 2027"))
-        pdf_file = FSInputFile(f'illness_stats2026-2027.pdf')
+        pdf_file = FSInputFile(f'Файлы pdf/illness_stats2026-2027.pdf')
         await message.answer(f"Статистика заболеваний по месяцам за 2026 - 2027 год")
         await message.answer_document(pdf_file)
 
@@ -275,27 +279,27 @@ async def illness_choose_year(message: types.Message, state: FSMContext):
 async def course_choose(message: types.Message, state: FSMContext):
     if message.text == "Все курсы":
         pdf_report()
-        pdf_file = FSInputFile("Answers_Report.pdf")
+        pdf_file = FSInputFile("Файлы pdf/Answers_Report.pdf")
         await message.answer("Отчет по всем курсам")
         await message.answer_document(pdf_file)
     elif message.text == "1":
         pdf_report_course(1)
-        pdf_file = FSInputFile("Statistic_1_course.pdf")
+        pdf_file = FSInputFile("Файлы pdf/Statistic_1_course.pdf")
         await message.answer("Отчет по первому курсу")
         await message.answer_document(pdf_file)
     elif message.text == "2":
         pdf_report_course(2)
-        pdf_file = FSInputFile("Statistic_2_course.pdf")
+        pdf_file = FSInputFile("Файлы pdf/Statistic_2_course.pdf")
         await message.answer("Отчет по второму курсу")
         await message.answer_document(pdf_file)
     elif message.text == "3":
         pdf_report_course(3)
-        pdf_file = FSInputFile("Statistic_3_course.pdf")
+        pdf_file = FSInputFile("Файлы pdf/Statistic_3_course.pdf")
         await message.answer("Отчет по третьему курсу")
         await message.answer_document(pdf_file)
     elif message.text == "4":
         pdf_report_course(4)
-        pdf_file = FSInputFile("Statistic_4_course.pdf")
+        pdf_file = FSInputFile("Файлы pdf/Statistic_4_course.pdf")
         await message.answer("Отчет по четвертому курсу")
         await message.answer_document(pdf_file)
     elif message.text == "Назад":
@@ -324,12 +328,12 @@ async def users_work(message: types.Message, state: FSMContext):
 async def choose_admin_user(message: types.Message, state: FSMContext):
     if message.text == "Студенты":
         generate_users_pdf()
-        pdf_file = FSInputFile("users.pdf")
+        pdf_file = FSInputFile("Файлы pdf/users.pdf")
         await message.answer("Список студентов")
         await message.answer_document(pdf_file)
     elif message.text == "Администраторы":
         generate_admins_pdf()
-        pdf_file = FSInputFile("admins.pdf")
+        pdf_file = FSInputFile("Файлы pdf/admins.pdf")
         await message.answer("Список администраторов")
         await message.answer_document(pdf_file)
     elif message.text == "Назад":
