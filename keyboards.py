@@ -48,6 +48,13 @@ def KB_students_admins():
         ],
     )
 
+def KB_years():
+    return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='2023 - 2024'),
+                                         KeyboardButton(text='2024 - 2025'),
+                                         KeyboardButton(text="2025 - 2026"),
+                                         KeyboardButton(text="2026 - 2027"),
+                                          KeyboardButton(text="Назад")]])
+
 
 def KB_admin_test_choose():
     return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Все курсы')],
@@ -59,12 +66,12 @@ def KB_admin_test_choose():
 
 
 def KB_admin_ill_choose():
-    return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Статистика по месяцам за год')],
-                                           [KeyboardButton(text='Статистика по месяцам за год 1 курс')],
-                                           [KeyboardButton(text='Статистика по месяцам за год 2 курс')],
-                                           [KeyboardButton(text='Статистика по месяцам за год 3 курс')],
-                                           [KeyboardButton(text='Статистика по месяцам за год 4 курс')],
-                                           [KeyboardButton(text='Назад')]])
+    return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Статистика по месяцам за год 1 курс'),
+                                           KeyboardButton(text='Статистика по месяцам за год 2 курс')],
+                                           [KeyboardButton(text='Статистика по месяцам за год 3 курс'),
+                                           KeyboardButton(text='Статистика по месяцам за год 4 курс')],
+                                           [KeyboardButton(text='Статистика по месяцам за год все курсы'),
+                                            KeyboardButton(text='Назад')]])
 
 
 def KB_admin_users():
@@ -75,8 +82,9 @@ def KB_admin_users():
 
 
 def KB_choose_type():
-    return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Тестирование')],
-                                         [KeyboardButton(text="Болезни")]])
+    return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Тестирование'),
+                                         KeyboardButton(text="Болезни"),
+                                          KeyboardButton(text="Назад")]])
 
 
 KB_1234 = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='1'),

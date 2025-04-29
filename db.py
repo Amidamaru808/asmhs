@@ -432,11 +432,8 @@ def generate_illness_stats_by_course(course, years):
     pdf.cell(0, 5, txt=f"График заболеваний по месяцам {course} курс {first_year} - {second_year}", ln=True, align="C")
     pdf.ln(2)
     pdf.image(f'illness_stats_course_{course}_{date}.png', x=-30)
-    pdf.output(f'illness_stats_course_{course}_{first_year}-{second_year}.pdf')
+    pdf.output(f'illness_stats_course_{course}_{first_year} - {second_year}.pdf')
 
 
 if __name__ == "__main__":
     init_db()
-
-generate_illness_stats(str("2023 - 2024"))
-generate_illness_stats_by_course(2, str("2024 - 2025"))
