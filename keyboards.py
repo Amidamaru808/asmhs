@@ -60,10 +60,10 @@ def KB_admin_test_choose():
 
 def KB_admin_ill_choose():
     return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Статистика по месяцам за год')],
-                                           [KeyboardButton(text='1')],
-                                           [KeyboardButton(text='2')],
-                                           [KeyboardButton(text='3')],
-                                           [KeyboardButton(text='4')],
+                                           [KeyboardButton(text='Статистика по месяцам за год 1 курс')],
+                                           [KeyboardButton(text='Статистика по месяцам за год 2 курс')],
+                                           [KeyboardButton(text='Статистика по месяцам за год 3 курс')],
+                                           [KeyboardButton(text='Статистика по месяцам за год 4 курс')],
                                            [KeyboardButton(text='Назад')]])
 
 

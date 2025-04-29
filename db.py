@@ -352,29 +352,30 @@ def generate_admins_pdf():
     pdf.output("admins.pdf")
 
 
-def generate_illness_stats():
+def generate_illness_stats(years):
     conn = sqlite3.connect('main_database.db')
     cursor = conn.cursor()
     cursor.execute('SELECT date FROM illnesses')
     dates = cursor.fetchall()
     conn.close()
 
-    month_counts = {i: 0 for i in range(1, 13)}
+    first_year = years.split(' - ')[0]
+    second_year = years.split(' - ')[1]
+    month_counts = {i: 0 for i in range(1, 11)}
 
     for d in dates:
         date = d[0]
         start_date = date.split(' - ')[0]
         day, month, year = start_date.split('.')
-        month = int(month)
-        month_counts[month] += 1
+        if(year == first_year or year == second_year):
+            month = int(month) + 4
+            month_counts[month] += 1
 
-    print(month_counts)
 
     months = [
-        "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
-        "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"
+         "Сентябрь", "Октябрь", "Ноябрь", "Декабрь", "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь"
     ]
-    counts = [month_counts[m] for m in range(1, 13)]
+    counts = [month_counts[m] for m in range(1, 11)]
 
     plt.figure(figsize=(10, 4))
     plt.plot(months, counts, marker='o')
@@ -394,6 +395,43 @@ def generate_illness_stats():
     pdf.output('illness_stats.pdf')
 
 
+def generate_illness_stats_by_course(course):
+    conn = sqlite3.connect('main_database.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT date FROM illnesses WHERE course = ?', (course,))
+    dates = cursor.fetchall()
+    conn.close()
+
+    month_counts = {i: 0 for i in range(1, 13)}
+
+    for d in dates:
+        date = d[0]
+        start_date = date.split(' - ')[0]
+        day, month, year = start_date.split('.')
+        month = int(month)
+        month_counts[month] += 1
+
+    months = [
+        "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+        "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"
+    ]
+    counts = [month_counts[m] for m in range(1, 13)]
+
+    plt.figure(figsize=(10, 4))
+    plt.plot(months, counts, marker='o')
+    plt.gca().yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
+    date = datetime.now().date()
+    plt.savefig(f'illness_stats_course_{course}_{date}.png')
+    plt.close()
+
+    pdf = FPDF(orientation='L')
+    pdf.add_page()
+    pdf.add_font('Bounded', '', 'Bounded-Regular.ttf', uni=True)
+    pdf.set_font('Bounded', '', 12)
+    pdf.cell(0, 5, txt=f"График заболеваний по месяцам {course} курс", ln=True, align="C")
+    pdf.ln(2)
+    pdf.image(f'illness_stats_course_{course}_{date}.png', x=-30)
+    pdf.output(f'illness_stats_course_{course}.pdf')
 
 
 if __name__ == "__main__":

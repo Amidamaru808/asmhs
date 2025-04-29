@@ -13,7 +13,7 @@ import json
 from fpdf import FPDF
 from db import (init_db, save_answers, pdf_report, pdf_report_course, check_user_in_db, check_admin_in_db,
                 check_admin_password, add_user_to_db, generate_password, add_admin_to_db, generate_users_pdf,
-                generate_admins_pdf, add_illness, generate_illness_stats)
+                generate_admins_pdf, add_illness, generate_illness_stats, generate_illness_stats_by_course)
 
 from openpyxl import Workbook
 from keyboards import (KB_05_1_15_2, KB_1234, KB_druzya, KB_kachestvo,
@@ -188,6 +188,26 @@ async def course_choose(message: types.Message, state: FSMContext):
         generate_illness_stats()
         pdf_file = FSInputFile('illness_stats.pdf')
         await message.answer("Статистика заболеваний по месяцам за год")
+        await message.answer_document(pdf_file)
+    if message.text == "Статистика по месяцам за год 1 курс":
+        generate_illness_stats_by_course(1)
+        pdf_file = FSInputFile('illness_stats_course_1.pdf')
+        await message.answer("Статистика заболеваний по месяцам за год 1 курс")
+        await message.answer_document(pdf_file)
+    if message.text == "Статистика по месяцам за год 2 курс":
+        generate_illness_stats_by_course(2)
+        pdf_file = FSInputFile('illness_stats_course_2.pdf')
+        await message.answer("Статистика заболеваний по месяцам за год 2 курс")
+        await message.answer_document(pdf_file)
+    if message.text == "Статистика по месяцам за год 3 курс":
+        generate_illness_stats_by_course(3)
+        pdf_file = FSInputFile('illness_stats_course_3.pdf')
+        await message.answer("Статистика заболеваний по месяцам за год 3 курс")
+        await message.answer_document(pdf_file)
+    if message.text == "Статистика по месяцам за год 4 курс":
+        generate_illness_stats_by_course(4)
+        pdf_file = FSInputFile('illness_stats_course_4.pdf')
+        await message.answer("Статистика заболеваний по месяцам за год 4 курс")
         await message.answer_document(pdf_file)
 
 
