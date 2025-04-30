@@ -33,6 +33,28 @@ png_folder = 'Файлы png'
 os.makedirs(png_folder, exist_ok=True)
 
 
+all_groups = {
+    1: ["ИД 23.1/Б3-24", "ИД 23.1/Б4-24", "ИД 23.1/Б1-24", "ИД 30.1/Б4-24", "ИД 30.1/Б3-24", "ИДc 23.1/Б3-24",
+        "УД 21.1/Б3-24", "УД 21.1/Б6-24", "УД 21.1/Б13-24", "УД 25.1/Б1-24", "УД 29.1/Б1-24", "НД 36.1/Б1-24",
+        "УД 14.1/1-24", "УДс 21.1/Б2-24", "УДс 21.1/Б3-24", "УДс 21.1/Б6-24", "ЭД 20.1/Б10-24", "ЭД 32.1/Б1-24",
+        "ЭД 13.1/1-24", "ЭД 13.2/1-24", "ЭД 24.1/Б2-24", "ЭДс 20.1/Б10-24", "ЭД 20.1/Б11-24", "ЭДс 20.1/Б2-24",
+        "ЭДс 32.1/Б11-24", "ЮД 22.1/Б2-24", "ЮД 22.1/Б3-24", "ЮД 22.1/Б5-24", "ЮДc 22.1/Б2-24", "ЮДс 22.1/Б3-24",
+        "УД 28.1/Б1-24", "УДс 28.1/Б1-24"],
+    2: ["ИД 30.1/Б3-23", "ИД 23.1/Б3-23", "ИДc 23.1/Б3-23", "УД 21.1/Б2-23", "УД 21.1/Б3-23", "УД 25.1/Б1-23",
+        "УД 25.2/Б1-23", "УД 29.1/Б1-23", "УДс 21.1/Б2-23", "УДс 21.1/Б3-23", "УДс 21.1/Б6-23", "ЭД 20.1/Б10-23",
+        "ЭД 32.1/Б1-23", "ЭД 13.1/1-23", "ЭД 13.2/1-23", "ЭД 13.3/1-23", "ЭД 24.1/Б2-23", "ЭД 14.1/1-23",
+        "ЭДс 20.1/Б11-23", "ЮД 22.1/Б2-23", "ЮД 22.1/Б3-23", "ЮДс 22.1/Б2-23", "УД 28.1/Б1-23", "УД 37.1/Б1-23",
+        "УДс 28.1/Б1-23"],
+    3: ["ИД 30.1/Б3-22", "ИД 23.1/Б3-22", "ИДс 23.1/Б3-22", "УД 21.1/Б2-22", "УД 25.1/Б1-22", "ЭД 20.1/Б10-22",
+        "ЭД 32.1/Б1-22", "ЭД 13.1/1-22", "ЭД 13.2/1-22", "ЭД 13.3/1-22", "ЭДс 20.1/Б10-22", "ЮД 22.1/Б2-22",
+        "ЮД 22.1/Б3-22", "ЮДс 22.1/Б2-22", "УД 28.1/Б1-22"],
+    4: ["ИД 23.1/Б3-21", "ИД 23.2/Б3-21", "ИД 23.3/Б3-21", "ИД 23.1/Б1-21", "ИД 30.1/Б3-21", "о. УД 29.1/Б1-21",
+        "о. УД 25.1/Б1-21", "о. УД 25.2/Б1-21", "о. ЭД 20.1/Б11-21", "о. ЭД 32.1/Б1-21", "о. ЭД 13.1/1-21",
+        "о. ЭД 13.2/1-21", "о. ЭД 13.3/1-21", "о. ЭД 13.4/1-21", "о. ЭД 13.5/1-21", "о. ЮД 22.1/Б2-21",
+        "о. ЮД 22.1/Б3-21"]
+}
+
+
 class Autorization(StatesGroup):
     Login = State()
     Password = State()
@@ -262,28 +284,32 @@ async def illness_user_choose(message: types.Message, state: FSMContext):
 @dp.message(StateFilter('illness_date_choose'))
 async def illness_date_choose(message: types.Message, state: FSMContext):
     user_message = message.text.strip()
-    data = await state.get_data()
-    course = data.get("illness_course")
-    group = data.get("illness_group")
-    name = data.get("illness_users")
-    ids = get_illness_ids(str(course), str(group), str(name), user_message)
-    await message.answer(f"Архив .zip со справками по заданным параметрам. {ids}")
+    if len(user_message) == 23:
+        data = await state.get_data()
+        course = data.get("illness_course")
+        group = data.get("illness_group")
+        name = data.get("illness_users")
+        ids = get_illness_ids(str(course), str(group), str(name), user_message)
+        await message.answer(f"Архив .zip со справками по заданным параметрам. {ids}")
 
-    if os.path.exists('Справки/illness_photos.zip'):
-        os.remove('Справки/illness_photos.zip')
+        if os.path.exists('Справки/illness_photos.zip'):
+            os.remove('Справки/illness_photos.zip')
 
-    with zipfile.ZipFile('Справки/illness_photos.zip', "w") as zipf:
-        for doc_id in ids:
-            filename = f"{doc_id}.jpg"
-            filepath = os.path.join("Справки", filename)
-            if os.path.exists(filepath):
-                zipf.write(filepath, arcname=filename)
+        with zipfile.ZipFile('Справки/illness_photos.zip', "w") as zipf:
+            for doc_id in ids:
+                filename = f"{doc_id}.jpg"
+                filepath = os.path.join("Справки", filename)
+                if os.path.exists(filepath):
+                    zipf.write(filepath, arcname=filename)
 
-    zip_file = FSInputFile('Справки/illness_photos.zip')
-    await message.answer_document(zip_file)
-    await message.answer(f'Вы авторизовались как администратор. Выберите одну из опции.',
-                         reply_markup=KB_admin())
-    await state.set_state('admin_menu')
+        zip_file = FSInputFile('Справки/illness_photos.zip')
+        await message.answer_document(zip_file)
+        await message.answer(f'Вы авторизовались как администратор. Выберите одну из опции.',
+                             reply_markup=KB_admin())
+        await state.set_state('admin_menu')
+    else:
+        await message.answer("Неправильный формат даты!"
+                             "Укажите дату начала и конца болезни в формате XX.XX.XXXX - XX.XX.XXXX")
 
 
 @dp.message(StateFilter('test_or_illness'))
@@ -471,7 +497,7 @@ async def get_user_last_name(message: Message, state: FSMContext):
         return
 
     await state.update_data(last_name=message.text.strip())
-    await message.answer("Введите группу пользователя:")
+    await message.answer("Выберите группу пользователя:")
     await state.set_state(AddStudent.user_group)
 
 

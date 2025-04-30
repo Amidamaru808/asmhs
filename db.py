@@ -400,7 +400,7 @@ def generate_illness_stats(years):
 def generate_illness_stats_by_course(course, years):
     conn = sqlite3.connect('main_database.db')
     cursor = conn.cursor()
-    cursor.execute('SELECT date FROM illnesses WHERE course = ?', (course,))
+    cursor.execute('SELECT ill_date FROM illnesses WHERE course = ?', (course,))
     dates = cursor.fetchall()
     conn.close()
     first_year = years.split(' - ')[0]
