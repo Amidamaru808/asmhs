@@ -301,12 +301,18 @@ def generate_password():
     return password
 
 
-def generate_users_pdf():
+def generate_users_pdf(group):
     conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
-    c.execute('SELECT first_name, last_name, password, "group", course FROM users')
+
+    if group.lower() == "all":
+        c.execute('SELECT first_name, last_name, password, "group", course FROM users')
+    else:
+        c.execute('SELECT first_name, last_name, password, "group", course FROM users WHERE "group" = ?', (group,))
+
     students = c.fetchall()
     conn.close()
+
     pdf = FPDF()
     pdf.add_page()
     pdf.add_font('Bounded', '', 'Bounded-Regular.ttf', uni=True)

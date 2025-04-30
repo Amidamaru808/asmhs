@@ -189,19 +189,19 @@ async def illness_course_choose(message: types.Message, state: FSMContext):
         await state.update_data(illness_group="all")
         await state.update_data(illness_users="all")
         await state.set_state('illness_date_choose')
-    if message.text == "1 курс":
+    if message.text == "1":
         await message.answer("1 курс", reply_markup=KB_admin_group_choose(1, True))
         await state.update_data(illness_course="1")
         await state.set_state('illness_group_choose')
-    if message.text == "2 курс":
+    if message.text == "2":
         await message.answer("2 курс", reply_markup=KB_admin_group_choose(2, True))
         await state.update_data(illness_course="2")
         await state.set_state('illness_group_choose')
-    if message.text == "3 курс":
+    if message.text == "3":
         await message.answer("3 курс", reply_markup=KB_admin_group_choose(3, True))
         await state.update_data(illness_course="3")
         await state.set_state('illness_group_choose')
-    if message.text == "4 курс":
+    if message.text == "4":
         await message.answer("4 курс", reply_markup=KB_admin_group_choose(4, True))
         await state.update_data(illness_course="4")
         await state.set_state('illness_group_choose')
@@ -262,6 +262,7 @@ async def illness_date_choose(message: types.Message, state: FSMContext):
         await message.answer("Раздел просмотра справок от обучающихся. Справки каких курсов вы хотите просмотреть?",
                              reply_markup=KB_admin_course_choose())
         await state.set_state('illness_course_choose')
+        return
     if len(user_message) == 23:
         data = await state.get_data()
         course = data.get("illness_course")
@@ -396,22 +397,22 @@ async def course_choose(message: types.Message, state: FSMContext):
         pdf_file = FSInputFile("Файлы pdf/Answers_Report.pdf")
         await message.answer("Отчет по всем курсам")
         await message.answer_document(pdf_file)
-    elif message.text == "1 курс":
+    elif message.text == "1":
         pdf_report_course(1)
         pdf_file = FSInputFile("Файлы pdf/Statistic_1_course.pdf")
         await message.answer("Отчет по первому курсу")
         await message.answer_document(pdf_file)
-    elif message.text == "2 курс":
+    elif message.text == "2":
         pdf_report_course(2)
         pdf_file = FSInputFile("Файлы pdf/Statistic_2_course.pdf")
         await message.answer("Отчет по второму курсу")
         await message.answer_document(pdf_file)
-    elif message.text == "3 курс":
+    elif message.text == "3":
         pdf_report_course(3)
         pdf_file = FSInputFile("Файлы pdf/Statistic_3_course.pdf")
         await message.answer("Отчет по третьему курсу")
         await message.answer_document(pdf_file)
-    elif message.text == "4 курс":
+    elif message.text == "4":
         pdf_report_course(4)
         pdf_file = FSInputFile("Файлы pdf/Statistic_4_course.pdf")
         await message.answer("Отчет по четвертому курсу")
@@ -441,10 +442,8 @@ async def users_work(message: types.Message, state: FSMContext):
 @dp.message(StateFilter("choose_admin_user"))
 async def choose_admin_user(message: types.Message, state: FSMContext):
     if message.text == "Студенты":
-        generate_users_pdf()
-        pdf_file = FSInputFile("Файлы pdf/users.pdf")
-        await message.answer("Список студентов")
-        await message.answer_document(pdf_file)
+        await message.answer("Выберите курс", reply_markup=KB_admin_course_choose())
+        await state.set_state("choose_course_user")
     elif message.text == "Администраторы":
         generate_admins_pdf()
         pdf_file = FSInputFile("Файлы pdf/admins.pdf")
@@ -454,6 +453,41 @@ async def choose_admin_user(message: types.Message, state: FSMContext):
         await message.answer("Меню для работы с пользователями бота", reply_markup=KB_admin_users())
         await state.set_state('users_work')
 
+
+@dp.message(StateFilter("choose_course_user"))
+async def choose_course_user(message: types.Message, state: FSMContext):
+    course = message.text.strip()
+    if course == "Все курсы":
+        generate_users_pdf("all")
+        pdf_file = FSInputFile("Файлы pdf/users.pdf")
+        await message.answer("Список всех студентов")
+        await message.answer_document(pdf_file)
+        await message.answer("Меню для работы с пользователями бота", reply_markup=KB_admin_users())
+        await state.set_state('users_work')
+        return
+    elif course == "Назад":
+        await message.answer("Выберите список пользователей", reply_markup=KB_students_admins())
+        await state.set_state("choose_admin_user")
+        return
+
+    await message.answer(f"Выберите группу {course} курса", reply_markup=KB_admin_group_choose(int(course), True))
+    await state.set_state("choose_group_user")
+
+
+@dp.message(StateFilter("choose_group_user"))
+async def choose_group_user(message: types.Message, state: FSMContext):
+    group = message.text.strip()
+    if group == "Назад":
+        await message.answer("Выберите курс", reply_markup=KB_admin_course_choose())
+        await state.set_state("choose_course_user")
+        return
+
+    generate_users_pdf(group)
+    pdf_file = FSInputFile("Файлы pdf/users.pdf")
+    await message.answer(f"Список студентов группы - {group}")
+    await message.answer_document(pdf_file)
+    await message.answer("Меню для работы с пользователями бота", reply_markup=KB_admin_users())
+    await state.set_state('users_work')
 
 @dp.message(AddStudent.user_first_name)
 async def get_user_first_name(message: Message, state: FSMContext):
@@ -475,7 +509,7 @@ async def get_user_last_name(message: Message, state: FSMContext):
         return
 
     await state.update_data(last_name=message.text.strip())
-    await message.answer("Выберите курс пользователя:")
+    await message.answer("Выберите курс пользователя:", reply_markup=KB_admin_course_choose())
     await state.set_state(AddStudent.user_course)
 
 

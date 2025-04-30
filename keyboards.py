@@ -79,10 +79,10 @@ def KB_years():
 
 def KB_admin_course_choose():
     return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Все курсы')],
-                                           [KeyboardButton(text='1 курс')],
-                                           [KeyboardButton(text='2 курс')],
-                                           [KeyboardButton(text='3 курс')],
-                                           [KeyboardButton(text='4 курс')],
+                                           [KeyboardButton(text='1'),
+                                           KeyboardButton(text='2')],
+                                           [KeyboardButton(text='3'),
+                                           KeyboardButton(text='4')],
                                            [KeyboardButton(text='Назад')]])
 
 
