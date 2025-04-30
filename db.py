@@ -315,16 +315,16 @@ def generate_users_pdf():
     pdf.ln(10)
     pdf.set_font('Bounded', '', 12)
     pdf.cell(80, 10, "Логин", border=1, align="C")
-    pdf.cell(40, 10, "Пароль", border=1, align="C")
-    pdf.cell(20, 10, "Группа", border=1, align="C")
-    pdf.cell(15, 10, "Курс", border=1, align="C")
+    pdf.cell(35, 10, "Пароль", border=1, align="C")
+    pdf.cell(50, 10, "Группа", border=1, align="C")
+    pdf.cell(20, 10, "Курс", border=1, align="C")
     pdf.ln()
     for first_name, last_name, password, group_name, course in students:
-        login = first_name + last_name
+        login = first_name + " " + last_name
         pdf.cell(80, 10, login, border=1)
-        pdf.cell(40, 10, password, border=1)
-        pdf.cell(20, 10, group_name, border=1)
-        pdf.cell(15, 10, str(course), border=1)
+        pdf.cell(35, 10, password, border=1)
+        pdf.cell(50, 10, group_name, border=1)
+        pdf.cell(20, 10, str(course), border=1)
         pdf.ln()
 
     pdf.output("Файлы pdf/users.pdf")
@@ -346,7 +346,7 @@ def generate_admins_pdf():
     pdf.cell(50, 10, "Пароль", border=1, align="C")
     pdf.ln()
     for first_name, last_name, password in admins:
-        login = first_name + last_name
+        login = first_name + " " + last_name
         pdf.cell(100, 10, login, border=1)
         pdf.cell(50, 10, password, border=1)
         pdf.ln()

@@ -8,9 +8,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.filters import CommandStart, StateFilter
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import ReplyKeyboardRemove
-import sqlite3
 import json
-from fpdf import FPDF
 from db import (init_db, save_answers, pdf_report, pdf_report_course, check_user_in_db, check_admin_in_db,
                 check_admin_password, add_user_to_db, generate_password, add_admin_to_db, generate_users_pdf,
                 generate_admins_pdf, add_illness, generate_illness_stats, generate_illness_stats_by_course,
@@ -20,8 +18,8 @@ import zipfile
 from keyboards import (KB_05_1_15_2, KB_1234, KB_druzya, KB_kachestvo,
                        KB_legko, KB_yes_no, KB_ves, KB_chastota_1, KB_chastota_2,
                        KB_chastota_3, KB_admin, KB_main_menu, KB_admin_course_choose, KB_admin_users, KB_back_users,
-                       KB_students_admins, KB_back, KB_choose_type, KB_admin_ill_choose, KB_years, KB_admin_group_choose,
-                       KB_admin_user_choose)
+                       KB_students_admins, KB_back, KB_choose_type, KB_admin_ill_choose, KB_years,
+                       KB_admin_group_choose, KB_admin_user_choose)
 
 bot = Bot(token='6735071514:AAHE1uVzht-JYxDEHoCvd7s7nvtwJQ5Vzls')
 dp = Dispatcher()
@@ -32,27 +30,6 @@ os.makedirs(pdf_folder, exist_ok=True)
 png_folder = 'Файлы png'
 os.makedirs(png_folder, exist_ok=True)
 
-
-all_groups = {
-    1: ["ИД 23.1/Б3-24", "ИД 23.1/Б4-24", "ИД 23.1/Б1-24", "ИД 30.1/Б4-24", "ИД 30.1/Б3-24", "ИДc 23.1/Б3-24",
-        "УД 21.1/Б3-24", "УД 21.1/Б6-24", "УД 21.1/Б13-24", "УД 25.1/Б1-24", "УД 29.1/Б1-24", "НД 36.1/Б1-24",
-        "УД 14.1/1-24", "УДс 21.1/Б2-24", "УДс 21.1/Б3-24", "УДс 21.1/Б6-24", "ЭД 20.1/Б10-24", "ЭД 32.1/Б1-24",
-        "ЭД 13.1/1-24", "ЭД 13.2/1-24", "ЭД 24.1/Б2-24", "ЭДс 20.1/Б10-24", "ЭД 20.1/Б11-24", "ЭДс 20.1/Б2-24",
-        "ЭДс 32.1/Б11-24", "ЮД 22.1/Б2-24", "ЮД 22.1/Б3-24", "ЮД 22.1/Б5-24", "ЮДc 22.1/Б2-24", "ЮДс 22.1/Б3-24",
-        "УД 28.1/Б1-24", "УДс 28.1/Б1-24"],
-    2: ["ИД 30.1/Б3-23", "ИД 23.1/Б3-23", "ИДc 23.1/Б3-23", "УД 21.1/Б2-23", "УД 21.1/Б3-23", "УД 25.1/Б1-23",
-        "УД 25.2/Б1-23", "УД 29.1/Б1-23", "УДс 21.1/Б2-23", "УДс 21.1/Б3-23", "УДс 21.1/Б6-23", "ЭД 20.1/Б10-23",
-        "ЭД 32.1/Б1-23", "ЭД 13.1/1-23", "ЭД 13.2/1-23", "ЭД 13.3/1-23", "ЭД 24.1/Б2-23", "ЭД 14.1/1-23",
-        "ЭДс 20.1/Б11-23", "ЮД 22.1/Б2-23", "ЮД 22.1/Б3-23", "ЮДс 22.1/Б2-23", "УД 28.1/Б1-23", "УД 37.1/Б1-23",
-        "УДс 28.1/Б1-23"],
-    3: ["ИД 30.1/Б3-22", "ИД 23.1/Б3-22", "ИДс 23.1/Б3-22", "УД 21.1/Б2-22", "УД 25.1/Б1-22", "ЭД 20.1/Б10-22",
-        "ЭД 32.1/Б1-22", "ЭД 13.1/1-22", "ЭД 13.2/1-22", "ЭД 13.3/1-22", "ЭДс 20.1/Б10-22", "ЮД 22.1/Б2-22",
-        "ЮД 22.1/Б3-22", "ЮДс 22.1/Б2-22", "УД 28.1/Б1-22"],
-    4: ["ИД 23.1/Б3-21", "ИД 23.2/Б3-21", "ИД 23.3/Б3-21", "ИД 23.1/Б1-21", "ИД 30.1/Б3-21", "о. УД 29.1/Б1-21",
-        "о. УД 25.1/Б1-21", "о. УД 25.2/Б1-21", "о. ЭД 20.1/Б11-21", "о. ЭД 32.1/Б1-21", "о. ЭД 13.1/1-21",
-        "о. ЭД 13.2/1-21", "о. ЭД 13.3/1-21", "о. ЭД 13.4/1-21", "о. ЭД 13.5/1-21", "о. ЮД 22.1/Б2-21",
-        "о. ЮД 22.1/Б3-21"]
-}
 
 
 class Autorization(StatesGroup):
@@ -205,23 +182,27 @@ async def admin_menu(message: types.Message, state: FSMContext):
 @dp.message(StateFilter('illness_course_choose'))
 async def illness_course_choose(message: types.Message, state: FSMContext):
     if message.text == "Все курсы":
-        await message.answer("Выбраны все курсы. Выберите группу.", reply_markup=KB_admin_group_choose())
+        await message.answer("Выбраны все курсы, все группы и все пользователи."
+                             "Введите дату в формает XX.XX.XXXX или же диапозон дат в формает"
+                             "XX.XX.XXXX - XX.XX.XXXX")
         await state.update_data(illness_course="all")
-        await state.set_state('illness_group_choose')
+        await state.update_data(illness_group="all")
+        await state.update_data(illness_users="all")
+        await state.set_state('illness_date_choose')
     if message.text == "1 курс":
-        await message.answer("1 курс", reply_markup=KB_admin_group_choose())
+        await message.answer("1 курс", reply_markup=KB_admin_group_choose(1, True))
         await state.update_data(illness_course="1")
         await state.set_state('illness_group_choose')
     if message.text == "2 курс":
-        await message.answer("2 курс", reply_markup=KB_admin_group_choose())
+        await message.answer("2 курс", reply_markup=KB_admin_group_choose(2, True))
         await state.update_data(illness_course="2")
         await state.set_state('illness_group_choose')
     if message.text == "3 курс":
-        await message.answer("3 курс", reply_markup=KB_admin_group_choose())
+        await message.answer("3 курс", reply_markup=KB_admin_group_choose(3, True))
         await state.update_data(illness_course="3")
         await state.set_state('illness_group_choose')
     if message.text == "4 курс":
-        await message.answer("4 курс", reply_markup=KB_admin_group_choose())
+        await message.answer("4 курс", reply_markup=KB_admin_group_choose(4, True))
         await state.update_data(illness_course="4")
         await state.set_state('illness_group_choose')
     if message.text == "Назад":
@@ -234,32 +215,24 @@ async def illness_course_choose(message: types.Message, state: FSMContext):
 async def illness_group_choose(message: types.Message, state: FSMContext):
     data = await state.get_data()
     course = data.get("illness_course")
-    if message.text == "Все группы":
+    group = message.text.strip()
+    if group == "Все группы":
         await message.answer("Выбраны все группы и все пользователи."
                              "Введите дату в формает XX.XX.XXXX или же диапозон дат в формает"
                              "XX.XX.XXXX - XX.XX.XXXX")
         await state.update_data(illness_group="all")
         await state.update_data(illness_users="all")
         await state.set_state('illness_date_choose')
-    if message.text == "1 группа":
-        await message.answer("1 группа", reply_markup=KB_admin_user_choose(course, 1))
-        await state.update_data(illness_group="1")
-        await state.set_state('illness_user_choose')
-    if message.text == "2 группа":
-        await message.answer("2 группа", reply_markup=KB_admin_user_choose(course, 2))
-        await state.update_data(illness_group="2")
-        await state.set_state('illness_user_choose')
-    if message.text == "3 группа":
-        await message.answer("3 группа", reply_markup=KB_admin_user_choose(course, 3))
-        await state.update_data(illness_group="3")
-        await state.set_state('illness_user_choose')
-    if message.text == "4 группа":
-        await message.answer("4 группа", reply_markup=KB_admin_user_choose(course, 4))
-        await state.update_data(illness_group="4")
-        await state.set_state('illness_user_choose')
-    if message.text == "Назад":
-        await message.answer("Раздел просмотра справок от обучающихся. Справки каких курсов вы хотите просмотреть?")
+        return
+    if group == "Назад":
+        await message.answer("Раздел просмотра справок от обучающихся. Справки каких курсов вы хотите просмотреть?",
+                             reply_markup=KB_admin_course_choose())
         await state.set_state('illness_course_choose')
+        return
+
+    await message.answer(f"{group}", reply_markup=KB_admin_user_choose(course, group))
+    await state.update_data(illness_group=group)
+    await state.set_state('illness_user_choose')
 
 
 @dp.message(StateFilter('illness_user_choose'))
@@ -272,7 +245,8 @@ async def illness_user_choose(message: types.Message, state: FSMContext):
         await state.set_state('illness_date_choose')
         return
     if message.text == "Назад":
-        await message.answer("Раздел просмотра справок от обучающихся. Справки каких курсов вы хотите просмотреть?")
+        await message.answer("Раздел просмотра справок от обучающихся. Справки каких курсов вы хотите просмотреть?",
+                             reply_markup=KB_admin_course_choose())
         await state.set_state('illness_course_choose')
     else:
         await message.answer(f"Выбран{user_message}. Введите дату в формает XX.XX.XXXX или же диапозон дат в формаете"
@@ -284,6 +258,10 @@ async def illness_user_choose(message: types.Message, state: FSMContext):
 @dp.message(StateFilter('illness_date_choose'))
 async def illness_date_choose(message: types.Message, state: FSMContext):
     user_message = message.text.strip()
+    if user_message == "Назад":
+        await message.answer("Раздел просмотра справок от обучающихся. Справки каких курсов вы хотите просмотреть?",
+                             reply_markup=KB_admin_course_choose())
+        await state.set_state('illness_course_choose')
     if len(user_message) == 23:
         data = await state.get_data()
         course = data.get("illness_course")
@@ -497,40 +475,42 @@ async def get_user_last_name(message: Message, state: FSMContext):
         return
 
     await state.update_data(last_name=message.text.strip())
-    await message.answer("Выберите группу пользователя:")
-    await state.set_state(AddStudent.user_group)
-
-
-@dp.message(AddStudent.user_group)
-async def get_user_group(message: Message, state: FSMContext):
-    if message.text == "Вернутся в меню работы с пользователями":
-        await message.answer("Меню для работы с пользователями бота", reply_markup=KB_admin_users())
-        await state.set_state('users_work')
-        return
-
-    await state.update_data(group=message.text.strip())
-    await message.answer("Введите курс пользователя:")
+    await message.answer("Выберите курс пользователя:")
     await state.set_state(AddStudent.user_course)
 
 
 @dp.message(AddStudent.user_course)
 async def get_user_course(message: Message, state: FSMContext):
-    if message.text == "Вернутся в меню работы с пользователями":
+    course = message.text.strip()
+    if course == "Вернутся в меню работы с пользователями":
         await message.answer("Меню для работы с пользователями бота", reply_markup=KB_admin_users())
         await state.set_state('users_work')
         return
 
-    await state.update_data(course=message.text.strip())
+    await state.update_data(course=course)
+    await message.answer("Выберите группу пользователя.", reply_markup=KB_admin_group_choose(int(course), False))
+    await state.set_state(AddStudent.user_group)
+
+
+@dp.message(AddStudent.user_group)
+async def get_user_group(message: Message, state: FSMContext):
+    group = message.text.strip()
+    if group == "Назад":
+        await message.answer("Меню для работы с пользователями бота", reply_markup=KB_admin_users())
+        await state.set_state('users_work')
+        return
+
     data = await state.get_data()
 
     add_user_to_db(
         data['first_name'],
         data['last_name'],
         generate_password(),
-        data['group'],
+        group,
         int(data['course']))
 
-    await message.answer("Пользователь добавлен в базу.", reply_markup=KB_admin_users())
+    await message.answer("Пользователь успешно добавлен.")
+    await message.answer("Меню для работы с пользователями бота", reply_markup=KB_admin_users())
     await state.set_state('users_work')
 
 
