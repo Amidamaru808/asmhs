@@ -210,24 +210,29 @@ async def illness_course_choose(message: types.Message, state: FSMContext):
 
 @dp.message(StateFilter('illness_group_choose'))
 async def illness_group_choose(message: types.Message, state: FSMContext):
+    data = await state.get_data()
+    course = data.get("illness_course")
     if message.text == "Все группы":
-        await message.answer("Выбраны все группы. выберите пользователей.", reply_markup=KB_admin_user_choose())
+        await message.answer("Выбраны все группы и все пользователи."
+                             "Введите дату в формает XX.XX.XXXX или же диапозон дат в формает"
+                             "XX.XX.XXXX - XX.XX.XXXX")
         await state.update_data(illness_group="all")
-        await state.set_state('illness_user_choose')
+        await state.update_data(illness_users="all")
+        await state.set_state('illness_date_choose')
     if message.text == "1 группа":
-        await message.answer("1 группа", reply_markup=KB_admin_user_choose())
+        await message.answer("1 группа", reply_markup=KB_admin_user_choose(course, 1))
         await state.update_data(illness_group="1")
         await state.set_state('illness_user_choose')
     if message.text == "2 группа":
-        await message.answer("2 группа", reply_markup=KB_admin_user_choose())
+        await message.answer("2 группа", reply_markup=KB_admin_user_choose(course, 2))
         await state.update_data(illness_group="2")
         await state.set_state('illness_user_choose')
     if message.text == "3 группа":
-        await message.answer("3 группа", reply_markup=KB_admin_user_choose())
+        await message.answer("3 группа", reply_markup=KB_admin_user_choose(course, 3))
         await state.update_data(illness_group="3")
         await state.set_state('illness_user_choose')
     if message.text == "4 группа":
-        await message.answer("4 группа", reply_markup=KB_admin_user_choose())
+        await message.answer("4 группа", reply_markup=KB_admin_user_choose(course, 4))
         await state.update_data(illness_group="4")
         await state.set_state('illness_user_choose')
     if message.text == "Назад":

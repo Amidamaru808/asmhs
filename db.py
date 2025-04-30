@@ -478,8 +478,20 @@ def get_illness_ids(course, group, name, date_range):
     return ids
 
 
+def get_users(course, group):
+    conn = sqlite3.connect("main_database.db")
+    cursor = conn.cursor()
+
+    cursor.execute(
+        '''SELECT first_name, last_name FROM users WHERE course = ? AND "group" = ?''',
+        (course, group)
+    )
+    users = cursor.fetchall()
+    conn.close()
+
+    full_names = [f"{first} {last}" for first, last in users]
+    return full_names
+
+
 if __name__ == "__main__":
     init_db()
-
-ids = get_illness_ids("1", "1", "all", "01.01.2024 - 12.02.2026")
-print(ids)

@@ -1,5 +1,5 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
-
+from db import get_users
 
 
 def KB_back_users():
@@ -74,12 +74,17 @@ def KB_admin_group_choose():
                                            [KeyboardButton(text='Назад')]])
 
 
-#ДОДЕЛАТЬ динамическая клавиатура
-def KB_admin_user_choose():
-    return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Все пользователи')],
-                                           [KeyboardButton(text='Иван Иванов')],
-                                           [KeyboardButton(text='Джек Джекович')],
-                                           [KeyboardButton(text='Назад')]])
+def KB_admin_user_choose(course, group):
+    users = get_users(course, group)
+
+    keyboard = []
+    for user in users:
+        keyboard.append([KeyboardButton(text=user)])
+
+    keyboard.append([KeyboardButton(text="Все пользователи")])
+    keyboard.append([KeyboardButton(text="Назад")])
+
+    return ReplyKeyboardMarkup(keyboard=keyboard)
 
 
 def KB_admin_ill_choose():
