@@ -36,7 +36,8 @@ def init_db():
                 name TEXT NOT NULL,
                 "group" TEXT NOT NULL,
                 course INTEGER NOT NULL,
-                date TEXT NOT NULL
+                ill_date TEXT NOT NULL,
+                send_date TEXT NOT NULL
             )
         ''')
 
@@ -104,16 +105,19 @@ def add_admin_to_db(first_name, last_name, password):
     conn.close()
 
 
-def add_illness(name, group, course, date):
+def add_illness(name, group, course, ill_date, send_date):
     conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
     c.execute('''
-        INSERT INTO illnesses (name, "group", course, date)
-        VALUES (?, ?, ?, ?)
-    ''', (name, group, course, date))
+        INSERT INTO illnesses (name, "group", course, ill_date, send_date)
+        VALUES (?, ?, ?, ?, ?)
+    ''', (name, group, course, ill_date, send_date))
+
+    illness_id = c.lastrowid
+
     conn.commit()
     conn.close()
-
+    return illness_id
 
 def check_user_in_db(first_name, last_name):
     conn = sqlite3.connect('main_database.db')
@@ -431,6 +435,39 @@ def generate_illness_stats_by_course(course, years):
     pdf.ln(2)
     pdf.image(f'Файлы png/illness_stats_course_{course}_{date}.png', x=-30)
     pdf.output(f'Файлы pdf/illness_stats_course_{course}_{first_year} - {second_year}.pdf')
+
+
+def get_illness_ids(course, group, name, date_range):
+    conn = sqlite3.connect("main_database.db")
+    cursor = conn.cursor()
+
+    query = 'SELECT id, name, "group", course, ill_date FROM illnesses WHERE course = ? AND "group" = ?'
+    params = [course, group]
+
+    if name.lower() != "all":
+        query += " AND name = ?"
+        params.append(name)
+
+    cursor.execute(query, params)
+    list = cursor.fetchall()
+    conn.close()
+
+    ids = []
+
+    if " - " in date_range:
+        start_str, end_str = date_range.split(" - ")
+        start_date = datetime.strptime(start_str.strip(), "%d.%m.%Y").date()
+        end_date = datetime.strptime(end_str.strip(), "%d.%m.%Y").date()
+    else:
+        single_date = datetime.strptime(date_range.strip(), "%d.%m.%Y").date()
+        start_date = end_date = single_date
+
+    for list_id, list_name, list_group, list_course, ill_date in list:
+        first_date_str = ill_date.split(" - ")[0].strip()
+        first_date = datetime.strptime(first_date_str, "%d.%m.%Y").date()
+        if start_date <= first_date <= end_date:
+            ids.append(list_id)
+    return ids
 
 
 if __name__ == "__main__":

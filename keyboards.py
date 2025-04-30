@@ -33,7 +33,7 @@ def KB_admin():
     return ReplyKeyboardMarkup(
         keyboard=[
             [KeyboardButton(text='Результаты')],
-            [KeyboardButton(text='Кнопка 2')],
+            [KeyboardButton(text='Справки')],
             [KeyboardButton(text='Пользователи')],
             [KeyboardButton(text='Справка о работе приложения')]
         ],
@@ -56,12 +56,29 @@ def KB_years():
                                           KeyboardButton(text="Назад")]])
 
 
-def KB_admin_test_choose():
+def KB_admin_course_choose():
     return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Все курсы')],
-                                           [KeyboardButton(text='1')],
-                                           [KeyboardButton(text='2')],
-                                           [KeyboardButton(text='3')],
-                                           [KeyboardButton(text='4')],
+                                           [KeyboardButton(text='1 курс')],
+                                           [KeyboardButton(text='2 курс')],
+                                           [KeyboardButton(text='3 курс')],
+                                           [KeyboardButton(text='4 курс')],
+                                           [KeyboardButton(text='Назад')]])
+
+
+def KB_admin_group_choose():
+    return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Все группы')],
+                                           [KeyboardButton(text='1 группа')],
+                                           [KeyboardButton(text='2 группа')],
+                                           [KeyboardButton(text='3 группа')],
+                                           [KeyboardButton(text='4 группа')],
+                                           [KeyboardButton(text='Назад')]])
+
+
+#ДОДЕЛАТЬ динамическая клавиатура
+def KB_admin_user_choose():
+    return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Все пользователи')],
+                                           [KeyboardButton(text='Иван Иванов')],
+                                           [KeyboardButton(text='Джек Джекович')],
                                            [KeyboardButton(text='Назад')]])
 
 
