@@ -16,7 +16,7 @@ from db import (init_db, save_answers, pdf_report, pdf_report_course, check_user
                 generate_admins_pdf, add_illness, generate_illness_stats, generate_illness_stats_by_course,
                 get_illness_ids)
 
-from openpyxl import Workbook
+import zipfile
 from keyboards import (KB_05_1_15_2, KB_1234, KB_druzya, KB_kachestvo,
                        KB_legko, KB_yes_no, KB_ves, KB_chastota_1, KB_chastota_2,
                        KB_chastota_3, KB_admin, KB_main_menu, KB_admin_course_choose, KB_admin_users, KB_back_users,
@@ -183,23 +183,24 @@ async def admin_menu(message: types.Message, state: FSMContext):
 @dp.message(StateFilter('illness_course_choose'))
 async def illness_course_choose(message: types.Message, state: FSMContext):
     if message.text == "Все курсы":
-        await message.answer("Все курсы")
-        #ДОДЕЛАТЬ
+        await message.answer("Выбраны все курсы. Выберите группу.", reply_markup=KB_admin_group_choose())
+        await state.update_data(illness_course="all")
+        await state.set_state('illness_group_choose')
     if message.text == "1 курс":
         await message.answer("1 курс", reply_markup=KB_admin_group_choose())
-        await state.update_data(illness_course=1)
+        await state.update_data(illness_course="1")
         await state.set_state('illness_group_choose')
     if message.text == "2 курс":
         await message.answer("2 курс", reply_markup=KB_admin_group_choose())
-        await state.update_data(illness_course=2)
+        await state.update_data(illness_course="2")
         await state.set_state('illness_group_choose')
     if message.text == "3 курс":
         await message.answer("3 курс", reply_markup=KB_admin_group_choose())
-        await state.update_data(illness_course=3)
+        await state.update_data(illness_course="3")
         await state.set_state('illness_group_choose')
     if message.text == "4 курс":
         await message.answer("4 курс", reply_markup=KB_admin_group_choose())
-        await state.update_data(illness_course=4)
+        await state.update_data(illness_course="4")
         await state.set_state('illness_group_choose')
     if message.text == "Назад":
         await message.answer(f'Вы авторизовались как администратор. Выберите одну из опции.',
@@ -210,23 +211,24 @@ async def illness_course_choose(message: types.Message, state: FSMContext):
 @dp.message(StateFilter('illness_group_choose'))
 async def illness_group_choose(message: types.Message, state: FSMContext):
     if message.text == "Все группы":
-        await message.answer("Все группы")
-        # ДОДЕЛАТЬ
+        await message.answer("Выбраны все группы. выберите пользователей.", reply_markup=KB_admin_user_choose())
+        await state.update_data(illness_group="all")
+        await state.set_state('illness_user_choose')
     if message.text == "1 группа":
         await message.answer("1 группа", reply_markup=KB_admin_user_choose())
-        await state.update_data(illness_group=1)
+        await state.update_data(illness_group="1")
         await state.set_state('illness_user_choose')
     if message.text == "2 группа":
         await message.answer("2 группа", reply_markup=KB_admin_user_choose())
-        await state.update_data(illness_group=2)
+        await state.update_data(illness_group="2")
         await state.set_state('illness_user_choose')
     if message.text == "3 группа":
         await message.answer("3 группа", reply_markup=KB_admin_user_choose())
-        await state.update_data(illness_group=3)
+        await state.update_data(illness_group="3")
         await state.set_state('illness_user_choose')
     if message.text == "4 группа":
         await message.answer("4 группа", reply_markup=KB_admin_user_choose())
-        await state.update_data(illness_group=4)
+        await state.update_data(illness_group="4")
         await state.set_state('illness_user_choose')
     if message.text == "Назад":
         await message.answer("Раздел просмотра справок от обучающихся. Справки каких курсов вы хотите просмотреть?")
@@ -237,13 +239,19 @@ async def illness_group_choose(message: types.Message, state: FSMContext):
 async def illness_user_choose(message: types.Message, state: FSMContext):
     user_message = message.text.strip()
     if user_message == "Все пользователи":
-        await message.answer("Все пользователи. Введите дату в формает XX.XX.XXXX или же диапозон дат в формает "
+        await message.answer("Выбраны все пользователи. Введите дату в формает XX.XX.XXXX или же диапозон дат в формает"
                              "XX.XX.XXXX - XX.XX.XXXX")
         await state.update_data(illness_users="all")
         await state.set_state('illness_date_choose')
+        return
     if message.text == "Назад":
         await message.answer("Раздел просмотра справок от обучающихся. Справки каких курсов вы хотите просмотреть?")
         await state.set_state('illness_course_choose')
+    else:
+        await message.answer(f"Выбран{user_message}. Введите дату в формает XX.XX.XXXX или же диапозон дат в формаете"
+                             "XX.XX.XXXX - XX.XX.XXXX")
+        await state.update_data(illness_users=user_message)
+        await state.set_state('illness_date_choose')
 
 
 @dp.message(StateFilter('illness_date_choose'))
@@ -253,8 +261,24 @@ async def illness_date_choose(message: types.Message, state: FSMContext):
     course = data.get("illness_course")
     group = data.get("illness_group")
     name = data.get("illness_users")
-    ids = get_illness_ids(course, group, name, user_message)
-    await message.answer(f"id = {ids}")
+    ids = get_illness_ids(str(course), str(group), str(name), user_message)
+    await message.answer(f"Архив .zip со справками по заданным параметрам. {ids}")
+
+    if os.path.exists('Справки/illness_photos.zip'):
+        os.remove('Справки/illness_photos.zip')
+
+    with zipfile.ZipFile('Справки/illness_photos.zip', "w") as zipf:
+        for doc_id in ids:
+            filename = f"{doc_id}.jpg"
+            filepath = os.path.join("Справки", filename)
+            if os.path.exists(filepath):
+                zipf.write(filepath, arcname=filename)
+
+    zip_file = FSInputFile('Справки/illness_photos.zip')
+    await message.answer_document(zip_file)
+    await message.answer(f'Вы авторизовались как администратор. Выберите одну из опции.',
+                         reply_markup=KB_admin())
+    await state.set_state('admin_menu')
 
 
 @dp.message(StateFilter('test_or_illness'))

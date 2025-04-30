@@ -441,10 +441,18 @@ def get_illness_ids(course, group, name, date_range):
     conn = sqlite3.connect("main_database.db")
     cursor = conn.cursor()
 
-    query = 'SELECT id, name, "group", course, ill_date FROM illnesses WHERE course = ? AND "group" = ?'
-    params = [course, group]
+    query = 'SELECT id, name, "group", course, ill_date FROM illnesses WHERE 1=1'
+    params = []
 
-    if name.lower() != "all":
+    if str(course).lower() != "all":
+        query += " AND course = ?"
+        params.append(course)
+
+    if str(group).lower() != "all":
+        query += ' AND "group" = ?'
+        params.append(group)
+
+    if str(name).lower() != "all":
         query += " AND name = ?"
         params.append(name)
 
@@ -472,3 +480,6 @@ def get_illness_ids(course, group, name, date_range):
 
 if __name__ == "__main__":
     init_db()
+
+ids = get_illness_ids("1", "1", "all", "01.01.2024 - 12.02.2026")
+print(ids)
