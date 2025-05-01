@@ -396,7 +396,7 @@ def generate_admins_pdf():
 def generate_illness_stats(years):
     conn = sqlite3.connect('main_database.db')
     cursor = conn.cursor()
-    cursor.execute('SELECT date FROM illnesses')
+    cursor.execute('SELECT ill_date FROM illnesses')
     dates = cursor.fetchall()
     conn.close()
 

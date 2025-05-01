@@ -407,6 +407,9 @@ async def illness_choose_year(message: types.Message, state: FSMContext):
         pdf_file = FSInputFile(f'Files pdf/illness_stats2026-2027.pdf')
         await message.answer(f"Статистика заболеваний по месяцам за 2026 - 2027 год")
         await message.answer_document(pdf_file)
+    if message.text == "Назад":
+        await message.answer("Раздел просмотра аналтики болезней.", reply_markup=kb_admin_ill_choose())
+        await state.set_state(AdminStates.Illness_choose)
 
 
 @dp.message(AdminStates.Course_choose)
