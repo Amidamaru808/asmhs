@@ -35,7 +35,7 @@ class Autorization(StatesGroup):
     Login = State()
     Password = State()
     AdminPassword = State()
-
+    Start_autorization = State()
 
 class AdminStates(StatesGroup):
     Admin_menu = State()
@@ -113,9 +113,15 @@ init_db()
 
 @dp.message(CommandStart())
 async def cmd_start(message: Message, state: FSMContext):
+    await message.answer('Добро пожаловать в приложения мониторинга здоровья обучающихся!')
     await message.answer('Введите логин.')
     await state.set_state(Autorization.Login)
 
+
+@dp.message(Autorization.Start_autorization)
+async def start_autorization(message: Message, state: FSMContext):
+    await message.answer('Введите логин.')
+    await state.set_state(Autorization.Login)
 
 @dp.message(Autorization.Login)
 async def handle_name(message: Message, state: FSMContext):
@@ -195,6 +201,9 @@ async def admin_menu(message: types.Message, state: FSMContext):
         await state.set_state(AdminStates.Users_work)
     elif message.text == "Справка о работе приложения":
         await message.answer("тут будет справка о работе приложения")
+    elif message.text == "Выход":
+        await message.answer('Введите логин.')
+        await state.set_state(Autorization.Login)
 
 
 @dp.message(AdminStates.Illness_course_choose)
@@ -640,6 +649,9 @@ async def handle_main_menu(message: types.Message, state: FSMContext):
         await message.answer("3")
     elif message.text == "4":
         await message.answer("4")
+    elif message.text == "Выход":
+        await message.answer('Введите логин.')
+        await state.set_state(Autorization.Login)
 
 
 @dp.message(UserStates.Send_date)

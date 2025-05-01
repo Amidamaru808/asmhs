@@ -46,7 +46,8 @@ def kb_main_menu():
             [KeyboardButton(text="Пройти тестирование о здоровье")],
             [KeyboardButton(text="Прикрепить справку")],
             [KeyboardButton(text="3")],
-            [KeyboardButton(text="4")]
+            [KeyboardButton(text="4")],
+            [KeyboardButton(text="Выход")]
         ],
     )
 
@@ -57,7 +58,8 @@ def kb_admin():
             [KeyboardButton(text='Результаты')],
             [KeyboardButton(text='Справки')],
             [KeyboardButton(text='Пользователи')],
-            [KeyboardButton(text='Справка о работе приложения')]
+            [KeyboardButton(text='Справка о работе приложения')],
+            [KeyboardButton(text="Выход")]
         ],
     )
 
