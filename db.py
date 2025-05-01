@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 from datetime import datetime
 
+
 def init_db():
     conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
@@ -215,7 +216,7 @@ def save_answers(user_id, group, course, answer_1, answer_2, answer_3, answer_4,
 
 
 def pdf_report():
-    filename = "Файлы pdf/Answers_Report.pdf"
+    filename = "Files pdf/Answers_Report.pdf"
     with open('TestQuestions.json', 'r', encoding='utf-8') as f:
         questions = json.load(f)
     conn = sqlite3.connect('main_database.db')
@@ -307,7 +308,7 @@ def pdf_report_course(course, group):
     course_label = str(course) if course != "all" else "all"
     group_label = group.replace("/", "_") if group != "all" else "all"
 
-    filename = f"Файлы pdf/Statistic_{course_label}_{group_label}.pdf"
+    filename = f"Files pdf/Statistic_{course_label}_{group_label}.pdf"
 
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
@@ -365,7 +366,7 @@ def generate_users_pdf(group):
         pdf.cell(20, 10, str(course), border=1)
         pdf.ln()
 
-    pdf.output("Файлы pdf/users.pdf")
+    pdf.output("Files pdf/users.pdf")
 
 
 def generate_admins_pdf():
@@ -389,7 +390,7 @@ def generate_admins_pdf():
         pdf.cell(50, 10, password, border=1)
         pdf.ln()
 
-    pdf.output("Файлы pdf/admins.pdf")
+    pdf.output("Files pdf/admins.pdf")
 
 
 def generate_illness_stats(years):
@@ -422,7 +423,7 @@ def generate_illness_stats(years):
     plt.xticks(months)
     plt.gca().yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
     date = datetime.now().date()
-    plt.savefig(f'Файлы png/illness_stats_{date}.png')
+    plt.savefig(f'Files png/illness_stats_{date}.png')
     plt.close()
 
     pdf = FPDF(orientation='L')
@@ -431,8 +432,8 @@ def generate_illness_stats(years):
     pdf.set_font('Bounded', '', 12)
     pdf.cell(0, 5, txt=f"График заболеваний по месяцам {first_year} - {second_year}", ln=True, align="C")
     pdf.ln(2)
-    pdf.image(f"Файлы png/illness_stats_{date}.png", x=-30)
-    pdf.output(f'Файлы pdf/illness_stats{first_year}-{second_year}.pdf')
+    pdf.image(f"Files png/illness_stats_{date}.png", x=-30)
+    pdf.output(f'Files pdf/illness_stats{first_year}-{second_year}.pdf')
 
 
 def generate_illness_stats_by_course(course, years):
@@ -462,7 +463,7 @@ def generate_illness_stats_by_course(course, years):
     plt.plot(months, counts, marker='o')
     plt.gca().yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
     date = datetime.now().date()
-    plt.savefig(f'Файлы png/illness_stats_course_{course}_{date}.png')
+    plt.savefig(f'Files png/illness_stats_course_{course}_{date}.png')
     plt.close()
 
     pdf = FPDF(orientation='L')
@@ -471,8 +472,8 @@ def generate_illness_stats_by_course(course, years):
     pdf.set_font('Bounded', '', 12)
     pdf.cell(0, 5, txt=f"График заболеваний по месяцам {course} курс {first_year} - {second_year}", ln=True, align="C")
     pdf.ln(2)
-    pdf.image(f'Файлы png/illness_stats_course_{course}_{date}.png', x=-30)
-    pdf.output(f'Файлы pdf/illness_stats_course_{course}_{first_year} - {second_year}.pdf')
+    pdf.image(f'Files png/illness_stats_course_{course}_{date}.png', x=-30)
+    pdf.output(f'Files pdf/illness_stats_course_{course}_{first_year} - {second_year}.pdf')
 
 
 def get_illness_ids(course, group, name, date_range):
@@ -534,5 +535,3 @@ def get_users(course, group):
 if __name__ == "__main__":
     init_db()
 
-
-pdf_report_course(1, "all")
