@@ -436,12 +436,18 @@ def generate_illness_stats(years):
     pdf.output(f'Files pdf/illness_stats{first_year}-{second_year}.pdf')
 
 
-def generate_illness_stats_by_course(course, years):
+def generate_illness_stats_by_course(course, group, years):
     conn = sqlite3.connect('main_database.db')
     cursor = conn.cursor()
-    cursor.execute('SELECT ill_date FROM illnesses WHERE course = ?', (course,))
+
+    if group == "all":
+        cursor.execute('SELECT ill_date FROM illnesses WHERE course = ?', (course,))
+    else:
+        cursor.execute('SELECT ill_date FROM illnesses WHERE course = ? AND "group" = ?', (course, group))
+
     dates = cursor.fetchall()
     conn.close()
+
     first_year = years.split(' - ')[0]
     second_year = years.split(' - ')[1]
     month_counts = {i: 0 for i in range(1, 11)}
@@ -450,7 +456,7 @@ def generate_illness_stats_by_course(course, years):
         date = d[0]
         start_date = date.split(' - ')[0]
         day, month, year = start_date.split('.')
-        if  year == first_year and int(month) >= 9 or year == second_year and int(month) <= 6:
+        if (year == first_year and int(month) >= 9) or (year == second_year and int(month) <= 6):
             month = int(month) + 4
             month_counts[month] += 1
 
@@ -463,17 +469,24 @@ def generate_illness_stats_by_course(course, years):
     plt.plot(months, counts, marker='o')
     plt.gca().yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
     date = datetime.now().date()
-    plt.savefig(f'Files png/illness_stats_course_{course}_{date}.png')
+
+    group_name = group.replace("/", "_") if group != "all" else "all"
+    image_path = f'Files png/illness_stats_course_{course}_{group_name}_{date}.png'
+    plt.savefig(image_path)
     plt.close()
 
     pdf = FPDF(orientation='L')
     pdf.add_page()
     pdf.add_font('Bounded', '', 'Bounded-Regular.ttf', uni=True)
     pdf.set_font('Bounded', '', 12)
-    pdf.cell(0, 5, txt=f"График заболеваний по месяцам {course} курс {first_year} - {second_year}", ln=True, align="C")
+    title = f"График заболеваний по месяцам ({course} курс, {group} группа, {first_year} - {second_year})"
+    pdf.cell(0, 5, txt=title, ln=True, align="C")
     pdf.ln(2)
-    pdf.image(f'Files png/illness_stats_course_{course}_{date}.png', x=-30)
-    pdf.output(f'Files pdf/illness_stats_course_{course}_{first_year} - {second_year}.pdf')
+    pdf.image(image_path, x=-30)
+
+    group_name = group.replace("/", "_") if group != "all" else "all"
+
+    pdf.output(f'Files pdf/illness_stats_course_{course}_{group_name}_{first_year}-{second_year}.pdf')
 
 
 def get_illness_ids(course, group, name, date_range):
@@ -534,4 +547,3 @@ def get_users(course, group):
 
 if __name__ == "__main__":
     init_db()
-
