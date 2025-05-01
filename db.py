@@ -43,6 +43,16 @@ def init_db():
         ''')
 
     c.execute('''
+           CREATE TABLE IF NOT EXISTS messages (
+               id INTEGER PRIMARY KEY AUTOINCREMENT,
+               name TEXT NOT NULL,
+               tg_id INTEGER NOT NULL,
+               message_text TEXT NOT NULL,
+               time TEXT NOT NULL
+           )
+       ''')
+
+    c.execute('''
         CREATE TABLE IF NOT EXISTS answers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER,
@@ -543,6 +553,18 @@ def get_users(course, group):
 
     full_names = [f"{first} {last}" for first, last in users]
     return full_names
+
+
+def add_message_db(name, tg_id, message_text):
+    conn = sqlite3.connect("main_database.db")
+    c = conn.cursor()
+    time_now = datetime.now().strftime("%d.%m %H.%M.%S  %Y")
+    c.execute('''
+        INSERT INTO messages (name, tg_id, message_text, time)
+        VALUES (?, ?, ?, ?)
+    ''', (name, tg_id, message_text, time_now))
+    conn.commit()
+    conn.close()
 
 
 if __name__ == "__main__":

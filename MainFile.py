@@ -37,6 +37,7 @@ class Autorization(StatesGroup):
     AdminPassword = State()
     Start_autorization = State()
 
+
 class AdminStates(StatesGroup):
     Admin_menu = State()
     Test_or_illness = State()
