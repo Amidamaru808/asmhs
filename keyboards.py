@@ -45,7 +45,7 @@ def kb_main_menu():
         keyboard=[
             [KeyboardButton(text="Пройти тестирование о здоровье")],
             [KeyboardButton(text="Прикрепить справку")],
-            [KeyboardButton(text="3")],
+            [KeyboardButton(text="Отправить сообщение работнику.")],
             [KeyboardButton(text="4")],
             [KeyboardButton(text="Выход")]
         ],

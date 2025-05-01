@@ -12,7 +12,7 @@ import json
 from db import (init_db, save_answers, pdf_report, pdf_report_course, check_user_in_db, check_admin_in_db,
                 check_admin_password, add_user_to_db, generate_password, add_admin_to_db, generate_users_pdf,
                 generate_admins_pdf, add_illness,  generate_illness_stats_by_course, generate_illness_stats,
-                get_illness_ids)
+                get_illness_ids, add_message_db)
 
 import zipfile
 from keyboards import (kb_05_1_15_2, kb_1234, kb_druzya, kb_kachestvo,
@@ -70,7 +70,7 @@ class UserStates(StatesGroup):
     User_menu = State()
     Send_date = State()
     Send_photo = State()
-
+    Send_Message = State()
 
 class Questions(StatesGroup):
     question_1 = State()
@@ -113,6 +113,8 @@ def load_questions():
 
 questions = load_questions()
 init_db()
+
+active_admins_ids = []
 
 
 @dp.message(CommandStart())
@@ -182,10 +184,13 @@ async def handle_password(message: Message, state: FSMContext):
     admin = check_admin_in_db(name, surname)
     if admin:
         if check_admin_password(name, surname, password):
+            tg_id = message.from_user.id
+            active_admins_ids.append(tg_id)
             await state.clear()
             await message.answer(f'Вы авторизовались как {name} {surname}. Выберите одну из опции.',
                                  reply_markup=kb_admin())
             await state.set_state(AdminStates.Admin_menu)
+            print(active_admins_ids)
             return
 
     await message.answer('Неверный пароль. Попробуйте снова.')
@@ -207,6 +212,8 @@ async def admin_menu(message: types.Message, state: FSMContext):
     elif message.text == "Справка о работе приложения":
         await message.answer("тут будет справка о работе приложения")
     elif message.text == "Выход":
+        tg_id = message.from_user.id
+        active_admins_ids.remove(tg_id)
         await message.answer('Введите логин.')
         await state.set_state(Autorization.Login)
 
@@ -671,8 +678,9 @@ async def handle_main_menu(message: types.Message, state: FSMContext):
         await message.answer("Укажите дату начала и конца болезни в формате XX.XX.XXXX - XX.XX.XXXX",
                              reply_markup=kb_back())
         await state.set_state(UserStates.Send_date)
-    elif message.text == "3":
-        await message.answer("3")
+    elif message.text == "Отправить сообщение работнику.":
+        await message.answer("Введите свое сообщение работнику.")
+        await state.set_state(UserStates.Send_Message)
     elif message.text == "4":
         await message.answer("4")
     elif message.text == "Выход":
@@ -719,6 +727,21 @@ async def send_photo(message: types.Message, state: FSMContext):
         await message.answer('Выберите одну из опции.',
                              reply_markup=kb_main_menu())
         await state.set_state(UserStates.User_menu)
+
+
+@dp.message(UserStates.Send_Message)
+async def send_message(message: types.Message, state: FSMContext):
+    msg = message.text.strip()
+    tg_id = message.from_user.id
+    data = await state.get_data()
+    first_name = data.get('name')
+    surname = data.get('surname')
+    name = first_name + " " + surname
+    add_message_db(name, tg_id, msg)
+    await message.answer("Ваше сообщение отправлено!")
+    await message.answer(f'Вы авторизовались как {name} {surname}. Выберите одну из опции.',
+                         reply_markup=kb_main_menu())
+    await state.set_state(UserStates.User_menu)
 
 
 async def ask_question(message: Message, state: FSMContext, question_number: int, markup):
