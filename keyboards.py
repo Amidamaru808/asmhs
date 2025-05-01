@@ -86,25 +86,25 @@ def KB_admin_course_choose():
                                            [KeyboardButton(text='Назад')]])
 
 
-def KB_admin_group_choose(course, all):
+def KB_admin_group_choose(course, all_gr):
     groups = all_groups.get(course, [])
-    Buttons = []
+    keyboard = []
 
-    if all:
-        Buttons.append([KeyboardButton(text='Все группы')])
+    if all_gr:
+        keyboard.append([KeyboardButton(text='Все группы')])
 
     line = []
     for i, group_name in enumerate(groups):
         line.append(KeyboardButton(text=group_name))
         if (i + 1) % 3 == 0:
-            Buttons.append(line)
+            keyboard.append(line)
             line = []
     if line:
-        Buttons.append(line)
+        keyboard.append(line)
 
-    Buttons.append([KeyboardButton(text='Назад')])
+    keyboard.append([KeyboardButton(text='Назад')])
 
-    return ReplyKeyboardMarkup(keyboard=Buttons, resize_keyboard=True)
+    return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
 
 
 def KB_admin_user_choose(course, group):

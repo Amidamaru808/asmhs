@@ -257,40 +257,72 @@ def pdf_report():
     pdf.output(filename)
 
 
-def pdf_report_course(course):
+def pdf_report_course(course, group):
     with open('TestQuestions.json', 'r', encoding='utf-8') as f:
         questions = json.load(f)
+
     conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
     survey_data = []
+
+    filters = []
+    params = []
+
+    if course != "all":
+        filters.append("course = ?")
+        params.append(course)
+
+    if group != "all":
+        filters.append('"group" = ?')
+        params.append(group)
+
+    where = "WHERE " + " AND ".join(filters) if filters else ""
+
     for question_num in range(1, 31):
         question_column = f'answer_{question_num}'
         question_text = questions.get(str(question_num), f"Вопрос {question_num}")
-        c.execute(f"SELECT {question_column} FROM answers WHERE course = ?", (course,))
+
+        query = f"SELECT {question_column} FROM answers {where}"
+        c.execute(query, params)
         answers = c.fetchall()
+
         answer_counts = {}
         total_answers = len(answers)
         for answer in answers:
             answer = answer[0]
             answer_counts[answer] = answer_counts.get(answer, 0) + 1
-        answer_percentages = {
-            answer: f"{(count / total_answers) * 100:.2f}% ({count})" for answer, count in answer_counts.items()
-        }
+
+        if total_answers > 0:
+            answer_percentages = {
+                answer: f"{(count / total_answers) * 100:.2f}% ({count})"
+                for answer, count in answer_counts.items()
+            }
+        else:
+            answer_percentages = {"Нет ответов": "0.00% (0)"}
 
         survey_data.append((question_text, answer_percentages))
-    filename = f"Файлы pdf/Statistic_{course}_course.pdf"
+
     conn.close()
+
+    course_label = str(course) if course != "all" else "all"
+    group_label = group.replace("/", "_") if group != "all" else "all"
+
+    filename = f"Файлы pdf/Statistic_{course_label}_{group_label}.pdf"
+
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
     pdf.add_font('font', '', 'Bounded-Regular.ttf', uni=True)
     pdf.set_font('font', size=14)
-    pdf.cell(200, 10, txt=f"Отчет по вопросам для  {course} курса", ln=True)
-    pdf.set_font('font', size=14)
+    pdf.cell(200, 10, txt=f"Отчет по вопросам ({course_label}, {group_label})", ln=True)
+
     for question_text, answer_percentages in survey_data:
-        pdf.cell(200, 10, txt=f"{question_text}", ln=True)
+        pdf.set_font('font', size=12)
+        pdf.multi_cell(0, 8, txt=f"{question_text}")
         for answer, percentage in answer_percentages.items():
-            pdf.cell(200, 5, txt=f"  Ответ: {answer} - {percentage}", ln=True)
+            pdf.multi_cell(0, 6, txt=f"  Ответ: {answer} - {percentage}")
+
+        pdf.ln(2)
 
     pdf.output(filename)
 
@@ -501,3 +533,6 @@ def get_users(course, group):
 
 if __name__ == "__main__":
     init_db()
+
+
+pdf_report_course(1, "all")
