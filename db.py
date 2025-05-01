@@ -314,7 +314,7 @@ def pdf_report_course(course, group):
     pdf.add_page()
     pdf.add_font('font', '', 'Bounded-Regular.ttf', uni=True)
     pdf.set_font('font', size=14)
-    pdf.cell(200, 10, txt=f"Отчет по вопросам ({course_label}, {group_label})", ln=True)
+    pdf.cell(200, 10, txt=f"Отчет по вопросам {course_label},  {group_label}", ln=True)
 
     for question_text, answer_percentages in survey_data:
         pdf.set_font('font', size=12)
