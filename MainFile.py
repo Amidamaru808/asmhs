@@ -37,17 +37,36 @@ class Autorization(StatesGroup):
     AdminPassword = State()
 
 
-class AddStudent(StatesGroup):
+class AdminStates(StatesGroup):
+    Admin_menu = State()
+    Test_or_illness = State()
+    Illness_course_choose = State()
+    Users_work = State()
+    Illness_date_choose = State()
+    Illness_user_choose = State()
+    Illness_choose = State()
+    Illness_choose_year = State()
+    Illness_choose_year_course = State()
+    Illness_group_choose = State()
+    Course_choose = State()
+    Group_choose = State()
+    Choose_admin_user = State()
+    Choose_course_user = State()
+    Choose_group_user = State()
+
+class AddUser(StatesGroup):
     user_first_name = State()
     user_last_name = State()
     user_group = State()
     user_course = State()
-
-
-class AddAdmin(StatesGroup):
     admin_first_name = State()
     admin_last_name = State()
 
+
+class UserStates(StatesGroup):
+    User_menu = State()
+    Send_date = State()
+    Send_photo = State()
 
 class Questions(StatesGroup):
     question_1 = State()
@@ -146,7 +165,7 @@ async def handle_password(message: Message, state: FSMContext):
             await state.update_data(user_id=user_id, name=name, surname=surname, group=group, course=course)
             await message.answer(f'Вы авторизовались как {name} {surname}. Выберите одну из опции.',
                                  reply_markup=kb_main_menu())
-            await state.set_state('main_menu')
+            await state.set_state(UserStates.User_menu)
             return
 
     admin = check_admin_in_db(name, surname)
@@ -155,30 +174,30 @@ async def handle_password(message: Message, state: FSMContext):
             await state.clear()
             await message.answer(f'Вы авторизовались как {name} {surname}. Выберите одну из опции.',
                                  reply_markup=kb_admin())
-            await state.set_state('admin_menu')
+            await state.set_state(AdminStates.Admin_menu)
             return
 
     await message.answer('Неверный пароль. Попробуйте снова.')
     await state.set_state(Autorization.Password)
 
 
-@dp.message(StateFilter("admin_menu"))
+@dp.message(AdminStates.Admin_menu)
 async def admin_menu(message: types.Message, state: FSMContext):
     if message.text == "Результаты":
-        await message.answer("Раздел просмотра информации о пользователях.", reply_markup=kb_choose_type())
-        await state.set_state('test_or_illness')
+        await message.answer("Раздел просмотра аналитики по тестированию и болезням.", reply_markup=kb_choose_type())
+        await state.set_state(AdminStates.Test_or_illness)
     elif message.text == "Справки":
         await message.answer("Раздел просмотра справок от обучающихся. Справки каких курсов вы хотите просмотреть?",
                              reply_markup=kb_admin_course_choose())
-        await state.set_state('illness_course_choose')
+        await state.set_state(AdminStates.Illness_course_choose)
     elif message.text == "Пользователи":
         await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
-        await state.set_state('users_work')
+        await state.set_state(AdminStates.Users_work)
     elif message.text == "Справка о работе приложения":
         await message.answer("тут будет справка о работе приложения")
 
 
-@dp.message(StateFilter('illness_course_choose'))
+@dp.message(AdminStates.Illness_course_choose)
 async def illness_course_choose(message: types.Message, state: FSMContext):
     if message.text == "Все курсы":
         await message.answer("Выбраны все курсы, все группы и все пользователи."
@@ -187,30 +206,30 @@ async def illness_course_choose(message: types.Message, state: FSMContext):
         await state.update_data(illness_course="all")
         await state.update_data(illness_group="all")
         await state.update_data(illness_users="all")
-        await state.set_state('illness_date_choose')
+        await state.set_state(AdminStates.Illness_date_choose)
     if message.text == "1":
         await message.answer("1 курс", reply_markup=kb_admin_group_choose(1, True))
         await state.update_data(illness_course="1")
-        await state.set_state('illness_group_choose')
+        await state.set_state(AdminStates.Illness_group_choose)
     if message.text == "2":
         await message.answer("2 курс", reply_markup=kb_admin_group_choose(2, True))
         await state.update_data(illness_course="2")
-        await state.set_state('illness_group_choose')
+        await state.set_state(AdminStates.Illness_group_choose)
     if message.text == "3":
         await message.answer("3 курс", reply_markup=kb_admin_group_choose(3, True))
         await state.update_data(illness_course="3")
-        await state.set_state('illness_group_choose')
+        await state.set_state(AdminStates.Illness_group_choose)
     if message.text == "4":
         await message.answer("4 курс", reply_markup=kb_admin_group_choose(4, True))
         await state.update_data(illness_course="4")
-        await state.set_state('illness_group_choose')
+        await state.set_state(AdminStates.Illness_group_choose)
     if message.text == "Назад":
         await message.answer(f'Вы авторизовались как администратор. Выберите одну из опции.',
                              reply_markup=kb_admin())
-        await state.set_state('admin_menu')
+        await state.set_state(AdminStates.Admin_menu)
 
 
-@dp.message(StateFilter('illness_group_choose'))
+@dp.message(AdminStates.Illness_group_choose)
 async def illness_group_choose(message: types.Message, state: FSMContext):
     data = await state.get_data()
     course = data.get("illness_course")
@@ -221,46 +240,46 @@ async def illness_group_choose(message: types.Message, state: FSMContext):
                              "XX.XX.XXXX - XX.XX.XXXX")
         await state.update_data(illness_group="all")
         await state.update_data(illness_users="all")
-        await state.set_state('illness_date_choose')
+        await state.set_state(AdminStates.Illness_date_choose)
         return
     if group == "Назад":
         await message.answer("Раздел просмотра справок от обучающихся. Справки каких курсов вы хотите просмотреть?",
                              reply_markup=kb_admin_course_choose())
-        await state.set_state('illness_course_choose')
+        await state.set_state(AdminStates.Illness_course_choose)
         return
 
     await message.answer(f"{group}", reply_markup=kb_admin_user_choose(course, group))
     await state.update_data(illness_group=group)
-    await state.set_state('illness_user_choose')
+    await state.set_state(AdminStates.Illness_user_choose)
 
 
-@dp.message(StateFilter('illness_user_choose'))
+@dp.message(AdminStates.Illness_user_choose)
 async def illness_user_choose(message: types.Message, state: FSMContext):
     user_message = message.text.strip()
     if user_message == "Все пользователи":
         await message.answer("Выбраны все пользователи. Введите дату в формает XX.XX.XXXX или же диапозон дат в формает"
                              "XX.XX.XXXX - XX.XX.XXXX")
         await state.update_data(illness_users="all")
-        await state.set_state('illness_date_choose')
+        await state.set_state(AdminStates.Illness_date_choose)
         return
     if message.text == "Назад":
         await message.answer("Раздел просмотра справок от обучающихся. Справки каких курсов вы хотите просмотреть?",
                              reply_markup=kb_admin_course_choose())
-        await state.set_state('illness_course_choose')
+        await state.set_state(AdminStates.Illness_course_choose)
     else:
         await message.answer(f"Выбран{user_message}. Введите дату в формает XX.XX.XXXX или же диапозон дат в формаете"
                              "XX.XX.XXXX - XX.XX.XXXX")
         await state.update_data(illness_users=user_message)
-        await state.set_state('illness_date_choose')
+        await state.set_state(AdminStates.Illness_date_choose)
 
 
-@dp.message(StateFilter('illness_date_choose'))
+@dp.message(AdminStates.Illness_date_choose)
 async def illness_date_choose(message: types.Message, state: FSMContext):
     user_message = message.text.strip()
     if user_message == "Назад":
         await message.answer("Раздел просмотра справок от обучающихся. Справки каких курсов вы хотите просмотреть?",
                              reply_markup=kb_admin_course_choose())
-        await state.set_state('illness_course_choose')
+        await state.set_state(AdminStates.Illness_course_choose)
         return
     if len(user_message) == 23:
         data = await state.get_data()
@@ -284,54 +303,54 @@ async def illness_date_choose(message: types.Message, state: FSMContext):
         await message.answer_document(zip_file)
         await message.answer(f'Вы авторизовались как администратор. Выберите одну из опции.',
                              reply_markup=kb_admin())
-        await state.set_state('admin_menu')
+        await state.set_state(AdminStates.Admin_menu)
     else:
         await message.answer("Неправильный формат даты!"
                              "Укажите дату начала и конца болезни в формате XX.XX.XXXX - XX.XX.XXXX")
 
 
-@dp.message(StateFilter('test_or_illness'))
+@dp.message(AdminStates.Test_or_illness)
 async def test_or_illness(message: types.Message, state: FSMContext):
     if message.text == "Тестирование":
         await message.answer("Раздел просмотра аналтики тестирования. Выберите курс.",
                              reply_markup=kb_admin_course_choose())
-        await state.set_state("course_choose")
+        await state.set_state(AdminStates.Course_choose)
     elif message.text == "Болезни":
         await message.answer("Раздел просмотра аналтики болезней.", reply_markup=kb_admin_ill_choose())
-        await state.set_state("illness_choose")
+        await state.set_state(AdminStates.Illness_choose)
     if message.text == "Назад":
         await message.answer(f'Вы авторизовались как администратор. Выберите одну из опции.',
                              reply_markup=kb_admin())
-        await state.set_state('admin_menu')
+        await state.set_state(AdminStates.Admin_menu)
 
 
-@dp.message(StateFilter("illness_choose"))
+@dp.message(AdminStates.Illness_choose)
 async def illness_choose(message: types.Message, state: FSMContext):
     if message.text == "Статистика по месяцам за год все курсы":
         await message.answer("Выберите учбеный год", reply_markup=kb_years())
-        await state.set_state("illness_choose_year")
+        await state.set_state(AdminStates.Illness_choose_year)
     if message.text == "Статистика по месяцам за год 1 курс":
         await state.update_data(ill_course=1)
         await message.answer("Выберите год статистики", reply_markup=kb_years())
-        await state.set_state("illness_choose_year_course")
+        await state.set_state(AdminStates.Illness_choose_year_course)
     if message.text == "Статистика по месяцам за год 2 курс":
         await state.update_data(ill_course=2)
         await message.answer("Выберите год статистики", reply_markup=kb_years())
-        await state.set_state("illness_choose_year_course")
+        await state.set_state(AdminStates.Illness_choose_year_course)
     if message.text == "Статистика по месяцам за год 3 курс":
         await state.update_data(ill_course=3)
         await message.answer("Выберите год статистики", reply_markup=kb_years())
-        await state.set_state("illness_choose_year_course")
+        await state.set_state(AdminStates.Illness_choose_year_course)
     if message.text == "Статистика по месяцам за год 4 курс":
         await state.update_data(ill_course=4)
         await message.answer("Выберите год статистики", reply_markup=kb_years())
-        await state.set_state("illness_choose_year_course")
+        await state.set_state(AdminStates.Illness_choose_year_course)
     if message.text == "Назад":
         await message.answer("Раздел просмотра информации о пользователях.", reply_markup=kb_choose_type())
-        await state.set_state('test_or_illness')
+        await state.set_state(AdminStates.Test_or_illness)
 
 
-@dp.message(StateFilter("illness_choose_year_course"))
+@dp.message(AdminStates.Illness_choose_year_course)
 async def illness_choose_year_course(message: types.Message, state: FSMContext):
     if message.text == "2023 - 2024":
         data = await state.get_data()
@@ -363,10 +382,10 @@ async def illness_choose_year_course(message: types.Message, state: FSMContext):
         await message.answer_document(pdf_file)
     if message.text == "Назад":
         await message.answer("Раздел просмотра аналтики болезней.", reply_markup=kb_admin_ill_choose())
-        await state.set_state("illness_choose")
+        await state.set_state(AdminStates.Illness_choose)
 
 
-@dp.message(StateFilter("illness_choose_year"))
+@dp.message(AdminStates.Illness_choose_year)
 async def illness_choose_year(message: types.Message, state: FSMContext):
     if message.text == "2023 - 2024":
         generate_illness_stats(str("2023 - 2024"))
@@ -390,7 +409,7 @@ async def illness_choose_year(message: types.Message, state: FSMContext):
         await message.answer_document(pdf_file)
 
 
-@dp.message(StateFilter("course_choose"))
+@dp.message(AdminStates.Course_choose)
 async def course_choose(message: types.Message, state: FSMContext):
     if message.text == "Все курсы":
         pdf_report()
@@ -399,26 +418,26 @@ async def course_choose(message: types.Message, state: FSMContext):
         await message.answer_document(pdf_file)
     elif message.text == "1":
         await state.update_data(test_course="1")
-        await state.set_state("group_choose")
+        await state.set_state(AdminStates.Group_choose)
         await message.answer("выбран 1 курс выберите группу", reply_markup=kb_admin_group_choose(1, True))
     elif message.text == "2":
         await state.update_data(test_course="2")
-        await state.set_state("group_choose")
+        await state.set_state(AdminStates.Group_choose)
         await message.answer("выбран 2 курс выберите группу", reply_markup=kb_admin_group_choose(1, True))
     elif message.text == "3":
         await state.update_data(test_course="3")
-        await state.set_state("group_choose")
+        await state.set_state(AdminStates.Group_choose)
         await message.answer("выбран 3 курс выберите группу", reply_markup=kb_admin_group_choose(1, True))
     elif message.text == "4":
         await state.update_data(test_course="4")
-        await state.set_state("group_choose")
+        await state.set_state(AdminStates.Group_choose)
         await message.answer("выбран 4 курс выберите группу", reply_markup=kb_admin_group_choose(1, True))
     elif message.text == "Назад":
-        await state.set_state('test_or_illness')
+        await state.set_state(AdminStates.Test_or_illness)
         await message.answer("Раздел просмотра информации о пользователях.", reply_markup=kb_choose_type())
 
 
-@dp.message(StateFilter("group_choose"))
+@dp.message(AdminStates.Group_choose)
 async def group_choose(message: types.Message, state: FSMContext):
     group = message.text.strip()
     if group == "Все группы":
@@ -432,7 +451,7 @@ async def group_choose(message: types.Message, state: FSMContext):
     elif group == "Назад":
         await message.answer("Раздел просмотра аналтики тестирования. Выберите курс.",
                              reply_markup=kb_admin_course_choose())
-        await state.set_state("course_choose")
+        await state.set_state(AdminStates.Course_choose)
         return
 
     data = await state.get_data()
@@ -444,28 +463,28 @@ async def group_choose(message: types.Message, state: FSMContext):
     await message.answer_document(pdf_file)
 
 
-@dp.message(StateFilter("users_work"))
+@dp.message(AdminStates.Users_work)
 async def users_work(message: types.Message, state: FSMContext):
     if message.text == "Список пользователей":
         await message.answer("Выберите список пользователей", reply_markup=kb_students_admins())
-        await state.set_state("choose_admin_user")
+        await state.set_state(AdminStates.Choose_admin_user)
     elif message.text == "Добавить ученика":
         await message.answer("Введите имя пользователя:",  reply_markup=kb_back_users())
-        await state.set_state(AddStudent.user_first_name)
+        await state.set_state(AddUser.user_first_name)
     elif message.text == "Добавить работника":
         await message.answer("Введите имя работника:", reply_markup=kb_back_users())
-        await state.set_state(AddAdmin.admin_first_name)
+        await state.set_state(AddUser.admin_first_name)
     elif message.text == "Назад":
         await message.answer(f'Вы авторизовались как администратор. Выберите одну из опции.',
                              reply_markup=kb_admin())
-        await state.set_state('admin_menu')
+        await state.set_state(AdminStates.Admin_menu)
 
 
-@dp.message(StateFilter("choose_admin_user"))
+@dp.message(AdminStates.Choose_admin_user)
 async def choose_admin_user(message: types.Message, state: FSMContext):
     if message.text == "Студенты":
         await message.answer("Выберите курс", reply_markup=kb_admin_course_choose())
-        await state.set_state("choose_course_user")
+        await state.set_state(AdminStates.Choose_course_user)
     elif message.text == "Администраторы":
         generate_admins_pdf()
         pdf_file = FSInputFile("Files pdf/admins.pdf")
@@ -473,10 +492,10 @@ async def choose_admin_user(message: types.Message, state: FSMContext):
         await message.answer_document(pdf_file)
     elif message.text == "Назад":
         await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
-        await state.set_state('users_work')
+        await state.set_state(AdminStates.Users_work)
 
 
-@dp.message(StateFilter("choose_course_user"))
+@dp.message(AdminStates.Choose_course_user)
 async def choose_course_user(message: types.Message, state: FSMContext):
     course = message.text.strip()
     if course == "Все курсы":
@@ -485,23 +504,23 @@ async def choose_course_user(message: types.Message, state: FSMContext):
         await message.answer("Список всех студентов")
         await message.answer_document(pdf_file)
         await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
-        await state.set_state('users_work')
+        await state.set_state(AdminStates.Users_work)
         return
     elif course == "Назад":
         await message.answer("Выберите список пользователей", reply_markup=kb_students_admins())
-        await state.set_state("choose_admin_user")
+        await state.set_state(AdminStates.Choose_admin_user)
         return
 
     await message.answer(f"Выберите группу {course} курса", reply_markup=kb_admin_group_choose(int(course), True))
-    await state.set_state("choose_group_user")
+    await state.set_state(AdminStates.Choose_group_user)
 
 
-@dp.message(StateFilter("choose_group_user"))
+@dp.message(AdminStates.Choose_group_user)
 async def choose_group_user(message: types.Message, state: FSMContext):
     group = message.text.strip()
     if group == "Назад":
         await message.answer("Выберите курс", reply_markup=kb_admin_course_choose())
-        await state.set_state("choose_course_user")
+        await state.set_state(AdminStates.Choose_course_user)
         return
 
     generate_users_pdf(group)
@@ -509,52 +528,52 @@ async def choose_group_user(message: types.Message, state: FSMContext):
     await message.answer(f"Список студентов группы - {group}")
     await message.answer_document(pdf_file)
     await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
-    await state.set_state('users_work')
+    await state.set_state(AdminStates.Users_work)
 
 
-@dp.message(AddStudent.user_first_name)
+@dp.message(AddUser.user_first_name)
 async def get_user_first_name(message: Message, state: FSMContext):
     if message.text == "Вернутся в меню работы с пользователями":
         await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
-        await state.set_state('users_work')
+        await state.set_state(AdminStates.Users_work)
         return
 
     await state.update_data(first_name=message.text.strip())
     await message.answer("Введите фамилию пользователя:")
-    await state.set_state(AddStudent.user_last_name)
+    await state.set_state(AddUser.user_last_name)
 
 
-@dp.message(AddStudent.user_last_name)
+@dp.message(AddUser.user_last_name)
 async def get_user_last_name(message: Message, state: FSMContext):
     if message.text == "Вернутся в меню работы с пользователями":
         await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
-        await state.set_state('users_work')
+        await state.set_state(AdminStates.Users_work)
         return
 
     await state.update_data(last_name=message.text.strip())
     await message.answer("Выберите курс пользователя:", reply_markup=kb_admin_course_choose())
-    await state.set_state(AddStudent.user_course)
+    await state.set_state(AddUser.user_course)
 
 
-@dp.message(AddStudent.user_course)
+@dp.message(AddUser.user_course)
 async def get_user_course(message: Message, state: FSMContext):
     course = message.text.strip()
     if course == "Вернутся в меню работы с пользователями":
         await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
-        await state.set_state('users_work')
+        await state.set_state(AdminStates.Users_work)
         return
 
     await state.update_data(course=course)
     await message.answer("Выберите группу пользователя.", reply_markup=kb_admin_group_choose(int(course), False))
-    await state.set_state(AddStudent.user_group)
+    await state.set_state(AddUser.user_group)
 
 
-@dp.message(AddStudent.user_group)
+@dp.message(AddUser.user_group)
 async def get_user_group(message: Message, state: FSMContext):
     group = message.text.strip()
     if group == "Назад":
         await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
-        await state.set_state('users_work')
+        await state.set_state(AdminStates.Users_work)
         return
 
     data = await state.get_data()
@@ -568,26 +587,26 @@ async def get_user_group(message: Message, state: FSMContext):
 
     await message.answer("Пользователь успешно добавлен.")
     await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
-    await state.set_state('users_work')
+    await state.set_state(AdminStates.Users_work)
 
 
-@dp.message(AddAdmin.admin_first_name)
+@dp.message(AddUser.admin_first_name)
 async def get_admin_first_name(message: Message, state: FSMContext):
     if message.text == "Вернутся в меню работы с пользователями":
         await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
-        await state.set_state('users_work')
+        await state.set_state(AdminStates.Users_work)
         return
 
     await state.update_data(admin_first_name=message.text.strip())
     await message.answer("Введите фамилию пользователя:")
-    await state.set_state(AddAdmin.admin_last_name)
+    await state.set_state(AddUser.admin_last_name)
 
 
-@dp.message(AddAdmin.admin_last_name)
+@dp.message(AddUser.admin_last_name)
 async def get_admin_last_name(message: Message, state: FSMContext):
     if message.text == "Вернутся в меню работы с пользователями":
         await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
-        await state.set_state('users_work')
+        await state.set_state(AdminStates.Users_work)
         return
 
     await state.update_data(admin_last_name=message.text.strip())
@@ -599,10 +618,10 @@ async def get_admin_last_name(message: Message, state: FSMContext):
         generate_password())
 
     await message.answer("Работник добавлен в базу.", reply_markup=kb_admin_users())
-    await state.set_state('users_work')
+    await state.set_state(AdminStates.Users_work)
 
 
-@dp.message(StateFilter("main_menu"))
+@dp.message(UserStates.User_menu)
 async def handle_main_menu(message: types.Message, state: FSMContext):
     if message.text == "Пройти тестирование о здоровье":
         await message.answer("Тестирование начинается. Тест состоит из 30 вопросов. Хорошо подумайте над ответами."
@@ -613,31 +632,31 @@ async def handle_main_menu(message: types.Message, state: FSMContext):
     elif message.text == "Прикрепить справку":
         await message.answer("Укажите дату начала и конца болезни в формате XX.XX.XXXX - XX.XX.XXXX",
                              reply_markup=kb_back())
-        await state.set_state("send_date")
+        await state.set_state(UserStates.Send_date)
     elif message.text == "3":
         await message.answer("3")
     elif message.text == "4":
         await message.answer("4")
 
 
-@dp.message(StateFilter("send_date"))
+@dp.message(UserStates.Send_date)
 async def send_date(message: types.Message, state: FSMContext):
     date = message.text.strip()
     if date == "Назад":
         await message.answer('Выберите одну из опции.',
                              reply_markup=kb_main_menu())
-        await state.set_state('main_menu')
+        await state.set_state(UserStates.User_menu)
         return
     if len(date) == 23:
         await state.update_data(date=date)
         await message.answer("Прикрепите справку", reply_markup=kb_back())
-        await state.set_state("send_photo")
+        await state.set_state(UserStates.Send_photo)
     else:
         await message.answer("Неправильный формат даты!"
                              "Укажите дату начала и конца болезни в формате XX.XX.XXXX - XX.XX.XXXX")
 
 
-@dp.message(StateFilter("send_photo"))
+@dp.message(UserStates.Send_photo)
 async def send_photo(message: types.Message, state: FSMContext):
     if message.photo:
         photo = message.photo[-1]
@@ -654,11 +673,11 @@ async def send_photo(message: types.Message, state: FSMContext):
         await message.answer("Справка отправлена")
         await message.answer('Выберите одну из опции.',
                              reply_markup=kb_main_menu())
-        await state.set_state('main_menu')
+        await state.set_state(UserStates.User_menu)
     elif message.text == "Назад":
         await message.answer('Выберите одну из опции.',
                              reply_markup=kb_main_menu())
-        await state.set_state('main_menu')
+        await state.set_state(UserStates.User_menu)
 
 
 async def ask_question(message: Message, state: FSMContext, question_number: int, markup):
@@ -917,7 +936,7 @@ async def question_30(message: types.Message, state: FSMContext):
         reply_markup=kb_main_menu()
     )
 
-    await state.set_state('main_menu')
+    await state.set_state(UserStates.User_menu)
 
 
 async def main():
