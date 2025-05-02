@@ -64,6 +64,15 @@ def init_db():
        ''')
 
     c.execute('''
+        CREATE TABLE IF NOT EXISTS statsmans (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            first_name TEXT NOT NULL,
+            last_name TEXT NOT NULL,
+            password TEXT NOT NULL
+        )
+    ''')
+
+    c.execute('''
         CREATE TABLE IF NOT EXISTS answers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER,
@@ -179,11 +188,11 @@ def check_admin_in_db(first_name, last_name):
 
 def check_admin_password(first_name, last_name, password):
     conn = sqlite3.connect('main_database.db')
-    cursor = conn.cursor()
-    cursor.execute('''
+    c = conn.cursor()
+    c.execute('''
         SELECT password FROM admins WHERE first_name = ? AND last_name = ?
     ''', (first_name, last_name))
-    result = cursor.fetchone()
+    result = c.fetchone()
     conn.close()
 
     if result and result[0] == password:
@@ -200,9 +209,9 @@ def load_questions(file_path='TestQuestions.json'):
 
 def fetch_all_answers():
     conn = sqlite3.connect('answers.db')
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM answers")
-    all_answers = cursor.fetchall()
+    c = conn.cursor()
+    c.execute("SELECT * FROM answers")
+    all_answers = c.fetchall()
     conn.close()
     return all_answers
 
@@ -416,9 +425,9 @@ def generate_admins_pdf():
 
 def generate_illness_stats(years):
     conn = sqlite3.connect('main_database.db')
-    cursor = conn.cursor()
-    cursor.execute('SELECT ill_date FROM illnesses')
-    dates = cursor.fetchall()
+    c = conn.cursor()
+    c.execute('SELECT ill_date FROM illnesses')
+    dates = c.fetchall()
     conn.close()
 
     first_year = years.split(' - ')[0]
@@ -459,14 +468,14 @@ def generate_illness_stats(years):
 
 def generate_illness_stats_by_course(course, group, years):
     conn = sqlite3.connect('main_database.db')
-    cursor = conn.cursor()
+    c = conn.cursor()
 
     if group == "all":
-        cursor.execute('SELECT ill_date FROM illnesses WHERE course = ?', (course,))
+        c.execute('SELECT ill_date FROM illnesses WHERE course = ?', (course,))
     else:
-        cursor.execute('SELECT ill_date FROM illnesses WHERE course = ? AND "group" = ?', (course, group))
+        c.execute('SELECT ill_date FROM illnesses WHERE course = ? AND "group" = ?', (course, group))
 
-    dates = cursor.fetchall()
+    dates = c.fetchall()
     conn.close()
 
     first_year = years.split(' - ')[0]
@@ -512,7 +521,7 @@ def generate_illness_stats_by_course(course, group, years):
 
 def get_illness_ids(course, group, name, date_range):
     conn = sqlite3.connect("main_database.db")
-    cursor = conn.cursor()
+    c = conn.cursor()
 
     query = 'SELECT id, name, "group", course, ill_date FROM illnesses WHERE 1=1'
     params = []
@@ -529,8 +538,8 @@ def get_illness_ids(course, group, name, date_range):
         query += " AND name = ?"
         params.append(name)
 
-    cursor.execute(query, params)
-    list = cursor.fetchall()
+    c.execute(query, params)
+    list = c.fetchall()
     conn.close()
 
     ids = []
@@ -553,13 +562,13 @@ def get_illness_ids(course, group, name, date_range):
 
 def get_users(course, group):
     conn = sqlite3.connect("main_database.db")
-    cursor = conn.cursor()
+    c = conn.cursor()
 
-    cursor.execute(
+    c.execute(
         '''SELECT first_name, last_name FROM users WHERE course = ? AND "group" = ?''',
         (course, group)
     )
-    users = cursor.fetchall()
+    users = c.fetchall()
     conn.close()
 
     full_names = [f"{first} {last}" for first, last in users]
@@ -580,9 +589,9 @@ def add_message_db(name, tg_id, message_text):
 
 def get_message_ids_not_answered():
     conn = sqlite3.connect('main_database.db')
-    cursor = conn.cursor()
-    cursor.execute('SELECT rowid FROM messages WHERE answered = "нет"')
-    ids = [row[0] for row in cursor.fetchall()]
+    c = conn.cursor()
+    c.execute('SELECT rowid FROM messages WHERE answered = "нет"')
+    ids = [row[0] for row in c.fetchall()]
     conn.close()
     return ids
 
@@ -596,9 +605,9 @@ def get_message_names_by_ids(ids):
         '''
 
     conn = sqlite3.connect('main_database.db')
-    cursor = conn.cursor()
-    cursor.execute(query, ids)
-    results = cursor.fetchall()
+    c = conn.cursor()
+    c.execute(query, ids)
+    results = c.fetchall()
     conn.close()
 
     ids = set()
@@ -614,10 +623,10 @@ def get_message_names_by_ids(ids):
 
 def get_message_messages_by_name(name):
     conn = sqlite3.connect("main_database.db")
-    cursor = conn.cursor()
+    c = conn.cursor()
 
-    cursor.execute("SELECT tg_id, message_text, time FROM messages WHERE name = ?", (name,))
-    messages = cursor.fetchall()
+    c.execute("SELECT tg_id, message_text, time FROM messages WHERE name = ?", (name,))
+    messages = c.fetchall()
     conn.close()
 
     if not messages:
@@ -633,9 +642,9 @@ def get_message_messages_by_name(name):
 
 def add_reply(id_tg_user, id_tg_admin, answer, watched):
     conn = sqlite3.connect("main_database.db")
-    cursor = conn.cursor()
+    c = conn.cursor()
 
-    cursor.execute('''
+    c.execute('''
         INSERT INTO reply (id_tg_user, id_tg_admin, answer, watched)
         VALUES (?, ?, ?, ?)
     ''', (id_tg_user, id_tg_admin, answer, watched))
@@ -646,9 +655,9 @@ def add_reply(id_tg_user, id_tg_admin, answer, watched):
 
 def set_answered_messages(tg_id):
     conn = sqlite3.connect("main_database.db")
-    cursor = conn.cursor()
+    c = conn.cursor()
 
-    cursor.execute('''
+    c.execute('''
         UPDATE messages
         SET answered = 'yes'
         WHERE tg_id = ?
@@ -660,17 +669,17 @@ def set_answered_messages(tg_id):
 
 def get_reply_no_watched(tg_id):
     conn = sqlite3.connect("main_database.db")
-    cursor = conn.cursor()
+    c = conn.cursor()
 
-    cursor.execute('''
+    c.execute('''
         SELECT answer
         FROM reply
         WHERE id_tg_user = ? AND watched = 'no'
     ''', (tg_id,))
 
-    answers = [row[0] for row in cursor.fetchall()]
+    answers = [row[0] for row in c.fetchall()]
 
-    cursor.execute('''
+    c.execute('''
             UPDATE reply
             SET watched = 'yes'
             WHERE id_tg_user = ? AND watched = 'no'
@@ -681,6 +690,39 @@ def get_reply_no_watched(tg_id):
     return answers
 
 
+def add_statsman(first_name, last_name, password):
+    conn = sqlite3.connect("main_database.db")
+    c = conn.cursor()
+    c.execute('''
+        INSERT INTO statsmans (first_name, last_name, password)
+        VALUES (?, ?, ?)
+    ''', (first_name, last_name, password))
+    conn.commit()
+    conn.close()
+
+
+def check_statsman_in_db(first_name, last_name):
+    conn = sqlite3.connect("main_database.db")
+    c = conn.cursor()
+    c.execute('''
+        SELECT * FROM statsmans WHERE first_name = ? AND last_name = ?
+    ''', (first_name, last_name))
+    result = c.fetchone()
+    conn.close()
+    return result is not None
+
+
+def check_statsman_password(first_name, last_name, password):
+    conn = sqlite3.connect("main_database.db")
+    c = conn.cursor()
+    c.execute('''
+        SELECT password FROM statsmans WHERE first_name = ? AND last_name = ?
+    ''', (first_name, last_name))
+    result = c.fetchone()
+    conn.close()
+    return result and result[0] == password
+
 
 if __name__ == "__main__":
     init_db()
+

@@ -158,6 +158,11 @@ def kb_choose_type():
                                           KeyboardButton(text="Назад")]])
 
 
+def kb_statsman_menu():
+    return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Статистика по тестированию')],
+                                          [KeyboardButton(text="Статистика по болезням")]])
+
+
 kb_spam = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Пометить как спам!'),
                                          KeyboardButton(text='Назад')]])
 
