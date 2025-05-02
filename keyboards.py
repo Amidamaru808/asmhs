@@ -158,6 +158,10 @@ def kb_choose_type():
                                           KeyboardButton(text="Назад")]])
 
 
+kb_spam = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Пометить как спам!'),
+                                         KeyboardButton(text='Назад')]])
+
+
 kb_1234 = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='1'),
                                            KeyboardButton(text='2')],
                                            [KeyboardButton(text='3'),

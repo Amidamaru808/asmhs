@@ -20,7 +20,7 @@ from keyboards import (kb_05_1_15_2, kb_1234, kb_druzya, kb_kachestvo,
                        kb_legko, kb_yes_no, kb_ves, kb_chastota_1, kb_chastota_2,
                        kb_chastota_3, kb_admin, kb_main_menu, kb_admin_course_choose, kb_admin_users, kb_back_users,
                        kb_students_admins, kb_back, kb_choose_type, kb_admin_ill_choose, kb_years,
-                       kb_admin_group_choose, kb_admin_user_choose, kb_names)
+                       kb_admin_group_choose, kb_admin_user_choose, kb_names, kb_spam)
 
 bot = Bot(token='6735071514:AAHE1uVzht-JYxDEHoCvd7s7nvtwJQ5Vzls')
 dp = Dispatcher()
@@ -685,31 +685,37 @@ async def choose_message(message: types.Message, state: FSMContext):
     await state.update_data(name_user=name)
     for msg in messages:
         await message.answer(msg)
-    await message.answer("Напишите ваше сообщение.")
+    await message.answer("Напишите ваше сообщение.", reply_markup=kb_spam)
     await state.set_state(AdminStates.Answer)
 
 
 @dp.message(AdminStates.Answer)
 async def answer(message: types.Message, state: FSMContext):
     admin_answer = message.text.strip()
+    tg_id_admin = message.from_user.id
+    data = await state.get_data()
+    tg_id_user = data.get("tg_id_user")
+    name = data.get("name_user")
+    ids = get_message_ids_not_answered()
+    names = get_message_names_by_ids(ids)
     if admin_answer == "Назад":
         await message.answer(f'Вы авторизовались как администратор. Выберите одну из опции.',
                              reply_markup=kb_admin())
         await state.set_state(AdminStates.Admin_menu)
         return
+    if admin_answer == "Пометить как спам!":
+        add_reply(tg_id_user, tg_id_admin, "Помечено как спам!", "no")
+        set_answered_messages(tg_id_user)
+        await bot.send_message(tg_id_user, f"{name}, ваше сообщение было помечено как спам.")
+        await message.answer("Выберите cообщение от пользователя", reply_markup=kb_names(names))
+        await state.set_state(AdminStates.Choose_message)
+        return
 
-    tg_id_admin = message.from_user.id
-    data = await state.get_data()
-    tg_id_user = data.get("tg_id_user")
-    name = data.get("name_user")
     add_reply(tg_id_user, tg_id_admin, admin_answer, "no")
     set_answered_messages(tg_id_user)
-    ids = get_message_ids_not_answered()
-    names = get_message_names_by_ids(ids)
     await bot.send_message(tg_id_user, f"{name}, вам пришло сообщение от администратора. Проверьте сообщения.")
     await message.answer("Выберите cообщение от пользователя", reply_markup=kb_names(names))
     await state.set_state(AdminStates.Choose_message)
-
 
 
 @dp.message(UserStates.User_menu)
