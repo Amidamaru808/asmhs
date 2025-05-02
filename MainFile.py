@@ -793,8 +793,8 @@ async def get_admin_last_name(message: Message, state: FSMContext):
 
 @dp.message(AdminStates.Choose_message)
 async def choose_message(message: types.Message, state: FSMContext):
-    tg_id = message.from_user.id
-    log(tg_id, message.text.strip())
+    tg_id_n = message.from_user.id
+    log(tg_id_n, message.text.strip())
     name = message.text.strip()
     if name == "Назад":
         await message.answer(f'Вы авторизовались как администратор. Выберите одну из опции.',
@@ -835,10 +835,11 @@ async def answer(message: types.Message, state: FSMContext):
         await state.set_state(AdminStates.Choose_message)
         return
 
-    add_reply(tg_id_user, tg_id_admin, admin_answer, "no")
+    add_reply(tg_id_user, tg_id_admin, admin_answer, "нет")
     set_answered_messages(tg_id_user)
-    await bot.send_message(tg_id_user, f"{name}, вам пришло сообщение от администратора. Проверьте сообщения.")
-    await message.answer("Выберите cообщение от пользователя", reply_markup=kb_names(names))
+    await bot.send_message(tg_id_user,  "вам пришло сообщение от администратора. Проверьте сообщения.")
+    names_new = get_message_names_by_ids(ids)
+    await message.answer("Выберите cообщение от пользователя", reply_markup=kb_names(names_new))
     await state.set_state(AdminStates.Choose_message)
 
 
@@ -896,7 +897,7 @@ async def send_date(message: types.Message, state: FSMContext):
 @dp.message(UserStates.Send_photo)
 async def send_photo(message: types.Message, state: FSMContext):
     tg_id = message.from_user.id
-    log(tg_id, message.text.strip())
+    log(tg_id, "Отправлено фото")
     if message.photo:
         photo = message.photo[-1]
         file = await message.bot.get_file(photo.file_id)

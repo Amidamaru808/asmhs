@@ -43,72 +43,114 @@ def init_db():
 
     c.execute('''
            CREATE TABLE IF NOT EXISTS messages (
-               id INTEGER PRIMARY KEY AUTOINCREMENT,
-               name TEXT NOT NULL,
-               tg_id INTEGER NOT NULL,
-               message_text TEXT NOT NULL,
-               time TEXT NOT NULL,
-               answered TEXT NOT NULL
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                tg_id INTEGER NOT NULL,
+                message_text TEXT NOT NULL,
+                time TEXT NOT NULL,
+                answered TEXT NOT NULL
            )
        ''')
 
     c.execute('''
            CREATE TABLE IF NOT EXISTS reply (
-               id INTEGER PRIMARY KEY AUTOINCREMENT,
-               id_tg_user INTEGER,
-               id_tg_admin INTEGER,
-               answer TEXT,
-               watched TEXT
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id_tg_user INTEGER,
+                id_tg_admin INTEGER,
+                answer TEXT,
+                watched TEXT
            )
        ''')
 
     c.execute('''
-        CREATE TABLE IF NOT EXISTS statsmans (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            first_name TEXT NOT NULL,
-            last_name TEXT NOT NULL,
-            password TEXT NOT NULL
-        )
-    ''')
+            CREATE TABLE IF NOT EXISTS statsmans (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                first_name TEXT NOT NULL,
+                last_name TEXT NOT NULL,
+                password TEXT NOT NULL
+            )
+        ''')
 
     c.execute('''
-        CREATE TABLE IF NOT EXISTS answers (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
-            course TEXT,
-            "group" TEXT,
-            answer_1 TEXT,
-            answer_2 TEXT,
-            answer_3 TEXT,
-            answer_4 TEXT,
-            answer_5 TEXT,
-            answer_6 TEXT,
-            answer_7 TEXT,
-            answer_8 TEXT,
-            answer_9 TEXT,
-            answer_10 TEXT,
-            answer_11 TEXT,
-            answer_12 TEXT,
-            answer_13 TEXT,
-            answer_14 TEXT,
-            answer_15 TEXT,
-            answer_16 TEXT,
-            answer_17 TEXT,
-            answer_18 TEXT,
-            answer_19 TEXT,
-            answer_20 TEXT,
-            answer_21 TEXT,
-            answer_22 TEXT,
-            answer_23 TEXT,
-            answer_24 TEXT,
-            answer_25 TEXT,
-            answer_26 TEXT,
-            answer_27 TEXT,
-            answer_28 TEXT,
-            answer_29 TEXT,
-            answer_30 TEXT
-        )
-    ''')
+            CREATE TABLE IF NOT EXISTS food (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tg_id integer,
+                name TEXT,
+                course TEXT,
+                "group" TEXT,
+                answer_1 TEXT,
+                answer_2 TEXT,
+                answer_3 TEXT,
+                answer_4 TEXT,
+                answer_5 TEXT,
+                answer_6 TEXT
+            )
+        ''')
+
+    c.execute('''
+            CREATE TABLE IF NOT EXISTS pain (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tg_id integer,
+                name TEXT,
+                course TEXT,
+                "group" TEXT,
+                answer_7 TEXT,
+                answer_8 TEXT,
+                answer_9 TEXT,
+                answer_10 TEXT,
+                answer_11 TEXT,
+                answer_12 TEXT
+            )
+        ''')
+
+    c.execute('''
+            CREATE TABLE IF NOT EXISTS physical (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tg_id integer,
+                name TEXT,
+                course TEXT,
+                "group" TEXT,
+                answer_13 TEXT,
+                answer_14 TEXT,
+                answer_15 TEXT,
+                answer_16 TEXT,
+                answer_17 TEXT
+            )
+        ''')
+
+    c.execute('''
+            CREATE TABLE IF NOT EXISTS daytime (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tg_id integer,
+                name TEXT,
+                course TEXT,
+                "group" TEXT,
+                answer_18 TEXT,
+                answer_19 TEXT,
+                answer_20 TEXT,
+                answer_21 TEXT,
+                answer_22 TEXT
+            )
+       ''')
+
+    c.execute('''
+            CREATE TABLE IF NOT EXISTS psycho (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tg_id integer,
+                name TEXT,
+                course TEXT,
+                "group" TEXT,
+                answer_23 TEXT,
+                answer_24 TEXT,
+                answer_25 TEXT,
+                answer_26 TEXT,
+                answer_27 TEXT,
+                answer_28 TEXT,
+                answer_29 TEXT,
+                answer_30 TEXT
+            )
+       ''')
+
     conn.commit()
     conn.close()
 
@@ -148,6 +190,7 @@ def add_illness(name, group, course, ill_date, send_date):
     conn.commit()
     conn.close()
     return illness_id
+
 
 def check_user_in_db(first_name, last_name):
     conn = sqlite3.connect('main_database.db')
@@ -204,15 +247,6 @@ def load_questions(file_path='TestQuestions.json'):
     with open(file_path, 'r', encoding='utf-8') as file:
         questions = json.load(file)
     return questions
-
-
-def fetch_all_answers():
-    conn = sqlite3.connect('answers.db')
-    c = conn.cursor()
-    c.execute("SELECT * FROM answers")
-    all_answers = c.fetchall()
-    conn.close()
-    return all_answers
 
 
 def save_answers(user_id, group, course, answer_1, answer_2, answer_3, answer_4, answer_5, answer_6, answer_7, answer_8,
