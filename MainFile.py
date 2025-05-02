@@ -9,12 +9,13 @@ from aiogram.filters import CommandStart, StateFilter
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import ReplyKeyboardRemove
 import json
-from db import (init_db, save_answers, pdf_report, pdf_report_course, check_user_in_db, check_admin_in_db,
+from db import (init_db, pdf_report, pdf_report_course, check_user_in_db, check_admin_in_db,
                 check_admin_password, add_user_to_db, generate_password, add_admin_to_db, generate_users_pdf,
                 generate_admins_pdf, add_illness,  generate_illness_stats_by_course, generate_illness_stats,
                 get_illness_ids, add_message_db, get_message_ids_not_answered, get_message_names_by_ids,
                 get_message_messages_by_name, add_reply, set_answered_messages, get_reply_no_watched,
-                check_statsman_in_db, check_statsman_password, add_statsman, generate_statsmans_pdf)
+                check_statsman_in_db, check_statsman_password, add_statsman, generate_statsmans_pdf, save_food_answers,
+                save_pain_answers, save_physical_answers, save_daytime_answers, save_psycho_answers)
 
 import zipfile
 from keyboards import (kb_05_1_15_2, kb_1234, kb_druzya, kb_kachestvo,
@@ -1433,33 +1434,58 @@ async def question_30(message: types.Message, state: FSMContext):
     log(tg_id, message.text.strip())
     await state.update_data(answer_30=message.text)
     data = await state.get_data()
-    login = data.get('name') + data.get('surname')
-    save_answers(
+    login = data.get('name') + " " + data.get('surname')
+    save_food_answers(
+        tg_id,
         login,
-        data.get('group'),
         data.get('course'),
+        data.get('group'),
         data.get('answer_1'),
         data.get('answer_2'),
         data.get('answer_3'),
         data.get('answer_4'),
         data.get('answer_5'),
-        data.get('answer_6'),
+        data.get('answer_6'))
+
+    save_pain_answers(
+        tg_id,
+        login,
+        data.get('course'),
+        data.get('group'),
         data.get('answer_7'),
         data.get('answer_8'),
         data.get('answer_9'),
         data.get('answer_10'),
         data.get('answer_11'),
-        data.get('answer_12'),
+        data.get('answer_12'))
+
+    save_physical_answers(
+        tg_id,
+        login,
+        data.get('course'),
+        data.get('group'),
         data.get('answer_13'),
         data.get('answer_14'),
         data.get('answer_15'),
         data.get('answer_16'),
-        data.get('answer_17'),
+        data.get('answer_17'))
+
+    save_daytime_answers(
+        tg_id,
+        login,
+        data.get('course'),
+        data.get('group'),
         data.get('answer_18'),
         data.get('answer_19'),
         data.get('answer_20'),
         data.get('answer_21'),
-        data.get('answer_22'),
+        data.get('answer_22'))
+
+    save_psycho_answers(
+        tg_id,
+        login,
+        data.get('course'),
+        data.get('group'),
         data.get('answer_23'),
         data.get('answer_24'),
         data.get('answer_25'),
@@ -1467,8 +1493,7 @@ async def question_30(message: types.Message, state: FSMContext):
         data.get('answer_27'),
         data.get('answer_28'),
         data.get('answer_29'),
-        data.get('answer_30')
-    )
+        data.get('answer_30'))
 
     await message.answer("Тест пройден.Ответы сохранены.", reply_markup=ReplyKeyboardRemove())
     await message.answer(

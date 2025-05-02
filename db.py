@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 from datetime import datetime
 
+
 def init_db():
     conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
@@ -72,7 +73,7 @@ def init_db():
         ''')
 
     c.execute('''
-            CREATE TABLE IF NOT EXISTS food (
+            CREATE TABLE IF NOT EXISTS food_answers (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 tg_id integer,
                 name TEXT,
@@ -88,7 +89,7 @@ def init_db():
         ''')
 
     c.execute('''
-            CREATE TABLE IF NOT EXISTS pain (
+            CREATE TABLE IF NOT EXISTS pain_answers (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 tg_id integer,
                 name TEXT,
@@ -104,7 +105,7 @@ def init_db():
         ''')
 
     c.execute('''
-            CREATE TABLE IF NOT EXISTS physical (
+            CREATE TABLE IF NOT EXISTS physical_answers (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 tg_id integer,
                 name TEXT,
@@ -119,7 +120,7 @@ def init_db():
         ''')
 
     c.execute('''
-            CREATE TABLE IF NOT EXISTS daytime (
+            CREATE TABLE IF NOT EXISTS daytime_answers (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 tg_id integer,
                 name TEXT,
@@ -134,7 +135,7 @@ def init_db():
        ''')
 
     c.execute('''
-            CREATE TABLE IF NOT EXISTS psycho (
+            CREATE TABLE IF NOT EXISTS psycho_answers (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 tg_id integer,
                 name TEXT,
@@ -249,74 +250,135 @@ def load_questions(file_path='TestQuestions.json'):
     return questions
 
 
-def save_answers(user_id, group, course, answer_1, answer_2, answer_3, answer_4, answer_5, answer_6, answer_7, answer_8,
-                 answer_9, answer_10, answer_11, answer_12, answer_13, answer_14, answer_15, answer_16, answer_17,
-                 answer_18, answer_19, answer_20, answer_21, answer_22, answer_23, answer_24, answer_25, answer_26,
-                 answer_27, answer_28, answer_29, answer_30):
+def save_food_answers(tg_id, name, course, group, answer_1, answer_2, answer_3, answer_4, answer_5, answer_6):
     conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
-    c.execute('''SELECT COUNT(*) FROM answers WHERE user_id = ?''', (user_id,))
-    count = c.fetchone()[0]
-    if count > 0:
-        c.execute('''DELETE FROM answers WHERE user_id = ?''', (user_id,))
-        conn.commit()
+    c.execute('DELETE FROM food_answers WHERE tg_id = ?', (tg_id,))
+    c.execute('''
+        INSERT INTO food_answers (tg_id, name, course, "group", answer_1, answer_2, answer_3, answer_4, answer_5, 
+        answer_6)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (tg_id, name, course, group, answer_1, answer_2, answer_3, answer_4, answer_5, answer_6))
+    conn.commit()
+    conn.close()
 
-    c.execute(''' 
-    INSERT INTO answers (
-        user_id, "group", course, answer_1, answer_2, answer_3, answer_4, answer_5, answer_6, answer_7, answer_8,
-        answer_9, answer_10, answer_11, answer_12, answer_13, answer_14, answer_15, answer_16, answer_17,
-        answer_18, answer_19, answer_20, answer_21, answer_22, answer_23, answer_24, answer_25, answer_26,
-        answer_27, answer_28, answer_29, answer_30
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ''', (
-        user_id, group, course, answer_1, answer_2, answer_3, answer_4, answer_5, answer_6, answer_7, answer_8,
-        answer_9, answer_10, answer_11, answer_12, answer_13, answer_14, answer_15, answer_16, answer_17,
-        answer_18, answer_19, answer_20, answer_21, answer_22, answer_23, answer_24, answer_25, answer_26,
-        answer_27, answer_28, answer_29, answer_30
-    ))
+
+def save_pain_answers(tg_id, name, course, group, answer_7, answer_8, answer_9, answer_10, answer_11, answer_12):
+    conn = sqlite3.connect('main_database.db')
+    c = conn.cursor()
+    c.execute('DELETE FROM pain_answers WHERE tg_id = ?', (tg_id,))
+    c.execute('''
+        INSERT INTO pain_answers (tg_id, name, course, "group", answer_7, answer_8, answer_9, answer_10, answer_11,
+         answer_12)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (tg_id, name, course, group, answer_7, answer_8, answer_9, answer_10, answer_11, answer_12))
+    conn.commit()
+    conn.close()
+
+
+def save_physical_answers(tg_id, name, course, group, answer_13, answer_14, answer_15, answer_16, answer_17):
+    conn = sqlite3.connect('main_database.db')
+    c = conn.cursor()
+    c.execute('DELETE FROM physical_answers WHERE tg_id = ?', (tg_id,))
+    c.execute('''
+        INSERT INTO physical_answers (tg_id, name, course, "group", answer_13, answer_14, answer_15, answer_16,
+         answer_17)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (tg_id, name, course, group, answer_13, answer_14, answer_15, answer_16, answer_17))
+    conn.commit()
+    conn.close()
+
+
+def save_daytime_answers(tg_id, name, course, group, answer_18, answer_19, answer_20, answer_21, answer_22):
+    conn = sqlite3.connect('main_database.db')
+    c = conn.cursor()
+    c.execute('DELETE FROM daytime_answers WHERE tg_id = ?', (tg_id,))
+    c.execute('''
+        INSERT INTO daytime_answers (tg_id, name, course, "group", answer_18, answer_19, answer_20, answer_21,
+         answer_22)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (tg_id, name, course, group, answer_18, answer_19, answer_20, answer_21, answer_22))
+    conn.commit()
+    conn.close()
+
+
+def save_psycho_answers(tg_id, name, course, group, answer_23, answer_24, answer_25, answer_26, answer_27, answer_28,
+                        answer_29, answer_30):
+    conn = sqlite3.connect('main_database.db')
+    c = conn.cursor()
+    c.execute('DELETE FROM psycho_answers WHERE tg_id = ?', (tg_id,))
+    c.execute('''
+        INSERT INTO psycho_answers (tg_id, name, course, "group", answer_23, answer_24, answer_25, answer_26, answer_27,
+         answer_28, answer_29, answer_30)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (tg_id, name, course, group, answer_23, answer_24, answer_25, answer_26, answer_27, answer_28, answer_29,
+          answer_30))
     conn.commit()
     conn.close()
 
 
 def pdf_report():
     filename = "Files pdf/Answers_Report.pdf"
-    with open('TestQuestions.json', 'r', encoding='utf-8') as f:
-        questions = json.load(f)
+
+    with open('TestQuestions.json', 'r', encoding='utf-8') as file:
+        questions = json.load(file)
+
     conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
     survey_data = []
-    for question_num in range(1, 31):
-        question_column = f'answer_{question_num}'
-        question_text = questions.get(str(question_num), f"Вопрос {question_num}")
-        c.execute(f"SELECT {question_column} FROM answers")
-        answers = c.fetchall()
-        answer_counts = {}
-        total_answers = len(answers)
-        if total_answers == 0:
-            survey_data.append((question_text, {}))
-            continue
 
-        for answer in answers:
-            answer = answer[0]
-            answer_counts[answer] = answer_counts.get(answer, 0) + 1
+    table_info = {
+        'food_answers': range(1, 7),
+        'pain_answers': range(7, 13),
+        'physical_answers': range(13, 18),
+        'daytime_answers': range(18, 23),
+        'psycho_answers': range(23, 31)
+    }
 
-        answer_percentages = {
-            answer: f"{(count / total_answers) * 100:.2f}% ({count})" for answer, count in answer_counts.items()
-        }
+    for table, question_range in table_info.items():
+        for question_num in question_range:
+            question_column = f'answer_{question_num}'
+            question_text = questions.get(str(question_num), f"Вопрос {question_num}")
+            try:
+                c.execute(f"SELECT {question_column} FROM {table}")
+                answers = c.fetchall()
+            except:
+                answers = []
 
-        survey_data.append((question_text, answer_percentages))
+            answer_counts = {}
+            total_answers = len(answers)
+
+            if total_answers == 0:
+                survey_data.append((question_text, {"Нет ответов"}))
+                continue
+
+            for answer in answers:
+                ans = answer[0]
+                if ans:
+                    answer_counts[ans] = answer_counts.get(ans, 0) + 1
+
+            answer_percentages = {
+                answer: f"{(count / total_answers) * 100:.2f}% ({count})"
+                for answer, count in answer_counts.items()
+            }
+
+            survey_data.append((question_text, answer_percentages))
 
     conn.close()
+
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
     pdf.add_font('font', '', 'Bounded-Regular.ttf', uni=True)
     pdf.set_font('font', size=14)
+
     for question_text, answer_percentages in survey_data:
-        pdf.cell(200, 10, txt=f"{question_text}", ln=True)
-        pdf.set_font('font', size=14)
+        pdf.multi_cell(0, 8, txt=f"{question_text}")
+        pdf.set_font('font', size=12)
         for answer, percentage in answer_percentages.items():
-            pdf.cell(200, 5, txt=f"  Ответ: {answer} - {percentage}", ln=True)
+            pdf.multi_cell(0, 6, txt=f"{answer} - {percentage}")
+        pdf.ln(5)
+        pdf.set_font('font', size=14)
 
     pdf.output(filename)
 
@@ -783,3 +845,5 @@ def check_statsman_password(first_name, last_name, password):
 
 if __name__ == "__main__":
     init_db()
+
+pdf_report()
