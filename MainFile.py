@@ -829,7 +829,7 @@ async def send_message(message: types.Message, state: FSMContext):
 
 @dp.message(StatsmanStates.Statsman_menu)
 async def send_message(message: types.Message, state: FSMContext):
-    if message.text == 'Статистика по тестированию'
+    if message.text == 'Статистика по тестированию
 
 
 async def ask_question(message: Message, state: FSMContext, question_number: int, markup):
