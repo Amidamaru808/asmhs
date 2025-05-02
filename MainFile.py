@@ -71,6 +71,7 @@ class AddUser(StatesGroup):
     statsman_first_name = State()
     statsman_last_name = State()
 
+
 class UserStates(StatesGroup):
     User_menu = State()
     Send_date = State()
@@ -133,11 +134,19 @@ init_db()
 active_admins_ids = []
 
 
+def log(tg_id, action):
+    now = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+    with open(f"User logs/{tg_id}_log.txt", "a", encoding="utf-8") as txt:
+        txt.write(f"[{now}] {action}\n")
+
+
 @dp.message(CommandStart())
 async def cmd_start(message: Message, state: FSMContext):
+    tg_id = message.from_user.id
     await message.answer('Добро пожаловать в приложения мониторинга здоровья обучающихся!')
     await message.answer('Введите логин.')
     await state.set_state(Autorization.Login)
+    log(tg_id,"/start")
 
 
 @dp.message(Autorization.Start_autorization)
@@ -149,6 +158,8 @@ async def start_autorization(message: Message, state: FSMContext):
 @dp.message(Autorization.Login)
 async def handle_name(message: Message, state: FSMContext):
     full_name = message.text.strip()
+    tg_id = message.from_user.id
+    log(tg_id, full_name)
     try:
         name, surname = full_name.split()
     except ValueError:
@@ -186,6 +197,8 @@ async def handle_name(message: Message, state: FSMContext):
 @dp.message(Autorization.Password)
 async def handle_password(message: Message, state: FSMContext):
     password = message.text.strip()
+    tg_id = message.from_user.id
+    log(tg_id, password)
     user_data = await state.get_data()
     name = user_data.get('name')
     surname = user_data.get('surname')
@@ -225,6 +238,8 @@ async def handle_password(message: Message, state: FSMContext):
 
 @dp.message(AdminStates.Admin_menu)
 async def admin_menu(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     if message.text == "Результаты":
         await message.answer("Раздел просмотра аналитики по тестированию и болезням.", reply_markup=kb_choose_type())
         await state.set_state(AdminStates.Test_or_illness)
@@ -249,6 +264,8 @@ async def admin_menu(message: types.Message, state: FSMContext):
 
 @dp.message(AdminStates.Illness_course_choose)
 async def illness_course_choose(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     if message.text == "Все курсы":
         await message.answer("Выбраны все курсы, все группы и все пользователи."
                              "Введите дату в формает XX.XX.XXXX или же диапозон дат в формает"
@@ -281,6 +298,8 @@ async def illness_course_choose(message: types.Message, state: FSMContext):
 
 @dp.message(AdminStates.Illness_group_choose)
 async def illness_group_choose(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     data = await state.get_data()
     course = data.get("illness_course")
     group = message.text.strip()
@@ -305,6 +324,8 @@ async def illness_group_choose(message: types.Message, state: FSMContext):
 
 @dp.message(AdminStates.Illness_user_choose)
 async def illness_user_choose(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     user_message = message.text.strip()
     if user_message == "Все пользователи":
         await message.answer("Выбраны все пользователи. Введите дату в формает XX.XX.XXXX или же диапозон дат в формает"
@@ -325,6 +346,8 @@ async def illness_user_choose(message: types.Message, state: FSMContext):
 
 @dp.message(AdminStates.Illness_date_choose)
 async def illness_date_choose(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     user_message = message.text.strip()
     if user_message == "Назад":
         await message.answer("Раздел просмотра справок от обучающихся. Справки каких курсов вы хотите просмотреть?",
@@ -361,6 +384,8 @@ async def illness_date_choose(message: types.Message, state: FSMContext):
 
 @dp.message(AdminStates.Test_or_illness)
 async def test_or_illness(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     if message.text == "Тестирование":
         await message.answer("Раздел просмотра аналтики тестирования. Выберите курс.",
                              reply_markup=kb_admin_course_choose())
@@ -376,6 +401,8 @@ async def test_or_illness(message: types.Message, state: FSMContext):
 
 @dp.message(AdminStates.Illness_choose_course)
 async def illness_choose_course(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     if message.text == "Статистика по месяцам за год все курсы":
         await message.answer("Выберите учбеный год", reply_markup=kb_years())
         await state.set_state(AdminStates.Illness_choose_year)
@@ -402,6 +429,8 @@ async def illness_choose_course(message: types.Message, state: FSMContext):
 
 @dp.message(AdminStates.Illness_choose_course_group)
 async def illness_choose_year_course(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     group = message.text.strip()
     if group == "Назад":
         await message.answer("Раздел просмотра аналтики болезней.", reply_markup=kb_admin_ill_choose())
@@ -414,6 +443,8 @@ async def illness_choose_year_course(message: types.Message, state: FSMContext):
 
 @dp.message(AdminStates.Illness_choose_year_course)
 async def illness_choose_year_course(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     if message.text == "2023 - 2024":
         data = await state.get_data()
         course_num = data.get('ill_course')
@@ -458,6 +489,8 @@ async def illness_choose_year_course(message: types.Message, state: FSMContext):
 
 @dp.message(AdminStates.Illness_choose_year)
 async def illness_choose_year(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     if message.text == "2023 - 2024":
         generate_illness_stats(str("2023 - 2024"))
         pdf_file = FSInputFile(f'Files pdf/illness_stats2023-2024.pdf')
@@ -485,6 +518,8 @@ async def illness_choose_year(message: types.Message, state: FSMContext):
 
 @dp.message(AdminStates.Course_choose)
 async def course_choose(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     if message.text == "Все курсы":
         pdf_report()
         pdf_file = FSInputFile("Files pdf/Answers_Report.pdf")
@@ -513,6 +548,8 @@ async def course_choose(message: types.Message, state: FSMContext):
 
 @dp.message(AdminStates.Group_choose)
 async def group_choose(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     group = message.text.strip()
     if group == "Все группы":
         data = await state.get_data()
@@ -539,6 +576,8 @@ async def group_choose(message: types.Message, state: FSMContext):
 
 @dp.message(AdminStates.Users_work)
 async def users_work(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     if message.text == "Список пользователей":
         await message.answer("Выберите список пользователей", reply_markup=kb_students_admins())
         await state.set_state(AdminStates.Choose_admin_user)
@@ -559,6 +598,8 @@ async def users_work(message: types.Message, state: FSMContext):
 
 @dp.message(AdminStates.Choose_admin_user)
 async def choose_admin_user(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     if message.text == "Студенты":
         await message.answer("Выберите курс", reply_markup=kb_admin_course_choose())
         await state.set_state(AdminStates.Choose_course_user)
@@ -579,6 +620,8 @@ async def choose_admin_user(message: types.Message, state: FSMContext):
 
 @dp.message(AdminStates.Choose_course_user)
 async def choose_course_user(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     course = message.text.strip()
     if course == "Все курсы":
         generate_users_pdf("all")
@@ -599,6 +642,8 @@ async def choose_course_user(message: types.Message, state: FSMContext):
 
 @dp.message(AdminStates.Choose_group_user)
 async def choose_group_user(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     group = message.text.strip()
     if group == "Назад":
         await message.answer("Выберите курс", reply_markup=kb_admin_course_choose())
@@ -615,6 +660,8 @@ async def choose_group_user(message: types.Message, state: FSMContext):
 
 @dp.message(AddUser.user_first_name)
 async def get_user_first_name(message: Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     if message.text == "Вернутся в меню работы с пользователями":
         await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
         await state.set_state(AdminStates.Users_work)
@@ -627,6 +674,8 @@ async def get_user_first_name(message: Message, state: FSMContext):
 
 @dp.message(AddUser.user_last_name)
 async def get_user_last_name(message: Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     if message.text == "Вернутся в меню работы с пользователями":
         await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
         await state.set_state(AdminStates.Users_work)
@@ -639,6 +688,8 @@ async def get_user_last_name(message: Message, state: FSMContext):
 
 @dp.message(AddUser.user_course)
 async def get_user_course(message: Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     course = message.text.strip()
     if course == "Вернутся в меню работы с пользователями":
         await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
@@ -652,6 +703,8 @@ async def get_user_course(message: Message, state: FSMContext):
 
 @dp.message(AddUser.user_group)
 async def get_user_group(message: Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     group = message.text.strip()
     if group == "Назад":
         await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
@@ -674,6 +727,8 @@ async def get_user_group(message: Message, state: FSMContext):
 
 @dp.message(AddUser.statsman_first_name)
 async def get_statsman_first_name(message: Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     if message.text == "Вернутся в меню работы с пользователями":
         await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
         await state.set_state(AdminStates.Users_work)
@@ -686,6 +741,8 @@ async def get_statsman_first_name(message: Message, state: FSMContext):
 
 @dp.message(AddUser.statsman_last_name)
 async def get_statsman_last_name(message: Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     if message.text == "Вернутся в меню работы с пользователями":
         await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
         await state.set_state(AdminStates.Users_work)
@@ -699,9 +756,10 @@ async def get_statsman_last_name(message: Message, state: FSMContext):
     await state.set_state(AdminStates.Users_work)
 
 
-
 @dp.message(AddUser.admin_first_name)
 async def get_admin_first_name(message: Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     if message.text == "Вернутся в меню работы с пользователями":
         await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
         await state.set_state(AdminStates.Users_work)
@@ -714,6 +772,8 @@ async def get_admin_first_name(message: Message, state: FSMContext):
 
 @dp.message(AddUser.admin_last_name)
 async def get_admin_last_name(message: Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     if message.text == "Вернутся в меню работы с пользователями":
         await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
         await state.set_state(AdminStates.Users_work)
@@ -733,6 +793,8 @@ async def get_admin_last_name(message: Message, state: FSMContext):
 
 @dp.message(AdminStates.Choose_message)
 async def choose_message(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     name = message.text.strip()
     if name == "Назад":
         await message.answer(f'Вы авторизовались как администратор. Выберите одну из опции.',
@@ -751,6 +813,8 @@ async def choose_message(message: types.Message, state: FSMContext):
 
 @dp.message(AdminStates.Answer)
 async def answer(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     admin_answer = message.text.strip()
     tg_id_admin = message.from_user.id
     data = await state.get_data()
@@ -780,6 +844,8 @@ async def answer(message: types.Message, state: FSMContext):
 
 @dp.message(UserStates.User_menu)
 async def handle_main_menu(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     if message.text == "Пройти тестирование о здоровье":
         await message.answer("Тестирование начинается. Тест состоит из 30 вопросов. Хорошо подумайте над ответами."
                              "После завершения тестирования ответы запишутся. Тестирование можно пройти повторно,"
@@ -810,6 +876,8 @@ async def handle_main_menu(message: types.Message, state: FSMContext):
 
 @dp.message(UserStates.Send_date)
 async def send_date(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     date = message.text.strip()
     if date == "Назад":
         await message.answer('Выберите одну из опции.',
@@ -827,6 +895,8 @@ async def send_date(message: types.Message, state: FSMContext):
 
 @dp.message(UserStates.Send_photo)
 async def send_photo(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     if message.photo:
         photo = message.photo[-1]
         file = await message.bot.get_file(photo.file_id)
@@ -851,6 +921,8 @@ async def send_photo(message: types.Message, state: FSMContext):
 
 @dp.message(UserStates.Send_Message)
 async def send_message(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     msg = message.text.strip()
     if msg == "Назад":
         await message.answer(f'Вы авторизовались как пользователь. Выберите одну из опции.',
@@ -873,6 +945,8 @@ async def send_message(message: types.Message, state: FSMContext):
 
 @dp.message(StatsmanStates.Statsman_menu)
 async def statsman_menu(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     if message.text == 'Статистика по тестированию':
         await message.answer("Раздел просмотра аналтики тестирования. Выберите курс.",
                              reply_markup=kb_admin_course_choose())
@@ -884,6 +958,8 @@ async def statsman_menu(message: types.Message, state: FSMContext):
 
 @dp.message(StatsmanStates.Course_choose)
 async def statsman_course_choose(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     if message.text == "Все курсы":
         pdf_report()
         pdf_file = FSInputFile("Files pdf/Answers_Report.pdf")
@@ -912,6 +988,8 @@ async def statsman_course_choose(message: types.Message, state: FSMContext):
 
 @dp.message(StatsmanStates.Group_choose)
 async def statsman_group_choose(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     group = message.text.strip()
     if group == "Все группы":
         data = await state.get_data()
@@ -938,6 +1016,8 @@ async def statsman_group_choose(message: types.Message, state: FSMContext):
 
 @dp.message(StatsmanStates.Illness_choose_course)
 async def statsman_illness_choose_course(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     if message.text == "Статистика по месяцам за год все курсы":
         await message.answer("Выберите учбеный год", reply_markup=kb_years())
         await state.set_state(StatsmanStates.Illness_choose_year)
@@ -964,6 +1044,8 @@ async def statsman_illness_choose_course(message: types.Message, state: FSMConte
 
 @dp.message(StatsmanStates.Illness_choose_year_course)
 async def statsman_illness_choose_year_course(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     if message.text == "2023 - 2024":
         data = await state.get_data()
         course_num = data.get('ill_course')
@@ -1008,6 +1090,8 @@ async def statsman_illness_choose_year_course(message: types.Message, state: FSM
 
 @dp.message(StatsmanStates.Illness_choose_course_group)
 async def statsman_illness_choose_year_course(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     group = message.text.strip()
     if group == "Назад":
         await message.answer("Раздел просмотра аналтики болезней.", reply_markup=kb_admin_ill_choose())
@@ -1020,6 +1104,8 @@ async def statsman_illness_choose_year_course(message: types.Message, state: FSM
 
 @dp.message(StatsmanStates.Illness_choose_course)
 async def statsman_illness_choose_course(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     if message.text == "Статистика по месяцам за год все курсы":
         await message.answer("Выберите учбеный год", reply_markup=kb_years())
         await state.set_state(StatsmanStates.Illness_choose_year)
@@ -1046,6 +1132,8 @@ async def statsman_illness_choose_course(message: types.Message, state: FSMConte
 
 @dp.message(StatsmanStates.Illness_choose_year)
 async def illness_choose_year(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     if message.text == "2023 - 2024":
         generate_illness_stats(str("2023 - 2024"))
         pdf_file = FSInputFile(f'Files pdf/illness_stats2023-2024.pdf')
@@ -1079,6 +1167,8 @@ async def ask_question(message: Message, state: FSMContext, question_number: int
 
 @dp.message(Questions.question_1)
 async def question_1(message: Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     await state.update_data(answer_1=message.text.strip())
     await ask_question(message, state, 2, kb_1234)
     await state.set_state(Questions.question_2)
@@ -1086,6 +1176,8 @@ async def question_1(message: Message, state: FSMContext):
 
 @dp.message(Questions.question_2)
 async def question_2(message: Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     await state.update_data(answer_2=message.text.strip())
     await ask_question(message, state, 3, kb_yes_no)
     await state.set_state(Questions.question_3)
@@ -1093,6 +1185,8 @@ async def question_2(message: Message, state: FSMContext):
 
 @dp.message(Questions.question_3)
 async def question_3(message: Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     await state.update_data(answer_3=message.text.strip())
     await ask_question(message, state, 4, kb_yes_no)
     await state.set_state(Questions.question_4)
@@ -1100,6 +1194,8 @@ async def question_3(message: Message, state: FSMContext):
 
 @dp.message(Questions.question_4)
 async def question_4(message: Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     await state.update_data(answer_4=message.text.strip())
     await ask_question(message, state, 5, kb_1234)
     await state.set_state(Questions.question_5)
@@ -1107,6 +1203,8 @@ async def question_4(message: Message, state: FSMContext):
 
 @dp.message(Questions.question_5)
 async def question_5(message: Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     await state.update_data(answer_5=message.text)
     await ask_question(message, state, 6, kb_05_1_15_2)
     await state.set_state(Questions.question_6)
@@ -1114,6 +1212,8 @@ async def question_5(message: Message, state: FSMContext):
 
 @dp.message(Questions.question_6)
 async def question_6(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     await state.update_data(answer_6=message.text)
     await ask_question(message, state, 7, kb_chastota_1)
     await state.set_state(Questions.question_7)
@@ -1121,6 +1221,8 @@ async def question_6(message: types.Message, state: FSMContext):
 
 @dp.message(Questions.question_7)
 async def question_7(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     await state.update_data(answer_7=message.text)
     await ask_question(message, state, 8, kb_chastota_1)
     await state.set_state(Questions.question_8)
@@ -1128,6 +1230,8 @@ async def question_7(message: types.Message, state: FSMContext):
 
 @dp.message(Questions.question_8)
 async def question_8(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     await state.update_data(answer_8=message.text)
     await ask_question(message, state, 9, kb_chastota_1)
     await state.set_state(Questions.question_9)
@@ -1135,6 +1239,8 @@ async def question_8(message: types.Message, state: FSMContext):
 
 @dp.message(Questions.question_9)
 async def question_9(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     await state.update_data(answer_9=message.text)
     await ask_question(message, state, 10, kb_chastota_2)
     await state.set_state(Questions.question_10)
@@ -1142,6 +1248,8 @@ async def question_9(message: types.Message, state: FSMContext):
 
 @dp.message(Questions.question_10)
 async def question_10(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     await state.update_data(answer_10=message.text)
     await ask_question(message, state, 11, kb_yes_no)
     await state.set_state(Questions.question_11)
@@ -1149,6 +1257,8 @@ async def question_10(message: types.Message, state: FSMContext):
 
 @dp.message(Questions.question_11)
 async def question_11(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     await state.update_data(answer_11=message.text)
     await ask_question(message, state, 12, kb_kachestvo)
     await state.set_state(Questions.question_12)
@@ -1156,6 +1266,8 @@ async def question_11(message: types.Message, state: FSMContext):
 
 @dp.message(Questions.question_12)
 async def question_12(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     await state.update_data(answer_12=message.text)
     await ask_question(message, state, 13, kb_chastota_1)
     await state.set_state(Questions.question_13)
@@ -1163,6 +1275,8 @@ async def question_12(message: types.Message, state: FSMContext):
 
 @dp.message(Questions.question_13)
 async def question_13(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     await state.update_data(answer_13=message.text)
     await ask_question(message, state, 14, kb_1234)
     await state.set_state(Questions.question_14)
@@ -1170,6 +1284,8 @@ async def question_13(message: types.Message, state: FSMContext):
 
 @dp.message(Questions.question_14)
 async def question_14(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     await state.update_data(answer_14=message.text)
     await ask_question(message, state, 15, kb_kachestvo)
     await state.set_state(Questions.question_15)
@@ -1177,6 +1293,8 @@ async def question_14(message: types.Message, state: FSMContext):
 
 @dp.message(Questions.question_15)
 async def question_15(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     await state.update_data(answer_15=message.text)
     await ask_question(message, state, 16, kb_chastota_1)
     await state.set_state(Questions.question_16)
@@ -1184,6 +1302,8 @@ async def question_15(message: types.Message, state: FSMContext):
 
 @dp.message(Questions.question_16)
 async def question_16(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     await state.update_data(answer_16=message.text)
     await ask_question(message, state, 17, kb_chastota_3)
     await state.set_state(Questions.question_17)
@@ -1191,6 +1311,8 @@ async def question_16(message: types.Message, state: FSMContext):
 
 @dp.message(Questions.question_17)
 async def question_17(message: Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     await state.update_data(answer_17=message.text)
     await ask_question(message, state, 18, kb_ves)
     await state.set_state(Questions.question_18)
@@ -1198,6 +1320,8 @@ async def question_17(message: Message, state: FSMContext):
 
 @dp.message(Questions.question_18)
 async def question_18(message: Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     await state.update_data(answer_18=message.text)
     await ask_question(message, state, 19, kb_chastota_3)
     await state.set_state(Questions.question_19)
@@ -1205,6 +1329,8 @@ async def question_18(message: Message, state: FSMContext):
 
 @dp.message(Questions.question_19)
 async def question_19(message: Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     await state.update_data(answer_19=message.text)
     await ask_question(message, state, 20, kb_chastota_1)
     await state.set_state(Questions.question_20)
@@ -1212,6 +1338,8 @@ async def question_19(message: Message, state: FSMContext):
 
 @dp.message(Questions.question_20)
 async def question_20(message: Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     await state.update_data(answer_20=message.text)
     await ask_question(message, state, 21, kb_kachestvo)
     await state.set_state(Questions.question_21)
@@ -1219,6 +1347,8 @@ async def question_20(message: Message, state: FSMContext):
 
 @dp.message(Questions.question_21)
 async def question_21(message: Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     await state.update_data(answer_21=message.text)
     await ask_question(message, state, 22, kb_kachestvo)
     await state.set_state(Questions.question_22)
@@ -1226,6 +1356,8 @@ async def question_21(message: Message, state: FSMContext):
 
 @dp.message(Questions.question_22)
 async def question_22(message: Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     await state.update_data(answer_22=message.text)
     await ask_question(message, state, 23, kb_chastota_1)
     await state.set_state(Questions.question_23)
@@ -1233,6 +1365,8 @@ async def question_22(message: Message, state: FSMContext):
 
 @dp.message(Questions.question_23)
 async def question_23(message: Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     await state.update_data(answer_23=message.text)
     await ask_question(message, state, 24, kb_legko)
     await state.set_state(Questions.question_24)
@@ -1240,6 +1374,8 @@ async def question_23(message: Message, state: FSMContext):
 
 @dp.message(Questions.question_24)
 async def question_24(message: Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     await state.update_data(answer_24=message.text)
     await ask_question(message, state, 25, kb_yes_no)
     await state.set_state(Questions.question_25)
@@ -1247,6 +1383,8 @@ async def question_24(message: Message, state: FSMContext):
 
 @dp.message(Questions.question_25)
 async def question_25(message: Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     await state.update_data(answer_25=message.text)
     await ask_question(message, state, 26, kb_chastota_1)
     await state.set_state(Questions.question_26)
@@ -1254,6 +1392,8 @@ async def question_25(message: Message, state: FSMContext):
 
 @dp.message(Questions.question_26)
 async def question_26(message: Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     await state.update_data(answer_26=message.text)
     await ask_question(message, state, 27, kb_yes_no)
     await state.set_state(Questions.question_27)
@@ -1261,6 +1401,8 @@ async def question_26(message: Message, state: FSMContext):
 
 @dp.message(Questions.question_27)
 async def question_27(message: Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     await state.update_data(answer_27=message.text)
     await ask_question(message, state, 28, kb_druzya)
     await state.set_state(Questions.question_28)
@@ -1268,6 +1410,8 @@ async def question_27(message: Message, state: FSMContext):
 
 @dp.message(Questions.question_28)
 async def question_28(message: Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     await state.update_data(answer_28=message.text)
     await ask_question(message, state, 29, kb_legko)
     await state.set_state(Questions.question_29)
@@ -1275,6 +1419,8 @@ async def question_28(message: Message, state: FSMContext):
 
 @dp.message(Questions.question_29)
 async def question_29(message: Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     await state.update_data(answer_29=message.text)
     await ask_question(message, state, 30, kb_1234)
     await state.set_state(Questions.question_30)
@@ -1282,6 +1428,8 @@ async def question_29(message: Message, state: FSMContext):
 
 @dp.message(Questions.question_30)
 async def question_30(message: types.Message, state: FSMContext):
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     await state.update_data(answer_30=message.text)
     data = await state.get_data()
     login = data.get('name') + data.get('surname')
@@ -1336,3 +1484,4 @@ async def main():
 
 if __name__ == '__main__':
     asyncio.run(main())
+

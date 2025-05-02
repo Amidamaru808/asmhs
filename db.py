@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 from datetime import datetime
 
-
 def init_db():
     conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
@@ -750,4 +749,3 @@ def check_statsman_password(first_name, last_name, password):
 
 if __name__ == "__main__":
     init_db()
-
