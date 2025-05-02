@@ -12,8 +12,8 @@ import json
 from db import (init_db, save_answers, pdf_report, pdf_report_course, check_user_in_db, check_admin_in_db,
                 check_admin_password, add_user_to_db, generate_password, add_admin_to_db, generate_users_pdf,
                 generate_admins_pdf, add_illness,  generate_illness_stats_by_course, generate_illness_stats,
-                get_illness_ids, add_message_db, get_message_ids_not_answered, get_message_name_by_id,
-                get_message_messages_by_name)
+                get_illness_ids, add_message_db, get_message_ids_not_answered, get_message_names_by_ids,
+                get_message_messages_by_name, add_reply, set_answered_messages, get_reply_no_watched)
 
 import zipfile
 from keyboards import (kb_05_1_15_2, kb_1234, kb_druzya, kb_kachestvo,
@@ -59,6 +59,7 @@ class AdminStates(StatesGroup):
     Choose_message = State()
     Answer = State()
 
+
 class AddUser(StatesGroup):
     user_first_name = State()
     user_last_name = State()
@@ -73,7 +74,6 @@ class UserStates(StatesGroup):
     Send_date = State()
     Send_photo = State()
     Send_Message = State()
-
 
 class Questions(StatesGroup):
     question_1 = State()
@@ -213,8 +213,8 @@ async def admin_menu(message: types.Message, state: FSMContext):
         await state.set_state(AdminStates.Users_work)
     elif message.text == "Входящие сообщения":
         ids = get_message_ids_not_answered()
-        names = get_message_name_by_id(ids)
-        await message.answer("Выберите cообщение от пользователя",reply_markup=kb_names(names))
+        names = get_message_names_by_ids(ids)
+        await message.answer("Выберите cообщение от пользователя", reply_markup=kb_names(names))
         await state.set_state(AdminStates.Choose_message)
     elif message.text == "Выход":
         tg_id = message.from_user.id
@@ -679,8 +679,10 @@ async def choose_message(message: types.Message, state: FSMContext):
                              reply_markup=kb_admin())
         await state.set_state(AdminStates.Admin_menu)
         return
-    messages = get_message_messages_by_name(name)
+    tg_id, messages = get_message_messages_by_name(name)
     await message.answer(f"Сообщения от {name}")
+    await state.update_data(tg_id_user=tg_id)
+    await state.update_data(name_user=name)
     for msg in messages:
         await message.answer(msg)
     await message.answer("Напишите ваше сообщение.")
@@ -696,6 +698,17 @@ async def answer(message: types.Message, state: FSMContext):
         await state.set_state(AdminStates.Admin_menu)
         return
 
+    tg_id_admin = message.from_user.id
+    data = await state.get_data()
+    tg_id_user = data.get("tg_id_user")
+    name = data.get("name_user")
+    add_reply(tg_id_user, tg_id_admin, admin_answer, "no")
+    set_answered_messages(tg_id_user)
+    ids = get_message_ids_not_answered()
+    names = get_message_names_by_ids(ids)
+    await bot.send_message(tg_id_user, f"{name}, вам пришло сообщение от администратора. Проверьте сообщения.")
+    await message.answer("Выберите cообщение от пользователя", reply_markup=kb_names(names))
+    await state.set_state(AdminStates.Choose_message)
 
 
 
@@ -712,10 +725,18 @@ async def handle_main_menu(message: types.Message, state: FSMContext):
                              reply_markup=kb_back())
         await state.set_state(UserStates.Send_date)
     elif message.text == "Отправить сообщение работнику.":
-        await message.answer("Введите свое сообщение работнику.")
+        await message.answer("Введите свое сообщение работнику.", reply_markup=kb_back())
         await state.set_state(UserStates.Send_Message)
-    elif message.text == "4":
-        await message.answer("4")
+    elif message.text == "Входящие сообщения":
+        tg_id = message.from_user.id
+        messages = get_reply_no_watched(tg_id)
+        if len(messages) <= 0:
+            await message.answer("У вас нет новых сообщений!")
+        else:
+            await message.answer(f"Просмотр входящих сообщений {len(messages)}.")
+            for msg in messages:
+                await message.answer(msg)
+
     elif message.text == "Выход":
         await message.answer('Введите логин.')
         await state.set_state(Autorization.Login)
@@ -765,6 +786,11 @@ async def send_photo(message: types.Message, state: FSMContext):
 @dp.message(UserStates.Send_Message)
 async def send_message(message: types.Message, state: FSMContext):
     msg = message.text.strip()
+    if msg == "Назад":
+        await message.answer(f'Вы авторизовались как пользователь. Выберите одну из опции.',
+                             reply_markup=kb_main_menu())
+        await state.set_state(UserStates.User_menu)
+        return
     tg_id = message.from_user.id
     data = await state.get_data()
     first_name = data.get('name')

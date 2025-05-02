@@ -54,6 +54,16 @@ def init_db():
        ''')
 
     c.execute('''
+           CREATE TABLE IF NOT EXISTS reply (
+               id INTEGER PRIMARY KEY AUTOINCREMENT,
+               id_tg_user INTEGER,
+               id_tg_admin INTEGER,
+               answer TEXT,
+               watched TEXT
+           )
+       ''')
+
+    c.execute('''
         CREATE TABLE IF NOT EXISTS answers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER,
@@ -577,7 +587,7 @@ def get_message_ids_not_answered():
     return ids
 
 
-def get_message_name_by_id(ids):
+def get_message_names_by_ids(ids):
     where_in = ','.join('?' for _ in ids)
     query = f'''
             SELECT name, tg_id 
@@ -615,9 +625,61 @@ def get_message_messages_by_name(name):
 
     first_tg_id = messages[0][0]
     if all(row[0] == first_tg_id for row in messages):
-        return [f"({row[2]})\n {row[1]}" for row in messages]
+        date_message = [f"({row[2]})\n{row[1]}" for row in messages]
+        return first_tg_id, date_message
     else:
-        return []
+        return None, []
+
+
+def add_reply(id_tg_user, id_tg_admin, answer, watched):
+    conn = sqlite3.connect("main_database.db")
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        INSERT INTO reply (id_tg_user, id_tg_admin, answer, watched)
+        VALUES (?, ?, ?, ?)
+    ''', (id_tg_user, id_tg_admin, answer, watched))
+
+    conn.commit()
+    conn.close()
+
+
+def set_answered_messages(tg_id):
+    conn = sqlite3.connect("main_database.db")
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        UPDATE messages
+        SET answered = 'yes'
+        WHERE tg_id = ?
+    ''', (tg_id,))
+
+    conn.commit()
+    conn.close()
+
+
+def get_reply_no_watched(tg_id):
+    conn = sqlite3.connect("main_database.db")
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        SELECT answer
+        FROM reply
+        WHERE id_tg_user = ? AND watched = 'no'
+    ''', (tg_id,))
+
+    answers = [row[0] for row in cursor.fetchall()]
+
+    cursor.execute('''
+            UPDATE reply
+            SET watched = 'yes'
+            WHERE id_tg_user = ? AND watched = 'no'
+        ''', (tg_id,))
+
+    conn.commit()
+    conn.close()
+    return answers
+
 
 
 if __name__ == "__main__":
