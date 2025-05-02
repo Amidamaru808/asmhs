@@ -423,6 +423,31 @@ def generate_admins_pdf():
     pdf.output("Files pdf/admins.pdf")
 
 
+def generate_statsmans_pdf():
+    conn = sqlite3.connect('main_database.db')
+    c = conn.cursor()
+    c.execute('SELECT first_name, last_name, password FROM statsmans')
+    statsmans = c.fetchall()
+    conn.close()
+
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font('Bounded', '', 'Bounded-Regular.ttf', uni=True)
+    pdf.set_font('Bounded', '', 12)
+    pdf.cell(0, 10, txt="Список аналитиков", ln=True, align="C")
+    pdf.ln(10)
+    pdf.cell(100, 10, "Логин", border=1, align="C")
+    pdf.cell(50, 10, "Пароль", border=1, align="C")
+    pdf.ln()
+    for first_name, last_name, password in statsmans:
+        login = f"{first_name} {last_name}"
+        pdf.cell(100, 10, login, border=1)
+        pdf.cell(50, 10, password, border=1)
+        pdf.ln()
+
+    pdf.output("Files pdf/statsmans.pdf")
+
+
 def generate_illness_stats(years):
     conn = sqlite3.connect('main_database.db')
     c = conn.cursor()

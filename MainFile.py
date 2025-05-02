@@ -14,7 +14,7 @@ from db import (init_db, save_answers, pdf_report, pdf_report_course, check_user
                 generate_admins_pdf, add_illness,  generate_illness_stats_by_course, generate_illness_stats,
                 get_illness_ids, add_message_db, get_message_ids_not_answered, get_message_names_by_ids,
                 get_message_messages_by_name, add_reply, set_answered_messages, get_reply_no_watched,
-                check_statsman_in_db, check_statsman_password, add_statsman)
+                check_statsman_in_db, check_statsman_password, add_statsman, generate_statsmans_pdf)
 
 import zipfile
 from keyboards import (kb_05_1_15_2, kb_1234, kb_druzya, kb_kachestvo,
@@ -566,6 +566,11 @@ async def choose_admin_user(message: types.Message, state: FSMContext):
         generate_admins_pdf()
         pdf_file = FSInputFile("Files pdf/admins.pdf")
         await message.answer("Список администраторов")
+        await message.answer_document(pdf_file)
+    elif message.text == "Аналитики":
+        generate_statsmans_pdf()
+        pdf_file = FSInputFile("Files pdf/statsmans.pdf")
+        await message.answer("Список аналитиков")
         await message.answer_document(pdf_file)
     elif message.text == "Назад":
         await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())

@@ -81,6 +81,7 @@ def kb_students_admins():
         keyboard=[
             [KeyboardButton(text='Студенты')],
             [KeyboardButton(text='Администраторы')],
+            [KeyboardButton(text="Аналитики")],
             [KeyboardButton(text='Назад')]
         ],
     )
