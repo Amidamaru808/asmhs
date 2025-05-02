@@ -48,7 +48,8 @@ def init_db():
                name TEXT NOT NULL,
                tg_id INTEGER NOT NULL,
                message_text TEXT NOT NULL,
-               time TEXT NOT NULL
+               time TEXT NOT NULL,
+               answered TEXT NOT NULL
            )
        ''')
 
@@ -560,11 +561,63 @@ def add_message_db(name, tg_id, message_text):
     c = conn.cursor()
     time_now = datetime.now().strftime("%d.%m %H.%M.%S  %Y")
     c.execute('''
-        INSERT INTO messages (name, tg_id, message_text, time)
-        VALUES (?, ?, ?, ?)
-    ''', (name, tg_id, message_text, time_now))
+        INSERT INTO messages (name, tg_id, message_text, time, answered)
+        VALUES (?, ?, ?, ?, ?)
+    ''', (name, tg_id, message_text, time_now, "нет"))
     conn.commit()
     conn.close()
+
+
+def get_message_ids_not_answered():
+    conn = sqlite3.connect('main_database.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT rowid FROM messages WHERE answered = "нет"')
+    ids = [row[0] for row in cursor.fetchall()]
+    conn.close()
+    return ids
+
+
+def get_message_name_by_id(ids):
+    where_in = ','.join('?' for _ in ids)
+    query = f'''
+            SELECT name, tg_id 
+            FROM messages 
+            WHERE rowid IN ({where_in})
+        '''
+
+    conn = sqlite3.connect('main_database.db')
+    cursor = conn.cursor()
+    cursor.execute(query, ids)
+    results = cursor.fetchall()
+    conn.close()
+
+    ids = set()
+    names = []
+
+    for name, tg_id in results:
+        if tg_id not in ids:
+            names.append(name)
+            ids.add(tg_id)
+
+    return names
+
+
+def get_message_messages_by_name(name):
+    conn = sqlite3.connect("main_database.db")
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT tg_id, message_text, time FROM messages WHERE name = ?", (name,))
+    messages = cursor.fetchall()
+    conn.close()
+
+    if not messages:
+        return []
+
+    first_tg_id = messages[0][0]
+    if all(row[0] == first_tg_id for row in messages):
+        return [f"({row[2]})\n {row[1]}" for row in messages]
+    else:
+        return []
 
 
 if __name__ == "__main__":

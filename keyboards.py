@@ -24,6 +24,18 @@ all_groups = {
 }
 
 
+def kb_names(names):
+    keyboard = []
+    names = names[:10]
+    for i in range(0, len(names), 2):
+        row = [KeyboardButton(text=name) for name in names[i:i + 2]]
+        keyboard.append(row)
+
+    keyboard.append([KeyboardButton(text="Назад")])
+
+    return ReplyKeyboardMarkup(keyboard=keyboard)
+
+
 def kb_back_users():
     return ReplyKeyboardMarkup(
         keyboard=[
@@ -58,7 +70,7 @@ def kb_admin():
             [KeyboardButton(text='Результаты')],
             [KeyboardButton(text='Справки')],
             [KeyboardButton(text='Пользователи')],
-            [KeyboardButton(text='Справка о работе приложения')],
+            [KeyboardButton(text='Входящие сообщения')],
             [KeyboardButton(text="Выход")]
         ],
     )
@@ -108,7 +120,7 @@ def kb_admin_group_choose(course, all_gr):
 
     keyboard.append([KeyboardButton(text='Назад')])
 
-    return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
+    return ReplyKeyboardMarkup(keyboard=keyboard)
 
 
 def kb_admin_user_choose(course, group):
