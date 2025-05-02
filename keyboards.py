@@ -149,6 +149,7 @@ def kb_admin_users():
     return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Список пользователей')],
                                            [KeyboardButton(text='Добавить ученика')],
                                            [KeyboardButton(text='Добавить работника')],
+                                         [KeyboardButton(text="Добавить аналитика")],
                                           [KeyboardButton(text="Назад")]])
 
 

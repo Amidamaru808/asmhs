@@ -14,7 +14,7 @@ from db import (init_db, save_answers, pdf_report, pdf_report_course, check_user
                 generate_admins_pdf, add_illness,  generate_illness_stats_by_course, generate_illness_stats,
                 get_illness_ids, add_message_db, get_message_ids_not_answered, get_message_names_by_ids,
                 get_message_messages_by_name, add_reply, set_answered_messages, get_reply_no_watched,
-                check_statsman_in_db, check_statsman_password)
+                check_statsman_in_db, check_statsman_password, add_statsman)
 
 import zipfile
 from keyboards import (kb_05_1_15_2, kb_1234, kb_druzya, kb_kachestvo,
@@ -68,7 +68,8 @@ class AddUser(StatesGroup):
     user_course = State()
     admin_first_name = State()
     admin_last_name = State()
-
+    statsman_first_name = State()
+    statsman_last_name = State()
 
 class UserStates(StatesGroup):
     User_menu = State()
@@ -547,6 +548,9 @@ async def users_work(message: types.Message, state: FSMContext):
     elif message.text == "Добавить работника":
         await message.answer("Введите имя работника:", reply_markup=kb_back_users())
         await state.set_state(AddUser.admin_first_name)
+    elif message.text == "Добавить аналитика":
+        await message.answer("Введите имя работника:", reply_markup=kb_back_users())
+        await state.set_state(AddUser.statsman_first_name)
     elif message.text == "Назад":
         await message.answer(f'Вы авторизовались как администратор. Выберите одну из опции.',
                              reply_markup=kb_admin())
@@ -661,6 +665,34 @@ async def get_user_group(message: Message, state: FSMContext):
     await message.answer("Пользователь успешно добавлен.")
     await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
     await state.set_state(AdminStates.Users_work)
+
+
+@dp.message(AddUser.statsman_first_name)
+async def get_statsman_first_name(message: Message, state: FSMContext):
+    if message.text == "Вернутся в меню работы с пользователями":
+        await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
+        await state.set_state(AdminStates.Users_work)
+        return
+
+    await state.update_data(statsman_first_name=message.text.strip())
+    await message.answer("Введите фамилию пользователя:")
+    await state.set_state(AddUser.statsman_last_name)
+
+
+@dp.message(AddUser.statsman_last_name)
+async def get_statsman_last_name(message: Message, state: FSMContext):
+    if message.text == "Вернутся в меню работы с пользователями":
+        await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
+        await state.set_state(AdminStates.Users_work)
+        return
+
+    await state.update_data(statsman_last_name=message.text.strip())
+    data = await state.get_data()
+    add_statsman(data['statsman_first_name'], data['statsman_last_name'], generate_password())
+
+    await message.answer("Аналитик добавлен в базу.", reply_markup=kb_admin_users())
+    await state.set_state(AdminStates.Users_work)
+
 
 
 @dp.message(AddUser.admin_first_name)
