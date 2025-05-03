@@ -366,6 +366,14 @@ def pdf_report():
     pdf.ln(8)
 
     pdf.set_font('font', size=14)
+    date = datetime.now().strftime("%d.%m.%Y %H:%M")
+    pdf.cell(0, 10, txt=f"Дата выгрузки отчета - {date}")
+
+    pdf.ln(18)
+    pdf.set_line_width(0.5)
+    pdf.line(0, pdf.get_y(), 2000, pdf.get_y())
+    pdf.ln(8)
+
     pdf.cell(0, 10, txt="Описание теста")
     pdf.ln(12)
     pdf.cell(0, 10, txt="Всего 30 вопросов")
@@ -451,7 +459,8 @@ def pdf_report():
 def pdf_report_course(course, group):
     with open('TestQuestions.json', 'r', encoding='utf-8') as f:
         questions = json.load(f)
-
+    filename = f"Files pdf/Statistic_{str(course).replace('/', '_')}" \
+               f"_{group.replace('/', '_') if group != 'all' else 'all'}.pdf"
     conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
     survey_data = []
@@ -464,78 +473,140 @@ def pdf_report_course(course, group):
         'psycho_answers': range(23, 31)
     }
 
-    for question_num in range(1, 31):
-        question_column = f'answer_{question_num}'
-        question_text = questions.get(str(question_num), f"Вопрос {question_num}")
+    table_name = {
+        'food_answers': 'Вопросы про питание',
+        'pain_answers': 'Вопросы про боли в разных частях тела',
+        'physical_answers': 'Вопросы про физическую активность',
+        'daytime_answers': 'Вопросы про ежедневное времяпровождение',
+        'psycho_answers': 'Вопросы про психологическое состояние'
+    }
 
-        question_num_int = int(question_num)
+    c.execute("SELECT COUNT(*) FROM food_answers")
+    answers_count = c.fetchone()[0]
 
-        if 1 <= question_num_int <= 6:
-            table_name = "food_answers"
-        elif 7 <= question_num_int <= 12:
-            table_name = "pain_answers"
-        elif 13 <= question_num_int <= 17:
-            table_name = "physical_answers"
-        elif 18 <= question_num_int <= 22:
-            table_name = "daytime_answers"
-        elif 23 <= question_num_int <= 30:
-            table_name = "psycho_answers"
-        else:
-            continue
+    c.execute("SELECT COUNT(*) FROM users")
+    users_count = c.fetchone()[0]
 
-        filters = []
-        params = []
-
-        if course != "all":
-            filters.append("course = ?")
-            params.append(course)
-
-        if group != "all":
-            filters.append('"group" = ?')
-            params.append(group)
-
-        where = "WHERE " + " AND ".join(filters) if filters else ""
-        query = f"SELECT {question_column} FROM {table_name} {where}"
-        c.execute(query, params)
-        answers = c.fetchall()
-
-        answer_counts = {}
-        total_answers = len(answers)
-        for answer in answers:
-            answer = answer[0]
-            answer_counts[answer] = answer_counts.get(answer, 0) + 1
-
-        if total_answers > 0:
-            answer_percentages = {
-                answer: f"{(count / total_answers) * 100:.2f}% ({count})"
-                for answer, count in answer_counts.items()
-            }
-        else:
-            answer_percentages = {"Нет ответов"}
-
-        survey_data.append((question_text, answer_percentages))
-
-    conn.close()
-
-    course_label = str(course) if course != "all" else "all"
-    group_label = group.replace("/", "_") if group != "all" else "all"
-    group_name = group.replace("/", "_") if group != "all" else ""
-    filename = f"Files pdf/Statistic_{course_label}_{group_label}.pdf"
+    percentage_count = (answers_count / users_count) * 100
 
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
     pdf.add_font('font', '', 'Bounded-Regular.ttf', uni=True)
+    pdf.set_font('font', size=18)
+    if group == "all":
+        pdf.cell(0, 10, txt=f"Отчет по вопросам {course} курс, все группы", ln=True)
+    else:
+        pdf.cell(0, 10, txt=f"Отчет по вопросам {course} курс, группа - {group}", ln=True)
+
+    pdf.ln(10)
+    pdf.set_line_width(0.5)
+    pdf.line(0, pdf.get_y(), 2000, pdf.get_y())
+    pdf.ln(8)
+
     pdf.set_font('font', size=14)
-    pdf.cell(200, 10, txt=f"Отчет по вопросам {course_label},  {group_name}", ln=True)
+    date = datetime.now().strftime("%d.%m.%Y %H:%M")
+    pdf.cell(0, 10, txt=f"Дата выгрузки отчета - {date}")
 
-    for question_text, answer_percentages in survey_data:
-        pdf.set_font('font', size=12)
-        pdf.multi_cell(0, 8, txt=f"{question_text}")
-        for answer, percentage in answer_percentages.items():
-            pdf.multi_cell(0, 6, txt=f"{answer} - {percentage}")
+    pdf.ln(18)
+    pdf.set_line_width(0.5)
+    pdf.line(0, pdf.get_y(), 2000, pdf.get_y())
+    pdf.ln(8)
+
+    pdf.cell(0, 10, txt="Описание теста")
+    pdf.ln(12)
+    pdf.cell(0, 10, txt="Всего 30 вопросов")
+    pdf.ln(7)
+    pdf.cell(0, 10, txt="Вопросов про питание - 6")
+    pdf.ln(7)
+    pdf.cell(0, 10, txt="Вопросов про боли в разных частях тела - 6")
+    pdf.ln(7)
+    pdf.cell(0, 10, txt="Вопросов про физическую активность - 5")
+    pdf.ln(7)
+    pdf.cell(0, 10, txt="Вопросов про ежеждневное времяпровождения- 5")
+    pdf.ln(7)
+    pdf.cell(0, 10, txt="Вопросов про психологическое состояние - 8")
+
+    pdf.ln(18)
+    pdf.set_line_width(0.5)
+    pdf.line(0, pdf.get_y(), 2000, pdf.get_y())
+    pdf.ln(8)
+
+    pdf.cell(0, 10, txt="Количество пройденного тестирования")
+    pdf.ln(12)
+
+    if group == "all":
+        group_ohvat = "Все группы"
+    else:
+        group_ohvat = str(group) + " " + "группа"
+
+    if course == "all":
+        course_ohvat = "1 - 4 курс"
+    else:
+        course_ohvat = str(course) + " " + "курс"
+
+    pdf.cell(0, 10, txt=f"Охват аудитории - {course_ohvat}, {group_ohvat}")
+
+    pdf.ln(7)
+    pdf.cell(0, 10, txt=f"Всего прошли тестирование: {answers_count}")
+    pdf.ln(7)
+    pdf.cell(0, 10, txt=f"Должны были пройти тестирование: {users_count}")
+    pdf.ln(7)
+    pdf.cell(0, 10, txt=f"Процент прохождения тестирования {percentage_count}%")
+
+    pdf.ln(10)
+
+    for table, questions_range in table_info.items():
         pdf.ln(5)
+        pdf.set_line_width(0.5)
+        pdf.line(0, pdf.get_y(), 2000, pdf.get_y())
+        pdf.ln(5)
+        section_title = table_name.get(table, table)
+        pdf.set_font('font', size=14)
+        pdf.cell(0, 10, section_title, ln=True)
+        pdf.ln(10)
 
+        for question_num in questions_range:
+            question_column = f'answer_{question_num}'
+            question_text = questions.get(str(question_num), f"Вопрос {question_num}")
+
+            filters = []
+            params = []
+
+            if course != "all":
+                filters.append("course = ?")
+                params.append(course)
+            if group != "all":
+                filters.append('"group" = ?')
+                params.append(group)
+
+            where = "WHERE " + " AND ".join(filters) if filters else ""
+            query = f"SELECT {question_column} FROM {table} {where}"
+            c.execute(query, params)
+            answers = c.fetchall()
+
+            answer_counts = {}
+            total_answers = len(answers)
+            for answer in answers:
+                ans = answer[0]
+                if ans:
+                    answer_counts[ans] = answer_counts.get(ans, 0) + 1
+
+            if total_answers > 0:
+                answer_percentages = {
+                    ans: f"{(count / total_answers) * 100:.2f}% ({count})"
+                    for ans, count in answer_counts.items()
+                }
+            else:
+                answer_percentages = {"Нет ответов": "0.00% (0)"}
+
+            pdf.set_font('font', size=12)
+            pdf.multi_cell(0, 8, txt=question_text)
+            for ans, percent in answer_percentages.items():
+                pdf.multi_cell(0, 6, txt=f"{ans} - {percent}")
+            pdf.ln(3)
+
+    conn.close()
     pdf.output(filename)
 
 
@@ -932,4 +1003,4 @@ def check_statsman_password(first_name, last_name, password):
 if __name__ == "__main__":
     init_db()
 
-pdf_report()
+pdf_report_course(1, "all")
