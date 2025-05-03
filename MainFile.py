@@ -237,30 +237,34 @@ async def handle_password(message: Message, state: FSMContext):
     await state.set_state(Autorization.Password)
 
 
-@dp.message(AdminStates.Admin_menu)
-async def admin_menu(message: types.Message, state: FSMContext):
-    tg_id = message.from_user.id
-    log(tg_id, message.text.strip())
-    if message.text == "Результаты":
-        await message.answer("Раздел просмотра аналитики по тестированию и болезням.", reply_markup=kb_choose_type())
+@dp.callback_query(AdminStates.Admin_menu)
+async def admin_menu_callback(callback: types.CallbackQuery, state: FSMContext):
+    tg_id = callback.from_user.id
+    data = callback.data
+    log(tg_id, data)
+    if data == "Результаты":
+        await callback.message.edit_text("Раздел просмотра аналитики по тестированию и болезням.",
+                                         reply_markup=kb_choose_type())
         await state.set_state(AdminStates.Test_or_illness)
-    elif message.text == "Справки":
-        await message.answer("Раздел просмотра справок от обучающихся. Справки каких курсов вы хотите просмотреть?",
-                             reply_markup=kb_admin_course_choose())
+    elif data == "Справки":
+        await callback.message.edit_text("Раздел просмотра справок от обучающихся. Справки каких курсов вы хотите просмотреть?",
+                                         reply_markup=kb_admin_course_choose())
         await state.set_state(AdminStates.Illness_course_choose)
-    elif message.text == "Пользователи":
-        await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
+    elif data == "Пользователи":
+        await callback.message.edit_text("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
         await state.set_state(AdminStates.Users_work)
-    elif message.text == "Входящие сообщения":
+    elif data == "Входящие сообщения":
         ids = get_message_ids_not_answered()
         names = get_message_names_by_ids(ids)
-        await message.answer("Выберите cообщение от пользователя", reply_markup=kb_names(names))
+        await callback.message.edit_text("Выберите сообщение от пользователя", reply_markup=kb_names(names))
         await state.set_state(AdminStates.Choose_message)
-    elif message.text == "Выход":
-        tg_id = message.from_user.id
-        active_admins_ids.remove(tg_id)
-        await message.answer('Введите логин.')
+    elif data == "Выход":
+        if tg_id in active_admins_ids:
+            active_admins_ids.remove(tg_id)
+        await callback.message.edit_text('Введите логин.')
         await state.set_state(Autorization.Login)
+
+    await callback.answer()
 
 
 @dp.message(AdminStates.Illness_course_choose)
@@ -849,7 +853,6 @@ async def handle_main_menu(callback: types.CallbackQuery, state: FSMContext):
     tg_id = callback.from_user.id
     action = callback.data.strip()
     log(tg_id, action)
-
     if action == "Пройти тестирование о здоровье":
         await callback.message.answer(
             "Тестирование начинается. Тест состоит из 30 вопросов. Хорошо подумайте над ответами. "
@@ -858,18 +861,15 @@ async def handle_main_menu(callback: types.CallbackQuery, state: FSMContext):
         )
         await ask_question(callback.message, state, 1, kb_1_30)
         await state.set_state(Questions.question_1)
-
     elif action == "Прикрепить справку":
         await callback.message.answer(
             "Укажите дату начала и конца болезни в формате XX.XX.XXXX - XX.XX.XXXX",
             reply_markup=kb_back()
         )
         await state.set_state(UserStates.Send_date)
-
     elif action == "Отправить сообщение работнику.":
         await callback.message.answer("Введите свое сообщение работнику.", reply_markup=kb_back())
         await state.set_state(UserStates.Send_Message)
-
     elif action == "Входящие сообщения":
         messages = get_reply_no_watched(tg_id)
         if not messages:
@@ -878,7 +878,6 @@ async def handle_main_menu(callback: types.CallbackQuery, state: FSMContext):
             await callback.message.answer(f"Просмотр входящих сообщений {len(messages)}.")
             for msg in messages:
                 await callback.message.answer(msg)
-
     elif action == "Выход":
         await callback.message.answer('Введите логин.')
         await state.set_state(Autorization.Login)

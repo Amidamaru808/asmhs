@@ -53,36 +53,28 @@ def kb_back():
 
 
 def kb_main_menu():
-    keyboard = InlineKeyboardMarkup(
+    return InlineKeyboardMarkup(
         inline_keyboard=[
-            [
-                InlineKeyboardButton(text="Пройти тестирование о здоровье",
-                                     callback_data="Пройти тестирование о здоровье"),
-                InlineKeyboardButton(text="Прикрепить справку", callback_data="Прикрепить справку")
-            ],
-            [
-                InlineKeyboardButton(text="Отправить сообщение работнику.",
-                                     callback_data="Отправить сообщение работнику."),
-                InlineKeyboardButton(text="Входящие сообщения", callback_data="Входящие сообщения")
-            ],
-            [
-                InlineKeyboardButton(text="Выход", callback_data="Выход")
-            ]
+            [InlineKeyboardButton(text="Пройти тестирование о здоровье",
+                                     callback_data="Пройти тестирование о здоровье")],
+            [InlineKeyboardButton(text="Прикрепить справку", callback_data="Прикрепить справку")],
+            [InlineKeyboardButton(text="Отправить сообщение работнику.",
+                                     callback_data="Отправить сообщение работнику.")],
+            [InlineKeyboardButton(text="Входящие сообщения", callback_data="Входящие сообщения")],
+            [InlineKeyboardButton(text="Выход", callback_data="Выход")]
         ]
     )
-    return keyboard
-
 
 
 def kb_admin():
-    return ReplyKeyboardMarkup(
-        keyboard=[
-            [KeyboardButton(text='Результаты')],
-            [KeyboardButton(text='Справки')],
-            [KeyboardButton(text='Пользователи')],
-            [KeyboardButton(text='Входящие сообщения')],
-            [KeyboardButton(text="Выход")]
-        ],
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text='Результаты', callback_data='Результаты')],
+            [InlineKeyboardButton(text='Справки', callback_data='Справки')],
+            [InlineKeyboardButton(text='Пользователи', callback_data='Пользователи')],
+            [InlineKeyboardButton(text='Входящие сообщения', callback_data='Входящие сообщения')],
+            [InlineKeyboardButton(text='Выход', callback_data='Выход')],
+        ]
     )
 
 
