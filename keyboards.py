@@ -86,6 +86,7 @@ def kb_students_admins():
         ],
     )
 
+
 def kb_years():
     return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='2023 - 2024'),
                                          KeyboardButton(text='2024 - 2025'),
@@ -169,59 +170,70 @@ kb_spam = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Пометить �
                                          KeyboardButton(text='Назад')]])
 
 
-kb_1234 = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='1'),
+kb_1_30 = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='1'),
                                            KeyboardButton(text='2')],
                                            [KeyboardButton(text='3'),
                                            KeyboardButton(text='4+')]])
 
+kb_2 = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='1 раз в день'),
+                                           KeyboardButton(text='2 раза в день')],
+                                           [KeyboardButton(text='3 раза в день'),
+                                           KeyboardButton(text='4 или более раз в день')]])
 
-kb_yes_no = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Да')],
+
+kb_3_4_10_14 = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Да')],
                                            [KeyboardButton(text='Нет')]])
 
 
-kb_05_1_15_2 = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='0.5'),
-                                           KeyboardButton(text='1')],
-                                           [KeyboardButton(text='1.5'),
-                                           KeyboardButton(text='2')]])
+kb_6 = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='0.5 литров'),
+                                           KeyboardButton(text='1 литров')],
+                                           [KeyboardButton(text='1.5 литров'),
+                                           KeyboardButton(text='2 литров')]])
 
 
-kb_chastota_1 = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Никогда'),
+kb_7_8_9_11_20_22_23_26_28 = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Никогда'),
                                            KeyboardButton(text='Редко')],
                                            [KeyboardButton(text='Часто'),
                                            KeyboardButton(text='Очень часто')]])
 
 
-kb_chastota_2 = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Каждый День'),
+kb_12 = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='0 - 1 раз'),
+                                           KeyboardButton(text='1 - 2 раза')],
+                                           [KeyboardButton(text='3 - 4 раза'),
+                                           KeyboardButton(text='5 и более раз')]])
+
+
+kb_5_13 = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Каждый День'),
                                            KeyboardButton(text='3-4 раза в неделю')],
                                            [KeyboardButton(text='1-2 раза в неделю'),
                                            KeyboardButton(text='Не занимаюсь')]])
 
 
-kb_chastota_3 = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='1-2 часа'),
+kb_18_19 = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='1-2 часа'),
                                            KeyboardButton(text='3-4 часа')],
                                            [KeyboardButton(text='5-6 часов'),
                                            KeyboardButton(text='7 и более часов')]])
 
 
-kb_kachestvo = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Ужасно'),
+kb_15_17_24_25 = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Ужасно'),
                                            KeyboardButton(text='Плохо')],
                                            [KeyboardButton(text='Хорошо'),
                                            KeyboardButton(text='Отлично')]])
 
 
-kb_ves = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='< 40'),
+kb_16 = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='< 40'),
                                            KeyboardButton(text='40-60')],
                                            [KeyboardButton(text='60-80'),
                                            KeyboardButton(text='80-100')]])
 
 
-kb_legko = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Легко'),
+kb_21_27 = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Легко'),
                                            KeyboardButton(text='Нормально')],
                                            [KeyboardButton(text='Трудно'),
                                            KeyboardButton(text='Очень тяжело')]])
 
 
-kb_druzya = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Нет друзей'),
+kb_29 = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Нет друзей'),
                                            KeyboardButton(text='Мало')],
                                            [KeyboardButton(text='Достаточно'),
                                            KeyboardButton(text='Много')]])

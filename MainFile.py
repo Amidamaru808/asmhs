@@ -18,9 +18,9 @@ from db import (init_db, pdf_report, pdf_report_course, check_user_in_db, check_
                 save_pain_answers, save_physical_answers, save_daytime_answers, save_psycho_answers)
 
 import zipfile
-from keyboards import (kb_05_1_15_2, kb_1234, kb_druzya, kb_kachestvo,
-                       kb_legko, kb_yes_no, kb_ves, kb_chastota_1, kb_chastota_2,
-                       kb_chastota_3, kb_admin, kb_main_menu, kb_admin_course_choose, kb_admin_users, kb_back_users,
+from keyboards import (kb_1_30, kb_2, kb_3_4_10_14, kb_5_13,
+                       kb_6, kb_7_8_9_11_20_22_23_26_28, kb_12, kb_15_17_24_25, kb_16,
+                       kb_18_19, kb_29, kb_21_27, kb_admin, kb_main_menu, kb_admin_course_choose, kb_admin_users, kb_back_users,
                        kb_students_admins, kb_back, kb_choose_type, kb_admin_ill_choose, kb_years,
                        kb_admin_group_choose, kb_admin_user_choose, kb_names, kb_spam, kb_statsman_menu)
 
@@ -852,7 +852,7 @@ async def handle_main_menu(message: types.Message, state: FSMContext):
         await message.answer("Тестирование начинается. Тест состоит из 30 вопросов. Хорошо подумайте над ответами."
                              "После завершения тестирования ответы запишутся. Тестирование можно пройти повторно,"
                              "предыдущие ответы будут перезаписаны.")
-        await ask_question(message, state, 1, kb_1234)
+        await ask_question(message, state, 1, kb_1_30)
         await state.set_state(Questions.question_1)
     elif message.text == "Прикрепить справку":
         await message.answer("Укажите дату начала и конца болезни в формате XX.XX.XXXX - XX.XX.XXXX",
@@ -1172,7 +1172,7 @@ async def question_1(message: Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     await state.update_data(answer_1=message.text.strip())
-    await ask_question(message, state, 2, kb_1234)
+    await ask_question(message, state, 2, kb_2)
     await state.set_state(Questions.question_2)
 
 
@@ -1181,7 +1181,7 @@ async def question_2(message: Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     await state.update_data(answer_2=message.text.strip())
-    await ask_question(message, state, 3, kb_yes_no)
+    await ask_question(message, state, 3, kb_3_4_10_14)
     await state.set_state(Questions.question_3)
 
 
@@ -1190,7 +1190,7 @@ async def question_3(message: Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     await state.update_data(answer_3=message.text.strip())
-    await ask_question(message, state, 4, kb_yes_no)
+    await ask_question(message, state, 4, kb_3_4_10_14)
     await state.set_state(Questions.question_4)
 
 
@@ -1199,7 +1199,7 @@ async def question_4(message: Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     await state.update_data(answer_4=message.text.strip())
-    await ask_question(message, state, 5, kb_1234)
+    await ask_question(message, state, 5, kb_5_13)
     await state.set_state(Questions.question_5)
 
 
@@ -1208,7 +1208,7 @@ async def question_5(message: Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     await state.update_data(answer_5=message.text)
-    await ask_question(message, state, 6, kb_05_1_15_2)
+    await ask_question(message, state, 6, kb_6)
     await state.set_state(Questions.question_6)
 
 
@@ -1217,7 +1217,7 @@ async def question_6(message: types.Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     await state.update_data(answer_6=message.text)
-    await ask_question(message, state, 7, kb_chastota_1)
+    await ask_question(message, state, 7, kb_7_8_9_11_20_22_23_26_28)
     await state.set_state(Questions.question_7)
 
 
@@ -1226,7 +1226,7 @@ async def question_7(message: types.Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     await state.update_data(answer_7=message.text)
-    await ask_question(message, state, 8, kb_chastota_1)
+    await ask_question(message, state, 8, kb_7_8_9_11_20_22_23_26_28)
     await state.set_state(Questions.question_8)
 
 
@@ -1235,7 +1235,7 @@ async def question_8(message: types.Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     await state.update_data(answer_8=message.text)
-    await ask_question(message, state, 9, kb_chastota_1)
+    await ask_question(message, state, 9, kb_7_8_9_11_20_22_23_26_28)
     await state.set_state(Questions.question_9)
 
 
@@ -1244,7 +1244,7 @@ async def question_9(message: types.Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     await state.update_data(answer_9=message.text)
-    await ask_question(message, state, 10, kb_chastota_2)
+    await ask_question(message, state, 10, kb_3_4_10_14)
     await state.set_state(Questions.question_10)
 
 
@@ -1253,7 +1253,7 @@ async def question_10(message: types.Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     await state.update_data(answer_10=message.text)
-    await ask_question(message, state, 11, kb_yes_no)
+    await ask_question(message, state, 11, kb_7_8_9_11_20_22_23_26_28)
     await state.set_state(Questions.question_11)
 
 
@@ -1262,7 +1262,7 @@ async def question_11(message: types.Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     await state.update_data(answer_11=message.text)
-    await ask_question(message, state, 12, kb_kachestvo)
+    await ask_question(message, state, 12, kb_12)
     await state.set_state(Questions.question_12)
 
 
@@ -1271,7 +1271,7 @@ async def question_12(message: types.Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     await state.update_data(answer_12=message.text)
-    await ask_question(message, state, 13, kb_chastota_1)
+    await ask_question(message, state, 13, kb_5_13)
     await state.set_state(Questions.question_13)
 
 
@@ -1280,7 +1280,7 @@ async def question_13(message: types.Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     await state.update_data(answer_13=message.text)
-    await ask_question(message, state, 14, kb_1234)
+    await ask_question(message, state, 14, kb_3_4_10_14)
     await state.set_state(Questions.question_14)
 
 
@@ -1289,7 +1289,7 @@ async def question_14(message: types.Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     await state.update_data(answer_14=message.text)
-    await ask_question(message, state, 15, kb_kachestvo)
+    await ask_question(message, state, 15, kb_15_17_24_25)
     await state.set_state(Questions.question_15)
 
 
@@ -1298,7 +1298,7 @@ async def question_15(message: types.Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     await state.update_data(answer_15=message.text)
-    await ask_question(message, state, 16, kb_chastota_1)
+    await ask_question(message, state, 16, kb_16)
     await state.set_state(Questions.question_16)
 
 
@@ -1307,7 +1307,7 @@ async def question_16(message: types.Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     await state.update_data(answer_16=message.text)
-    await ask_question(message, state, 17, kb_chastota_3)
+    await ask_question(message, state, 17, kb_15_17_24_25)
     await state.set_state(Questions.question_17)
 
 
@@ -1316,7 +1316,7 @@ async def question_17(message: Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     await state.update_data(answer_17=message.text)
-    await ask_question(message, state, 18, kb_ves)
+    await ask_question(message, state, 18, kb_18_19)
     await state.set_state(Questions.question_18)
 
 
@@ -1325,7 +1325,7 @@ async def question_18(message: Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     await state.update_data(answer_18=message.text)
-    await ask_question(message, state, 19, kb_chastota_3)
+    await ask_question(message, state, 19, kb_18_19)
     await state.set_state(Questions.question_19)
 
 
@@ -1334,7 +1334,7 @@ async def question_19(message: Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     await state.update_data(answer_19=message.text)
-    await ask_question(message, state, 20, kb_chastota_1)
+    await ask_question(message, state, 20, kb_7_8_9_11_20_22_23_26_28)
     await state.set_state(Questions.question_20)
 
 
@@ -1343,7 +1343,7 @@ async def question_20(message: Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     await state.update_data(answer_20=message.text)
-    await ask_question(message, state, 21, kb_kachestvo)
+    await ask_question(message, state, 21, kb_21_27)
     await state.set_state(Questions.question_21)
 
 
@@ -1352,7 +1352,7 @@ async def question_21(message: Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     await state.update_data(answer_21=message.text)
-    await ask_question(message, state, 22, kb_kachestvo)
+    await ask_question(message, state, 22, kb_7_8_9_11_20_22_23_26_28)
     await state.set_state(Questions.question_22)
 
 
@@ -1361,7 +1361,7 @@ async def question_22(message: Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     await state.update_data(answer_22=message.text)
-    await ask_question(message, state, 23, kb_chastota_1)
+    await ask_question(message, state, 23, kb_7_8_9_11_20_22_23_26_28)
     await state.set_state(Questions.question_23)
 
 
@@ -1370,7 +1370,7 @@ async def question_23(message: Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     await state.update_data(answer_23=message.text)
-    await ask_question(message, state, 24, kb_legko)
+    await ask_question(message, state, 24, kb_15_17_24_25)
     await state.set_state(Questions.question_24)
 
 
@@ -1379,7 +1379,7 @@ async def question_24(message: Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     await state.update_data(answer_24=message.text)
-    await ask_question(message, state, 25, kb_yes_no)
+    await ask_question(message, state, 25, kb_15_17_24_25)
     await state.set_state(Questions.question_25)
 
 
@@ -1388,7 +1388,7 @@ async def question_25(message: Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     await state.update_data(answer_25=message.text)
-    await ask_question(message, state, 26, kb_chastota_1)
+    await ask_question(message, state, 26, kb_7_8_9_11_20_22_23_26_28)
     await state.set_state(Questions.question_26)
 
 
@@ -1397,7 +1397,7 @@ async def question_26(message: Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     await state.update_data(answer_26=message.text)
-    await ask_question(message, state, 27, kb_yes_no)
+    await ask_question(message, state, 27, kb_21_27)
     await state.set_state(Questions.question_27)
 
 
@@ -1406,7 +1406,7 @@ async def question_27(message: Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     await state.update_data(answer_27=message.text)
-    await ask_question(message, state, 28, kb_druzya)
+    await ask_question(message, state, 28, kb_7_8_9_11_20_22_23_26_28)
     await state.set_state(Questions.question_28)
 
 
@@ -1415,7 +1415,7 @@ async def question_28(message: Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     await state.update_data(answer_28=message.text)
-    await ask_question(message, state, 29, kb_legko)
+    await ask_question(message, state, 29, kb_29)
     await state.set_state(Questions.question_29)
 
 
@@ -1424,7 +1424,7 @@ async def question_29(message: Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     await state.update_data(answer_29=message.text)
-    await ask_question(message, state, 30, kb_1234)
+    await ask_question(message, state, 30, kb_1_30)
     await state.set_state(Questions.question_30)
 
 

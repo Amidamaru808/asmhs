@@ -391,24 +391,46 @@ def pdf_report_course(course, group):
     c = conn.cursor()
     survey_data = []
 
-    filters = []
-    params = []
-
-    if course != "all":
-        filters.append("course = ?")
-        params.append(course)
-
-    if group != "all":
-        filters.append('"group" = ?')
-        params.append(group)
-
-    where = "WHERE " + " AND ".join(filters) if filters else ""
+    table_info = {
+        'food_answers': range(1, 7),
+        'pain_answers': range(7, 13),
+        'physical_answers': range(13, 18),
+        'daytime_answers': range(18, 23),
+        'psycho_answers': range(23, 31)
+    }
 
     for question_num in range(1, 31):
         question_column = f'answer_{question_num}'
         question_text = questions.get(str(question_num), f"Вопрос {question_num}")
 
-        query = f"SELECT {question_column} FROM answers {where}"
+        question_num_int = int(question_num)
+
+        if 1 <= question_num_int <= 6:
+            table_name = "food_answers"
+        elif 7 <= question_num_int <= 12:
+            table_name = "pain_answers"
+        elif 13 <= question_num_int <= 17:
+            table_name = "physical_answers"
+        elif 18 <= question_num_int <= 22:
+            table_name = "daytime_answers"
+        elif 23 <= question_num_int <= 30:
+            table_name = "psycho_answers"
+        else:
+            continue
+
+        filters = []
+        params = []
+
+        if course != "all":
+            filters.append("course = ?")
+            params.append(course)
+
+        if group != "all":
+            filters.append('"group" = ?')
+            params.append(group)
+
+        where = "WHERE " + " AND ".join(filters) if filters else ""
+        query = f"SELECT {question_column} FROM {table_name} {where}"
         c.execute(query, params)
         answers = c.fetchall()
 
@@ -424,7 +446,7 @@ def pdf_report_course(course, group):
                 for answer, count in answer_counts.items()
             }
         else:
-            answer_percentages = {"Нет ответов": "0.00% (0)"}
+            answer_percentages = {"Нет ответов"}
 
         survey_data.append((question_text, answer_percentages))
 
@@ -432,7 +454,7 @@ def pdf_report_course(course, group):
 
     course_label = str(course) if course != "all" else "all"
     group_label = group.replace("/", "_") if group != "all" else "all"
-
+    group_name = group.replace("/", "_") if group != "all" else ""
     filename = f"Files pdf/Statistic_{course_label}_{group_label}.pdf"
 
     pdf = FPDF()
@@ -440,15 +462,14 @@ def pdf_report_course(course, group):
     pdf.add_page()
     pdf.add_font('font', '', 'Bounded-Regular.ttf', uni=True)
     pdf.set_font('font', size=14)
-    pdf.cell(200, 10, txt=f"Отчет по вопросам {course_label},  {group_label}", ln=True)
+    pdf.cell(200, 10, txt=f"Отчет по вопросам {course_label},  {group_name}", ln=True)
 
     for question_text, answer_percentages in survey_data:
         pdf.set_font('font', size=12)
         pdf.multi_cell(0, 8, txt=f"{question_text}")
         for answer, percentage in answer_percentages.items():
-            pdf.multi_cell(0, 6, txt=f"  Ответ: {answer} - {percentage}")
-
-        pdf.ln(2)
+            pdf.multi_cell(0, 6, txt=f"{answer} - {percentage}")
+        pdf.ln(5)
 
     pdf.output(filename)
 
