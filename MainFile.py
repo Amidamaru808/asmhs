@@ -5,7 +5,7 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.types import Message
 from aiogram.types.input_file import FSInputFile
 from aiogram.fsm.context import FSMContext
-from aiogram.filters import CommandStart, StateFilter
+from aiogram.filters import CommandStart, Command
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import ReplyKeyboardRemove
 import json
@@ -148,6 +148,15 @@ async def cmd_start(message: Message, state: FSMContext):
     await message.answer('Введите логин.')
     await state.set_state(Autorization.Login)
     log(tg_id,"/start")
+
+
+@dp.message(Command("help"))
+async def send_help(message: types.Message):
+    help_text = (
+        "Помощь в работе с ботом. \n"
+        "команда  /start - перезапустит бота"
+    )
+    await message.answer(help_text)
 
 
 @dp.message(Autorization.Start_autorization)
