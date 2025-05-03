@@ -364,14 +364,65 @@ def pdf_report():
 
             survey_data.append((question_text, answer_percentages))
 
+    c.execute("SELECT COUNT(*) FROM food_answers")
+    answers_count = c.fetchone()[0]
+
+    c.execute("SELECT COUNT(*) FROM users")
+    users_count = c.fetchone()[0]
+
     conn.close()
+
+    percentage_count = (answers_count / users_count) * 100
 
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
     pdf.add_font('font', '', 'Bounded-Regular.ttf', uni=True)
-    pdf.set_font('font', size=14)
+    pdf.set_font('font', size=20)
+    pdf.ln(5)
+    pdf.cell(0, 8, txt="Результаты пройденного тестирования")
 
+    pdf.ln(18)
+    pdf.set_line_width(0.5)
+    pdf.line(0, pdf.get_y(), 2000, pdf.get_y())
+    pdf.ln(8)
+
+    pdf.set_font('font', size=14)
+    pdf.cell(0, 10, txt="Описание теста")
+    pdf.ln(12)
+    pdf.cell(0, 10, txt="Всего 30 вопросов")
+    pdf.ln(7)
+    pdf.cell(0, 10, txt="Вопросов про питание - 6")
+    pdf.ln(7)
+    pdf.cell(0, 10, txt="Вопросов про боли в разных частях тела - 6")
+    pdf.ln(7)
+    pdf.cell(0, 10, txt="Вопросов про физическую активность - 5")
+    pdf.ln(7)
+    pdf.cell(0, 10, txt="Вопросов про ежеждневное времяпровождения- 5")
+    pdf.ln(7)
+    pdf.cell(0, 10, txt="Вопросов про психологическое состояние - 8")
+
+    pdf.ln(18)
+    pdf.set_line_width(0.5)
+    pdf.line(0, pdf.get_y(), 2000, pdf.get_y())
+    pdf.ln(8)
+
+    pdf.cell(0, 10, txt="Количество пройденного тестирования")
+    pdf.ln(12)
+    pdf.cell(0, 10, txt=f"Охват аудитории - с 1 по 4 курс, все группы")
+    pdf.ln(7)
+    pdf.cell(0, 10, txt=f"Всего прошли тестирование: {answers_count}")
+    pdf.ln(7)
+    pdf.cell(0, 10, txt=f"Должны были пройти тестирование: {users_count}")
+    pdf.ln(7)
+    pdf.cell(0, 10, txt=f"Процент прохождения тестирования {percentage_count}%")
+
+    pdf.ln(18)
+    pdf.set_line_width(0.5)
+    pdf.line(0, pdf.get_y(), 2000, pdf.get_y())
+    pdf.ln(8)
+    pdf.cell(0, 10, txt="Результаты выбранных ответов на вопросы")
+    pdf.ln(12)
     for question_text, answer_percentages in survey_data:
         pdf.multi_cell(0, 8, txt=f"{question_text}")
         pdf.set_font('font', size=12)
