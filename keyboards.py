@@ -1,4 +1,4 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 from db import get_users
 from datetime import datetime
 
@@ -53,15 +53,24 @@ def kb_back():
 
 
 def kb_main_menu():
-    return ReplyKeyboardMarkup(
-        keyboard=[
-            [KeyboardButton(text="Пройти тестирование о здоровье")],
-            [KeyboardButton(text="Прикрепить справку")],
-            [KeyboardButton(text="Отправить сообщение работнику.")],
-            [KeyboardButton(text="Входящие сообщения")],
-            [KeyboardButton(text="Выход")]
-        ],
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="Пройти тестирование о здоровье",
+                                     callback_data="Пройти тестирование о здоровье"),
+                InlineKeyboardButton(text="Прикрепить справку", callback_data="Прикрепить справку")
+            ],
+            [
+                InlineKeyboardButton(text="Отправить сообщение работнику.",
+                                     callback_data="Отправить сообщение работнику."),
+                InlineKeyboardButton(text="Входящие сообщения", callback_data="Входящие сообщения")
+            ],
+            [
+                InlineKeyboardButton(text="Выход", callback_data="Выход")
+            ]
+        ]
     )
+    return keyboard
 
 
 def kb_admin():

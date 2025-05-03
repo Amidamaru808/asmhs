@@ -844,36 +844,46 @@ async def answer(message: types.Message, state: FSMContext):
     await state.set_state(AdminStates.Choose_message)
 
 
-@dp.message(UserStates.User_menu)
-async def handle_main_menu(message: types.Message, state: FSMContext):
-    tg_id = message.from_user.id
-    log(tg_id, message.text.strip())
-    if message.text == "Пройти тестирование о здоровье":
-        await message.answer("Тестирование начинается. Тест состоит из 30 вопросов. Хорошо подумайте над ответами."
-                             "После завершения тестирования ответы запишутся. Тестирование можно пройти повторно,"
-                             "предыдущие ответы будут перезаписаны.")
-        await ask_question(message, state, 1, kb_1_30)
-        await state.set_state(Questions.question_1)
-    elif message.text == "Прикрепить справку":
-        await message.answer("Укажите дату начала и конца болезни в формате XX.XX.XXXX - XX.XX.XXXX",
-                             reply_markup=kb_back())
-        await state.set_state(UserStates.Send_date)
-    elif message.text == "Отправить сообщение работнику.":
-        await message.answer("Введите свое сообщение работнику.", reply_markup=kb_back())
-        await state.set_state(UserStates.Send_Message)
-    elif message.text == "Входящие сообщения":
-        tg_id = message.from_user.id
-        messages = get_reply_no_watched(tg_id)
-        if len(messages) <= 0:
-            await message.answer("У вас нет новых сообщений!")
-        else:
-            await message.answer(f"Просмотр входящих сообщений {len(messages)}.")
-            for msg in messages:
-                await message.answer(msg)
+@dp.callback_query(UserStates.User_menu)
+async def handle_main_menu(callback: types.CallbackQuery, state: FSMContext):
+    tg_id = callback.from_user.id
+    action = callback.data.strip()
+    log(tg_id, action)
 
-    elif message.text == "Выход":
-        await message.answer('Введите логин.')
+    if action == "Пройти тестирование о здоровье":
+        await callback.message.answer(
+            "Тестирование начинается. Тест состоит из 30 вопросов. Хорошо подумайте над ответами. "
+            "После завершения тестирования ответы запишутся. Тестирование можно пройти повторно,"
+            "предыдущие ответы будут перезаписаны."
+        )
+        await ask_question(callback.message, state, 1, kb_1_30)
+        await state.set_state(Questions.question_1)
+
+    elif action == "Прикрепить справку":
+        await callback.message.answer(
+            "Укажите дату начала и конца болезни в формате XX.XX.XXXX - XX.XX.XXXX",
+            reply_markup=kb_back()
+        )
+        await state.set_state(UserStates.Send_date)
+
+    elif action == "Отправить сообщение работнику.":
+        await callback.message.answer("Введите свое сообщение работнику.", reply_markup=kb_back())
+        await state.set_state(UserStates.Send_Message)
+
+    elif action == "Входящие сообщения":
+        messages = get_reply_no_watched(tg_id)
+        if not messages:
+            await callback.message.answer("У вас нет новых сообщений!")
+        else:
+            await callback.message.answer(f"Просмотр входящих сообщений {len(messages)}.")
+            for msg in messages:
+                await callback.message.answer(msg)
+
+    elif action == "Выход":
+        await callback.message.answer('Введите логин.')
         await state.set_state(Autorization.Login)
+
+    await callback.answer()
 
 
 @dp.message(UserStates.Send_date)
