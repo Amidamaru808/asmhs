@@ -335,34 +335,18 @@ def pdf_report():
         'psycho_answers': range(23, 31)
     }
 
-    for table, question_range in table_info.items():
-        for question_num in question_range:
-            question_column = f'answer_{question_num}'
-            question_text = questions.get(str(question_num), f"Вопрос {question_num}")
-            try:
-                c.execute(f"SELECT {question_column} FROM {table}")
-                answers = c.fetchall()
-            except:
-                answers = []
+    table_name = {
+        'food_answers': 'Вопросы про питание',
+        'pain_answers': 'Вопросы про боли в разных частях тела',
+        'physical_answers': 'Вопросы про физическую активность ',
+        'daytime_answers': 'Вопросы про ежеждневное времяпровождения',
+        'psycho_answers': 'Вопросы про психологическое состояние'
+    }
 
-            answer_counts = {}
-            total_answers = len(answers)
-
-            if total_answers == 0:
-                survey_data.append((question_text, {"Нет ответов"}))
-                continue
-
-            for answer in answers:
-                ans = answer[0]
-                if ans:
-                    answer_counts[ans] = answer_counts.get(ans, 0) + 1
-
-            answer_percentages = {
-                answer: f"{(count / total_answers) * 100:.2f}% ({count})"
-                for answer, count in answer_counts.items()
-            }
-
-            survey_data.append((question_text, answer_percentages))
+    pdf = FPDF()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.add_page()
+    pdf.add_font('font', '', 'Bounded-Regular.ttf', uni=True)
 
     c.execute("SELECT COUNT(*) FROM food_answers")
     answers_count = c.fetchone()[0]
@@ -370,14 +354,8 @@ def pdf_report():
     c.execute("SELECT COUNT(*) FROM users")
     users_count = c.fetchone()[0]
 
-    conn.close()
-
     percentage_count = (answers_count / users_count) * 100
 
-    pdf = FPDF()
-    pdf.set_auto_page_break(auto=True, margin=15)
-    pdf.add_page()
-    pdf.add_font('font', '', 'Bounded-Regular.ttf', uni=True)
     pdf.set_font('font', size=20)
     pdf.ln(5)
     pdf.cell(0, 8, txt="Результаты пройденного тестирования")
@@ -422,15 +400,51 @@ def pdf_report():
     pdf.line(0, pdf.get_y(), 2000, pdf.get_y())
     pdf.ln(8)
     pdf.cell(0, 10, txt="Результаты выбранных ответов на вопросы")
-    pdf.ln(12)
-    for question_text, answer_percentages in survey_data:
-        pdf.multi_cell(0, 8, txt=f"{question_text}")
-        pdf.set_font('font', size=12)
-        for answer, percentage in answer_percentages.items():
-            pdf.multi_cell(0, 6, txt=f"{answer} - {percentage}")
-        pdf.ln(5)
-        pdf.set_font('font', size=14)
 
+    for table, question_range in table_info.items():
+        pdf.set_font('font', size=14)
+        pdf.set_draw_color(0, 0, 0)
+        pdf.ln(18)
+        pdf.line(0, pdf.get_y(), 2000, pdf.get_y())
+        pdf.ln(8)
+        pdf.cell(0, 10, txt=table_name.get(table, table), ln=True)
+        pdf.ln(6)
+
+        for question_num in question_range:
+            question_column = f'answer_{question_num}'
+            question_text = questions.get(str(question_num), f"Вопрос {question_num}")
+            try:
+                c.execute(f"SELECT {question_column} FROM {table}")
+                answers = c.fetchall()
+            except:
+                answers = []
+
+            answer_counts = {}
+            total_answers = len(answers)
+
+            if total_answers == 0:
+                survey_data.append((question_text, {"Нет ответов"}))
+                continue
+
+            for answer in answers:
+                ans = answer[0]
+                if ans:
+                    answer_counts[ans] = answer_counts.get(ans, 0) + 1
+
+            answer_percentages = {
+                answer: f"{(count / total_answers) * 100:.2f}% ({count})"
+                for answer, count in answer_counts.items()
+            }
+
+            pdf.set_font('font', size=12)
+            pdf.multi_cell(0, 8, txt=f"{question_text}")
+            for answer, percentage in answer_percentages.items():
+                pdf.multi_cell(0, 6, txt=f"{answer} - {percentage}")
+            pdf.ln(5)
+
+            survey_data.append((question_text, answer_percentages))
+
+    conn.close()
     pdf.output(filename)
 
 
