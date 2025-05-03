@@ -951,7 +951,7 @@ def get_reply_no_watched(tg_id):
     c.execute('''
         SELECT answer
         FROM reply
-        WHERE id_tg_user = ? AND watched = 'no'
+        WHERE id_tg_user = ? AND watched = 'нет'
     ''', (tg_id,))
 
     answers = [row[0] for row in c.fetchall()]
@@ -959,7 +959,7 @@ def get_reply_no_watched(tg_id):
     c.execute('''
             UPDATE reply
             SET watched = 'yes'
-            WHERE id_tg_user = ? AND watched = 'no'
+            WHERE id_tg_user = ? AND watched = 'нет'
         ''', (tg_id,))
 
     conn.commit()
