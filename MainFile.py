@@ -220,6 +220,7 @@ async def handle_password(message: Message, state: FSMContext):
             await state.update_data(user_id=user_id, name=name, surname=surname, group=group, course=course)
             await message.answer(f'Вы авторизовались как {name} {surname}. Выберите одну из опции.',
                                  reply_markup=kb_main_menu())
+
             await state.set_state(UserStates.User_menu)
             return
 
@@ -252,22 +253,42 @@ async def admin_menu_callback(callback: types.CallbackQuery, state: FSMContext):
     data = callback.data
     log(tg_id, data)
     if data == "Результаты":
+        await bot.edit_message_reply_markup(
+            chat_id=callback.message.chat.id,
+            message_id=callback.message.message_id,
+            reply_markup=None)
         await callback.message.answer("Раздел просмотра аналитики по тестированию и болезням.",
                                          reply_markup=kb_choose_type())
         await state.set_state(AdminStates.Test_or_illness)
     elif data == "Справки":
+        await bot.edit_message_reply_markup(
+            chat_id=callback.message.chat.id,
+            message_id=callback.message.message_id,
+            reply_markup=None)
         await callback.message.answer("Раздел просмотра справок от обучающихся. Справки каких курсов вы хотите просмотреть?",
                                          reply_markup=kb_admin_course_choose())
         await state.set_state(AdminStates.Illness_course_choose)
     elif data == "Пользователи":
+        await bot.edit_message_reply_markup(
+            chat_id=callback.message.chat.id,
+            message_id=callback.message.message_id,
+            reply_markup=None)
         await callback.message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
         await state.set_state(AdminStates.Users_work)
     elif data == "Входящие сообщения":
+        await bot.edit_message_reply_markup(
+            chat_id=callback.message.chat.id,
+            message_id=callback.message.message_id,
+            reply_markup=None)
         ids = get_message_ids_not_answered()
         names = get_message_names_by_ids(ids)
         await callback.message.answer("Выберите сообщение от пользователя", reply_markup=kb_names(names))
         await state.set_state(AdminStates.Choose_message)
     elif data == "Выход":
+        await bot.edit_message_reply_markup(
+            chat_id=callback.message.chat.id,
+            message_id=callback.message.message_id,
+            reply_markup=None)
         if tg_id in active_admins_ids:
             active_admins_ids.remove(tg_id)
         await callback.message.answer('Введите логин.')
@@ -305,8 +326,10 @@ async def illness_course_choose(message: types.Message, state: FSMContext):
         await state.update_data(illness_course="4")
         await state.set_state(AdminStates.Illness_group_choose)
     if message.text == "Назад":
+        await message.answer(text="Возвращение в главное меню", reply_markup=ReplyKeyboardRemove())
         await message.answer(f'Вы авторизовались как администратор. Выберите одну из опции.',
                              reply_markup=kb_admin())
+
         await state.set_state(AdminStates.Admin_menu)
 
 
@@ -388,6 +411,7 @@ async def illness_date_choose(message: types.Message, state: FSMContext):
 
         zip_file = FSInputFile('Spravki/illness_photos.zip')
         await message.answer_document(zip_file)
+        await message.answer(text="Возвращение в главное меню", reply_markup=ReplyKeyboardRemove())
         await message.answer(f'Вы авторизовались как администратор. Выберите одну из опции.',
                              reply_markup=kb_admin())
         await state.set_state(AdminStates.Admin_menu)
@@ -408,6 +432,7 @@ async def test_or_illness(message: types.Message, state: FSMContext):
         await message.answer("Раздел просмотра аналтики болезней.", reply_markup=kb_admin_ill_choose())
         await state.set_state(AdminStates.Illness_choose_course)
     if message.text == "Назад":
+        await message.answer(text="Возвращение в главное меню", reply_markup=ReplyKeyboardRemove())
         await message.answer(f'Вы авторизовались как администратор. Выберите одну из опции.',
                              reply_markup=kb_admin())
         await state.set_state(AdminStates.Admin_menu)
@@ -605,6 +630,7 @@ async def users_work(message: types.Message, state: FSMContext):
         await message.answer("Введите имя работника:", reply_markup=kb_back_users())
         await state.set_state(AddUser.statsman_first_name)
     elif message.text == "Назад":
+        await message.answer(text="Возвращение в главное меню", reply_markup=ReplyKeyboardRemove())
         await message.answer(f'Вы авторизовались как администратор. Выберите одну из опции.',
                              reply_markup=kb_admin())
         await state.set_state(AdminStates.Admin_menu)
@@ -811,6 +837,7 @@ async def choose_message(message: types.Message, state: FSMContext):
     log(tg_id_n, message.text.strip())
     name = message.text.strip()
     if name == "Назад":
+        await message.answer(text="Возвращение в главное меню", reply_markup=ReplyKeyboardRemove())
         await message.answer(f'Вы авторизовались как администратор. Выберите одну из опции.',
                              reply_markup=kb_admin())
         await state.set_state(AdminStates.Admin_menu)
@@ -837,6 +864,7 @@ async def answer(message: types.Message, state: FSMContext):
     ids = get_message_ids_not_answered()
     names = get_message_names_by_ids(ids)
     if admin_answer == "Назад":
+        await message.answer(text="Возвращение в главное меню", reply_markup=ReplyKeyboardRemove())
         await message.answer(f'Вы авторизовались как администратор. Выберите одну из опции.',
                              reply_markup=kb_admin())
         await state.set_state(AdminStates.Admin_menu)
@@ -863,6 +891,10 @@ async def handle_main_menu(callback: types.CallbackQuery, state: FSMContext):
     action = callback.data.strip()
     log(tg_id, action)
     if action == "Пройти тестирование о здоровье":
+        await bot.edit_message_reply_markup(
+            chat_id=callback.message.chat.id,
+            message_id=callback.message.message_id,
+            reply_markup=None)
         await callback.message.answer(
             "Тестирование начинается. Тест состоит из 30 вопросов. Хорошо подумайте над ответами. "
             "После завершения тестирования ответы запишутся. Тестирование можно пройти повторно,"
@@ -871,15 +903,27 @@ async def handle_main_menu(callback: types.CallbackQuery, state: FSMContext):
         await ask_question(callback.message, state, 1, kb_1_30)
         await state.set_state(Questions.question_1)
     elif action == "Прикрепить справку":
+        await bot.edit_message_reply_markup(
+            chat_id=callback.message.chat.id,
+            message_id=callback.message.message_id,
+            reply_markup=None)
         await callback.message.answer(
             "Укажите дату начала и конца болезни в формате XX.XX.XXXX - XX.XX.XXXX",
             reply_markup=kb_back()
         )
         await state.set_state(UserStates.Send_date)
     elif action == "Отправить сообщение работнику.":
+        await bot.edit_message_reply_markup(
+            chat_id=callback.message.chat.id,
+            message_id=callback.message.message_id,
+            reply_markup=None)
         await callback.message.answer("Введите свое сообщение работнику.", reply_markup=kb_back())
         await state.set_state(UserStates.Send_Message)
     elif action == "Входящие сообщения":
+        await bot.edit_message_reply_markup(
+            chat_id=callback.message.chat.id,
+            message_id=callback.message.message_id,
+            reply_markup=None)
         messages = get_reply_no_watched(tg_id)
         if not messages:
             await callback.message.answer("У вас нет новых сообщений!")
@@ -888,6 +932,10 @@ async def handle_main_menu(callback: types.CallbackQuery, state: FSMContext):
             for msg in messages:
                 await callback.message.answer(msg)
     elif action == "Выход":
+        await bot.edit_message_reply_markup(
+            chat_id=callback.message.chat.id,
+            message_id=callback.message.message_id,
+            reply_markup=None)
         await callback.message.answer('Введите логин.')
         await state.set_state(Autorization.Login)
 
@@ -900,6 +948,7 @@ async def send_date(message: types.Message, state: FSMContext):
     log(tg_id, message.text.strip())
     date = message.text.strip()
     if date == "Назад":
+        await message.answer(text="Возвращение в главное меню", reply_markup=ReplyKeyboardRemove())
         await message.answer('Выберите одну из опции.',
                              reply_markup=kb_main_menu())
         await state.set_state(UserStates.User_menu)
@@ -930,12 +979,12 @@ async def send_photo(message: types.Message, state: FSMContext):
         save_path = os.path.join(save_folder, filename)
         await message.bot.download_file(file_path, save_path)
         await message.answer("Справка отправлена")
-        await message.answer('Выберите одну из опции.',
-                             reply_markup=kb_main_menu())
+        await message.answer(text="Возвращение в главное меню", reply_markup=ReplyKeyboardRemove())
+        await message.answer('Выберите одну из опции.', reply_markup=kb_main_menu())
         await state.set_state(UserStates.User_menu)
     elif message.text == "Назад":
-        await message.answer('Выберите одну из опции.',
-                             reply_markup=kb_main_menu())
+        await message.answer(text="Возвращение в главное меню", reply_markup=ReplyKeyboardRemove())
+        await message.answer('Выберите одну из опции.', reply_markup=kb_main_menu())
         await state.set_state(UserStates.User_menu)
 
 
@@ -945,6 +994,7 @@ async def send_message(message: types.Message, state: FSMContext):
     log(tg_id, message.text.strip())
     msg = message.text.strip()
     if msg == "Назад":
+        await message.answer(text="Возвращение в главное меню", reply_markup=ReplyKeyboardRemove())
         await message.answer(f'Вы авторизовались как пользователь. Выберите одну из опции.',
                              reply_markup=kb_main_menu())
         await state.set_state(UserStates.User_menu)
@@ -958,8 +1008,8 @@ async def send_message(message: types.Message, state: FSMContext):
     await message.answer("Ваше сообщение отправлено!")
     for admin in active_admins_ids:
         await bot.send_message(admin, "Потсупило новое сообщение!")
-    await message.answer(f'Вы авторизовались как {name} {surname}. Выберите одну из опции.',
-                         reply_markup=kb_main_menu())
+    await message.answer(text="Возвращение в главное меню", reply_markup=ReplyKeyboardRemove())
+    await message.answer(f'Вы авторизовались как {name} {surname}. Выберите одну из опции.', reply_markup=kb_main_menu())
     await state.set_state(UserStates.User_menu)
 
 
@@ -1514,9 +1564,8 @@ async def question_30(message: types.Message, state: FSMContext):
         data.get('answer_30'))
 
     await message.answer("Тест пройден.Ответы сохранены.", reply_markup=ReplyKeyboardRemove())
-    await message.answer(
-        "Вы успешно авторизовались. Пожалуйста, выберите одну из опций.",
-        reply_markup=kb_main_menu()
+    await message.answer(text="Возвращение в главное меню", reply_markup=ReplyKeyboardRemove())
+    await message.answer("Вы успешно авторизовались. Пожалуйста, выберите одну из опций.", reply_markup=kb_main_menu()
     )
 
     await state.set_state(UserStates.User_menu)
