@@ -1092,5 +1092,3 @@ def add_tg_id_statsman(tg_id, name, surname, password):
 
 if __name__ == "__main__":
     init_db()
-
-generate_users_pdf("all", "all")

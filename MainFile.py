@@ -693,9 +693,14 @@ async def choose_group_user(message: types.Message, state: FSMContext):
         await message.answer("Выберите курс", reply_markup=kb_admin_course_choose())
         await state.set_state(AdminStates.Choose_course_user)
         return
-    data = await state.get_data()
-    course = data.get('course')
-    generate_users_pdf(course, group)
+    if group == "Все группы":
+        data = await state.get_data()
+        course = data.get('course')
+        generate_users_pdf(course, "all")
+    else:
+        data = await state.get_data()
+        course = data.get('course')
+        generate_users_pdf(course, group)
     pdf_file = FSInputFile("Files pdf/users.pdf")
     await message.answer(f"Список студентов куср - {course}, группы - {group}")
     await message.answer_document(pdf_file)
@@ -1582,4 +1587,3 @@ async def main():
 
 if __name__ == '__main__':
     asyncio.run(main())
-
