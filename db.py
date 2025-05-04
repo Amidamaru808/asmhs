@@ -619,15 +619,24 @@ def generate_password():
     return password
 
 
-def generate_users_pdf(group):
+def generate_users_pdf(course, group):
     conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
+    query = 'SELECT first_name, last_name, password, "group", course FROM users'
+    conditions = []
+    params = []
+    if course.lower() != "all":
+        conditions.append('course = ?')
+        params.append(course)
 
-    if group.lower() == "all":
-        c.execute('SELECT first_name, last_name, password, "group", course FROM users')
-    else:
-        c.execute('SELECT first_name, last_name, password, "group", course FROM users WHERE "group" = ?', (group,))
+    if group.lower() != "all":
+        conditions.append('"group" = ?')
+        params.append(group)
 
+    if conditions:
+        query += ' WHERE ' + ' AND '.join(conditions)
+
+    c.execute(query, params)
     students = c.fetchall()
     conn.close()
 
@@ -637,21 +646,20 @@ def generate_users_pdf(group):
     pdf.set_font('Bounded', '', 12)
     pdf.cell(0, 10, txt="Список студентов", ln=True, align="C")
     pdf.ln(10)
-    pdf.set_font('Bounded', '', 12)
     pdf.cell(80, 10, "Логин", border=1, align="C")
     pdf.cell(35, 10, "Пароль", border=1, align="C")
     pdf.cell(50, 10, "Группа", border=1, align="C")
     pdf.cell(20, 10, "Курс", border=1, align="C")
     pdf.ln()
     for first_name, last_name, password, group_name, course in students:
-        login = first_name + " " + last_name
+        login = f"{first_name} {last_name}"
         pdf.cell(80, 10, login, border=1)
         pdf.cell(35, 10, password, border=1)
         pdf.cell(50, 10, group_name, border=1)
         pdf.cell(20, 10, str(course), border=1)
         pdf.ln()
 
-    pdf.output("Files pdf/users.pdf")
+    pdf.output("Files pdf/users_.pdf")
 
 
 def generate_admins_pdf():

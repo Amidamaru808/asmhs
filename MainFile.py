@@ -668,7 +668,7 @@ async def choose_course_user(message: types.Message, state: FSMContext):
     log(tg_id, message.text.strip())
     course = message.text.strip()
     if course == "Все курсы":
-        generate_users_pdf("all")
+        generate_users_pdf("all", "all")
         pdf_file = FSInputFile("Files pdf/users.pdf")
         await message.answer("Список всех студентов")
         await message.answer_document(pdf_file)
@@ -679,7 +679,7 @@ async def choose_course_user(message: types.Message, state: FSMContext):
         await message.answer("Выберите список пользователей", reply_markup=kb_students_admins())
         await state.set_state(AdminStates.Choose_admin_user)
         return
-
+    await state.update_data(course=course)
     await message.answer(f"Выберите группу {course} курса", reply_markup=kb_admin_group_choose(int(course), True))
     await state.set_state(AdminStates.Choose_group_user)
 
@@ -693,10 +693,11 @@ async def choose_group_user(message: types.Message, state: FSMContext):
         await message.answer("Выберите курс", reply_markup=kb_admin_course_choose())
         await state.set_state(AdminStates.Choose_course_user)
         return
-
-    generate_users_pdf(group)
+    data = await state.get_data()
+    course = data.get('course')
+    generate_users_pdf(course, group)
     pdf_file = FSInputFile("Files pdf/users.pdf")
-    await message.answer(f"Список студентов группы - {group}")
+    await message.answer(f"Список студентов куср - {course}, группы - {group}")
     await message.answer_document(pdf_file)
     await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
     await state.set_state(AdminStates.Users_work)
