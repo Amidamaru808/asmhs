@@ -97,13 +97,18 @@ def kb_years():
                                           KeyboardButton(text="Назад")]])
 
 
-def kb_admin_course_choose():
-    return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Все курсы')],
-                                           [KeyboardButton(text='1'),
-                                           KeyboardButton(text='2')],
-                                           [KeyboardButton(text='3'),
-                                           KeyboardButton(text='4')],
-                                           [KeyboardButton(text='Назад')]])
+def kb_admin_course_choose(all_cr):
+    keyboard = []
+
+    if all_cr:
+        keyboard.append([KeyboardButton(text='Все курсы')])
+    keyboard.append([KeyboardButton(text='1')])
+    keyboard.append([KeyboardButton(text='2')])
+    keyboard.append([KeyboardButton(text='3')])
+    keyboard.append([KeyboardButton(text='4')])
+    keyboard.append([KeyboardButton(text='Назад')])
+
+    return ReplyKeyboardMarkup(keyboard=keyboard)
 
 
 def kb_admin_group_choose(course, all_gr):

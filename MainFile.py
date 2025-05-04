@@ -21,7 +21,8 @@ from db import (init_db, pdf_report, pdf_report_course, check_user_in_db, check_
 import zipfile
 from keyboards import (kb_1_30, kb_2, kb_3_4_10_14, kb_5_13,
                        kb_6, kb_7_8_9_11_20_22_23_26_28, kb_12, kb_15_17_24_25, kb_16,
-                       kb_18_19, kb_29, kb_21_27, kb_admin, kb_main_menu, kb_admin_course_choose, kb_admin_users, kb_back_users,
+                       kb_18_19, kb_29, kb_21_27, kb_admin, kb_main_menu, kb_admin_course_choose, kb_admin_users,
+                       kb_back_users,
                        kb_students_admins, kb_back, kb_choose_type, kb_admin_ill_choose, kb_years,
                        kb_admin_group_choose, kb_admin_user_choose, kb_names, kb_spam, kb_statsman_menu)
 
@@ -219,11 +220,12 @@ async def handle_password(message: Message, state: FSMContext):
 
         if student_password == password:
             await state.update_data(user_id=user_id, name=name, surname=surname, group=group, course=course)
-            add_tg_id_user(tg_id,name, surname, password)
+            add_tg_id_user(tg_id, name, surname, password)
             await message.answer(f'Вы авторизовались как {name} {surname}. Выберите одну из опции.',
                                  reply_markup=kb_main_menu())
 
             await state.set_state(UserStates.User_menu)
+            await message.delete()
             return
 
     admin = check_admin_in_db(name, surname)
@@ -232,23 +234,26 @@ async def handle_password(message: Message, state: FSMContext):
             tg_id = message.from_user.id
             active_admins_ids.append(tg_id)
             await state.clear()
-            add_tg_id_admin(tg_id,name, surname, password)
+            add_tg_id_admin(tg_id, name, surname, password)
             await message.answer(f'Вы авторизовались как {name} {surname}. Выберите одну из опции.',
                                  reply_markup=kb_admin())
             await state.set_state(AdminStates.Admin_menu)
+            await message.delete()
             return
 
     statsman = check_statsman_in_db(name, surname)
     if statsman:
         if check_statsman_password(name, surname, password):
             await state.set_state(StatsmanStates.Statsman_menu)
-            add_tg_id_statsman(tg_id,name, surname, password)
+            add_tg_id_statsman(tg_id, name, surname, password)
             await message.answer(f"Вы авторизовались как статистик {name} {surname}!Выберите 1 из опций.",
                                  reply_markup=kb_statsman_menu())
+            await message.delete()
             return
 
     await message.answer('Неверный пароль. Попробуйте снова.')
     await state.set_state(Autorization.Password)
+    await message.delete()
 
 
 @dp.callback_query(AdminStates.Admin_menu)
@@ -262,15 +267,16 @@ async def admin_menu_callback(callback: types.CallbackQuery, state: FSMContext):
             message_id=callback.message.message_id,
             reply_markup=None)
         await callback.message.answer("Раздел просмотра аналитики по тестированию и болезням.",
-                                         reply_markup=kb_choose_type())
+                                      reply_markup=kb_choose_type())
         await state.set_state(AdminStates.Test_or_illness)
     elif data == "Справки":
         await bot.edit_message_reply_markup(
             chat_id=callback.message.chat.id,
             message_id=callback.message.message_id,
             reply_markup=None)
-        await callback.message.answer("Раздел просмотра справок от обучающихся. Справки каких курсов вы хотите просмотреть?",
-                                         reply_markup=kb_admin_course_choose())
+        await callback.message.answer("Раздел просмотра справок от обучающихся."
+                                      " Справки каких курсов вы хотите просмотреть?",
+                                      reply_markup=kb_admin_course_choose(True))
         await state.set_state(AdminStates.Illness_course_choose)
     elif data == "Пользователи":
         await bot.edit_message_reply_markup(
@@ -354,7 +360,7 @@ async def illness_group_choose(message: types.Message, state: FSMContext):
         return
     if group == "Назад":
         await message.answer("Раздел просмотра справок от обучающихся. Справки каких курсов вы хотите просмотреть?",
-                             reply_markup=kb_admin_course_choose())
+                             reply_markup=kb_admin_course_choose(True))
         await state.set_state(AdminStates.Illness_course_choose)
         return
 
@@ -376,7 +382,7 @@ async def illness_user_choose(message: types.Message, state: FSMContext):
         return
     if message.text == "Назад":
         await message.answer("Раздел просмотра справок от обучающихся. Справки каких курсов вы хотите просмотреть?",
-                             reply_markup=kb_admin_course_choose())
+                             reply_markup=kb_admin_course_choose(True))
         await state.set_state(AdminStates.Illness_course_choose)
     else:
         await message.answer(f"Выбран{user_message}. Введите дату в формает XX.XX.XXXX или же диапозон дат в формаете"
@@ -392,7 +398,7 @@ async def illness_date_choose(message: types.Message, state: FSMContext):
     user_message = message.text.strip()
     if user_message == "Назад":
         await message.answer("Раздел просмотра справок от обучающихся. Справки каких курсов вы хотите просмотреть?",
-                             reply_markup=kb_admin_course_choose())
+                             reply_markup=kb_admin_course_choose(True))
         await state.set_state(AdminStates.Illness_course_choose)
         return
     if len(user_message) == 23:
@@ -430,7 +436,7 @@ async def test_or_illness(message: types.Message, state: FSMContext):
     log(tg_id, message.text.strip())
     if message.text == "Тестирование":
         await message.answer("Раздел просмотра аналтики тестирования. Выберите курс.",
-                             reply_markup=kb_admin_course_choose())
+                             reply_markup=kb_admin_course_choose(True))
         await state.set_state(AdminStates.Course_choose)
     elif message.text == "Болезни":
         await message.answer("Раздел просмотра аналтики болезней.", reply_markup=kb_admin_ill_choose())
@@ -604,7 +610,7 @@ async def group_choose(message: types.Message, state: FSMContext):
         return
     elif group == "Назад":
         await message.answer("Раздел просмотра аналтики тестирования. Выберите курс.",
-                             reply_markup=kb_admin_course_choose())
+                             reply_markup=kb_admin_course_choose(True))
         await state.set_state(AdminStates.Course_choose)
         return
 
@@ -645,7 +651,7 @@ async def choose_admin_user(message: types.Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     if message.text == "Студенты":
-        await message.answer("Выберите курс", reply_markup=kb_admin_course_choose())
+        await message.answer("Выберите курс", reply_markup=kb_admin_course_choose(True))
         await state.set_state(AdminStates.Choose_course_user)
     elif message.text == "Администраторы":
         generate_admins_pdf()
@@ -690,7 +696,7 @@ async def choose_group_user(message: types.Message, state: FSMContext):
     log(tg_id, message.text.strip())
     group = message.text.strip()
     if group == "Назад":
-        await message.answer("Выберите курс", reply_markup=kb_admin_course_choose())
+        await message.answer("Выберите курс", reply_markup=kb_admin_course_choose(True))
         await state.set_state(AdminStates.Choose_course_user)
         return
     if group == "Все группы":
@@ -732,7 +738,7 @@ async def get_user_last_name(message: Message, state: FSMContext):
         return
 
     await state.update_data(last_name=message.text.strip())
-    await message.answer("Выберите курс пользователя:", reply_markup=kb_admin_course_choose())
+    await message.answer("Выберите курс пользователя:", reply_markup=kb_admin_course_choose(False))
     await state.set_state(AddUser.user_course)
 
 
@@ -1019,7 +1025,8 @@ async def send_message(message: types.Message, state: FSMContext):
     for admin in active_admins_ids:
         await bot.send_message(admin, "Потсупило новое сообщение!")
     await message.answer(text="Возвращение в главное меню", reply_markup=ReplyKeyboardRemove())
-    await message.answer(f'Вы авторизовались как {name} {surname}. Выберите одну из опции.', reply_markup=kb_main_menu())
+    await message.answer(f'Вы авторизовались как {name} {surname}. Выберите одну из опции.',
+                         reply_markup=kb_main_menu())
     await state.set_state(UserStates.User_menu)
 
 
@@ -1029,7 +1036,7 @@ async def statsman_menu(message: types.Message, state: FSMContext):
     log(tg_id, message.text.strip())
     if message.text == 'Статистика по тестированию':
         await message.answer("Раздел просмотра аналтики тестирования. Выберите курс.",
-                             reply_markup=kb_admin_course_choose())
+                             reply_markup=kb_admin_course_choose(True))
         await state.set_state(StatsmanStates.Course_choose)
     if message.text == "Статистика по болезням":
         await message.answer("Раздел просмотра аналтики болезней.", reply_markup=kb_admin_ill_choose())
@@ -1575,8 +1582,7 @@ async def question_30(message: types.Message, state: FSMContext):
 
     await message.answer("Тест пройден.Ответы сохранены.", reply_markup=ReplyKeyboardRemove())
     await message.answer(text="Возвращение в главное меню", reply_markup=ReplyKeyboardRemove())
-    await message.answer("Вы успешно авторизовались. Пожалуйста, выберите одну из опций.", reply_markup=kb_main_menu()
-    )
+    await message.answer("Вы успешно авторизовались. Пожалуйста, выберите одну из опций.", reply_markup=kb_main_menu())
 
     await state.set_state(UserStates.User_menu)
 
