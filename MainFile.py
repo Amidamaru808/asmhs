@@ -9,22 +9,11 @@ from aiogram.filters import CommandStart, Command
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import ReplyKeyboardRemove
 import json
-from db import (init_db, pdf_report, pdf_report_course, check_user_in_db, check_admin_in_db,
-                check_admin_password, add_user_to_db, generate_password, add_admin_to_db, generate_users_pdf,
-                generate_admins_pdf, add_illness,  generate_illness_stats_by_course, generate_illness_stats,
-                get_illness_ids, add_message_db, get_message_ids_not_answered, get_message_names_by_ids,
-                get_message_messages_by_name, add_reply, set_answered_messages, get_reply_no_watched,
-                check_statsman_in_db, check_statsman_password, add_statsman, generate_statsmans_pdf, save_food_answers,
-                save_pain_answers, save_physical_answers, save_daytime_answers, save_psycho_answers, add_tg_id_admin,
-                add_tg_id_user, add_tg_id_statsman)
+
+from db import *
 
 import zipfile
-from keyboards import (kb_1_30, kb_2, kb_3_4_10_14, kb_5_13,
-                       kb_6, kb_7_8_9_11_20_22_23_26_28, kb_12, kb_15_17_24_25, kb_16,
-                       kb_18_19, kb_29, kb_21_27, kb_admin, kb_main_menu, kb_admin_course_choose, kb_admin_users,
-                       kb_back_users,
-                       kb_students_admins, kb_back, kb_choose_type, kb_admin_ill_choose, kb_years,
-                       kb_admin_group_choose, kb_admin_user_choose, kb_names, kb_spam, kb_statsman_menu)
+from keyboards import *
 
 bot = Bot(token='6735071514:AAHE1uVzht-JYxDEHoCvd7s7nvtwJQ5Vzls')
 dp = Dispatcher()
