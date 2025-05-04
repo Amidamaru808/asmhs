@@ -147,7 +147,7 @@ async def cmd_start(message: Message, state: FSMContext):
     await message.answer('Добро пожаловать в приложения мониторинга здоровья обучающихся!')
     await message.answer('Введите логин.')
     await state.set_state(Autorization.Login)
-    log(tg_id,"/start")
+    log(tg_id, "/start")
 
 
 @dp.message(Command("help"))
@@ -252,25 +252,25 @@ async def admin_menu_callback(callback: types.CallbackQuery, state: FSMContext):
     data = callback.data
     log(tg_id, data)
     if data == "Результаты":
-        await callback.message.edit_text("Раздел просмотра аналитики по тестированию и болезням.",
+        await callback.message.answer("Раздел просмотра аналитики по тестированию и болезням.",
                                          reply_markup=kb_choose_type())
         await state.set_state(AdminStates.Test_or_illness)
     elif data == "Справки":
-        await callback.message.edit_text("Раздел просмотра справок от обучающихся. Справки каких курсов вы хотите просмотреть?",
+        await callback.message.answer("Раздел просмотра справок от обучающихся. Справки каких курсов вы хотите просмотреть?",
                                          reply_markup=kb_admin_course_choose())
         await state.set_state(AdminStates.Illness_course_choose)
     elif data == "Пользователи":
-        await callback.message.edit_text("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
+        await callback.message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
         await state.set_state(AdminStates.Users_work)
     elif data == "Входящие сообщения":
         ids = get_message_ids_not_answered()
         names = get_message_names_by_ids(ids)
-        await callback.message.edit_text("Выберите сообщение от пользователя", reply_markup=kb_names(names))
+        await callback.message.answer("Выберите сообщение от пользователя", reply_markup=kb_names(names))
         await state.set_state(AdminStates.Choose_message)
     elif data == "Выход":
         if tg_id in active_admins_ids:
             active_admins_ids.remove(tg_id)
-        await callback.message.edit_text('Введите логин.')
+        await callback.message.answer('Введите логин.')
         await state.set_state(Autorization.Login)
 
     await callback.answer()

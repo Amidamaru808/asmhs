@@ -18,7 +18,8 @@ def init_db():
                 last_name TEXT NOT NULL,
                 password TEXT NOT NULL,
                 "group" TEXT NOT NULL,
-                course INTEGER NOT NULL
+                course INTEGER NOT NULL,
+                tg_id INTEGER NOT NULL
             )
         ''')
 
@@ -27,7 +28,8 @@ def init_db():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 first_name TEXT NOT NULL,
                 last_name TEXT NOT NULL,
-                password TEXT NOT NULL
+                password TEXT NOT NULL,
+                tg_id INTEGER NOT NULL
             )
         ''')
 
@@ -68,7 +70,8 @@ def init_db():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 first_name TEXT NOT NULL,
                 last_name TEXT NOT NULL,
-                password TEXT NOT NULL
+                password TEXT NOT NULL,
+                tg_id INTEGER NOT NULL
             )
         ''')
 
