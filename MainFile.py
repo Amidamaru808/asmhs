@@ -936,10 +936,7 @@ async def handle_main_menu(callback: types.CallbackQuery, state: FSMContext):
         await callback.message.answer("Введите свое сообщение работнику.", reply_markup=kb_back())
         await state.set_state(UserStates.Send_Message)
     elif action == "Входящие сообщения":
-        await bot.edit_message_reply_markup(
-            chat_id=callback.message.chat.id,
-            message_id=callback.message.message_id,
-            reply_markup=None)
+
         messages = get_reply_no_watched(tg_id)
         if not messages:
             await callback.message.answer("У вас нет новых сообщений!")

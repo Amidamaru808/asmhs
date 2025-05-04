@@ -484,14 +484,27 @@ def pdf_report_course(course, group):
         'psycho_answers': 'Вопросы про психологическое состояние'
     }
 
-    c.execute("SELECT COUNT(*) FROM food_answers")
+    filt = []
+    par = []
+
+    if course != "all":
+        filt.append("course = ?")
+        par.append(course)
+    if group != "all":
+        filt.append('"group" = ?')
+        par.append(group)
+
+    where_clause = "WHERE " + " AND ".join(filt) if filt else ""
+
+    c.execute(f"SELECT COUNT(*) FROM food_answers {where_clause}", par)
     answers_count = c.fetchone()[0]
 
-    c.execute("SELECT COUNT(*) FROM users")
+    c.execute(f"SELECT COUNT(*) FROM users {where_clause}", par)
     users_count = c.fetchone()[0]
-
-    percentage_count = (answers_count / users_count) * 100
-
+    if users_count > 0:
+        percentage_count = round((answers_count / users_count * 100), 1)
+    else:
+        percentage_count = 0
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
