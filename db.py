@@ -29,7 +29,7 @@ def init_db():
                 first_name TEXT NOT NULL,
                 last_name TEXT NOT NULL,
                 password TEXT NOT NULL,
-                tg_id INTEGER NOT NULL
+                tg_id INTEGER  NULL
             )
         ''')
 
@@ -1003,7 +1003,41 @@ def check_statsman_password(first_name, last_name, password):
     return result and result[0] == password
 
 
+def add_tg_id_user(tg_id, name, surname, password):
+    conn = sqlite3.connect("main_database.db")
+    cursor = conn.cursor()
+    cursor.execute('''
+        UPDATE users
+        SET tg_id = ?
+        WHERE first_name = ? AND last_name = ? AND password = ?
+    ''', (tg_id, name, surname, password))
+    conn.commit()
+    conn.close()
+
+
+def add_tg_id_admin(tg_id, name, surname, password):
+    conn = sqlite3.connect("main_database.db")
+    cursor = conn.cursor()
+    cursor.execute('''
+        UPDATE admins
+        SET tg_id = ?
+        WHERE first_name = ? AND last_name = ? AND password = ?
+    ''', (tg_id, name, surname, password))
+    conn.commit()
+    conn.close()
+
+
+def add_tg_id_statsman(tg_id, name, surname, password):
+    conn = sqlite3.connect("main_database.db")
+    cursor = conn.cursor()
+    cursor.execute('''
+            UPDATE statsmans
+            SET tg_id = ?
+            WHERE first_name = ? AND last_name = ? AND password = ?
+        ''', (tg_id, name, surname, password))
+    conn.commit()
+    conn.close()
+
+
 if __name__ == "__main__":
     init_db()
-
-pdf_report_course(1, "all")

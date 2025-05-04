@@ -15,7 +15,8 @@ from db import (init_db, pdf_report, pdf_report_course, check_user_in_db, check_
                 get_illness_ids, add_message_db, get_message_ids_not_answered, get_message_names_by_ids,
                 get_message_messages_by_name, add_reply, set_answered_messages, get_reply_no_watched,
                 check_statsman_in_db, check_statsman_password, add_statsman, generate_statsmans_pdf, save_food_answers,
-                save_pain_answers, save_physical_answers, save_daytime_answers, save_psycho_answers)
+                save_pain_answers, save_physical_answers, save_daytime_answers, save_psycho_answers, add_tg_id_admin,
+                add_tg_id_user, add_tg_id_statsman)
 
 import zipfile
 from keyboards import (kb_1_30, kb_2, kb_3_4_10_14, kb_5_13,
@@ -218,6 +219,7 @@ async def handle_password(message: Message, state: FSMContext):
 
         if student_password == password:
             await state.update_data(user_id=user_id, name=name, surname=surname, group=group, course=course)
+            add_tg_id_user(tg_id,name, surname, password)
             await message.answer(f'Вы авторизовались как {name} {surname}. Выберите одну из опции.',
                                  reply_markup=kb_main_menu())
 
@@ -230,6 +232,7 @@ async def handle_password(message: Message, state: FSMContext):
             tg_id = message.from_user.id
             active_admins_ids.append(tg_id)
             await state.clear()
+            add_tg_id_admin(tg_id,name, surname, password)
             await message.answer(f'Вы авторизовались как {name} {surname}. Выберите одну из опции.',
                                  reply_markup=kb_admin())
             await state.set_state(AdminStates.Admin_menu)
@@ -239,6 +242,7 @@ async def handle_password(message: Message, state: FSMContext):
     if statsman:
         if check_statsman_password(name, surname, password):
             await state.set_state(StatsmanStates.Statsman_menu)
+            add_tg_id_statsman(tg_id,name, surname, password)
             await message.answer(f"Вы авторизовались как статистик {name} {surname}!Выберите 1 из опций.",
                                  reply_markup=kb_statsman_menu())
             return
