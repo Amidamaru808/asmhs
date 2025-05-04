@@ -182,7 +182,7 @@ async def handle_name(message: Message, state: FSMContext):
     statsman = check_statsman_in_db(name, surname)
 
     if user:
-        user_id, _, _, _, group, course = user
+        user_id, _, _, _, group, course, _ = user
         await state.update_data(user_id=user_id, name=name, surname=surname, group=group, course=course)
     elif admin or statsman:
         await state.update_data(name=name, surname=surname)
@@ -215,7 +215,7 @@ async def handle_password(message: Message, state: FSMContext):
     surname = user_data.get('surname')
     user = check_user_in_db(name, surname)
     if user:
-        user_id, _, _, student_password, group, course = user
+        user_id, _, _, student_password, group, course, _ = user
 
         if student_password == password:
             await state.update_data(user_id=user_id, name=name, surname=surname, group=group, course=course)

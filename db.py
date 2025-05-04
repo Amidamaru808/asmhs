@@ -19,7 +19,7 @@ def init_db():
                 password TEXT NOT NULL,
                 "group" TEXT NOT NULL,
                 course INTEGER NOT NULL,
-                tg_id INTEGER NOT NULL
+                tg_id INTEGER NULL
             )
         ''')
 
@@ -29,7 +29,7 @@ def init_db():
                 first_name TEXT NOT NULL,
                 last_name TEXT NOT NULL,
                 password TEXT NOT NULL,
-                tg_id INTEGER  NULL
+                tg_id INTEGER NULL
             )
         ''')
 
@@ -71,7 +71,7 @@ def init_db():
                 first_name TEXT NOT NULL,
                 last_name TEXT NOT NULL,
                 password TEXT NOT NULL,
-                tg_id INTEGER NOT NULL
+                tg_id INTEGER  NULL
             )
         ''')
 
@@ -622,9 +622,11 @@ def generate_password():
 def generate_users_pdf(course, group):
     conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
-    query = 'SELECT first_name, last_name, password, "group", course FROM users'
+
+    query = 'SELECT first_name, last_name, password, "group", course, tg_id FROM users'
     conditions = []
     params = []
+
     if course.lower() != "all":
         conditions.append('course = ?')
         params.append(course)
@@ -643,23 +645,64 @@ def generate_users_pdf(course, group):
     pdf = FPDF()
     pdf.add_page()
     pdf.add_font('Bounded', '', 'Bounded-Regular.ttf', uni=True)
-    pdf.set_font('Bounded', '', 12)
-    pdf.cell(0, 10, txt="Список студентов", ln=True, align="C")
+    pdf.set_font('Bounded', '', 16)
+
+    if group == "all":
+        group_name = "все группы"
+    else:
+        group_name = group + " " + "группа"
+
+    if course == "all":
+        course_name = "все курсы"
+    else:
+        course_name = course + " " + "курс"
+
+    pdf.cell(0, 10, txt=f"Список студентов {course_name}, {group_name}", ln=True, align="C")
+
+    pdf.ln(5)
+    pdf.set_line_width(0.5)
+    pdf.line(0, pdf.get_y(), 2000, pdf.get_y())
+    pdf.ln(5)
+
+    pdf.set_font('Bounded', '', 14)
+    pdf.cell(0, 10, txt="Описание файла", ln=True, align="C")
+    pdf.cell(0, 10, txt="Логин - логин пользователя для авторизации")
     pdf.ln(10)
-    pdf.cell(80, 10, "Логин", border=1, align="C")
+    pdf.cell(0, 10, txt="Пароль - Пароль пользователя для авторизации")
+    pdf.ln(10)
+    pdf.cell(0, 10, txt="Группа - учебная группа пользователя")
+    pdf.ln(10)
+    pdf.cell(0, 10, txt="Курс - учебный курс пользователя")
+    pdf.ln(10)
+    pdf.cell(0, 10, txt="Tg - авторизовался пользователь или нет")
+    pdf.ln(10)
+
+    pdf.ln(10)
+    pdf.set_line_width(0.5)
+    pdf.line(0, pdf.get_y(), 2000, pdf.get_y())
+    pdf.ln(5)
+
+    pdf.ln(10)
+    pdf.set_font('Bounded', '', 12)
+    pdf.cell(70, 10, "Логин", border=1, align="C")
     pdf.cell(35, 10, "Пароль", border=1, align="C")
-    pdf.cell(50, 10, "Группа", border=1, align="C")
-    pdf.cell(20, 10, "Курс", border=1, align="C")
+    pdf.cell(45, 10, "Группа", border=1, align="C")
+    pdf.cell(15, 10, "Курс", border=1, align="C")
+    pdf.cell(20, 10, "Tg", border=1, align="C")
     pdf.ln()
-    for first_name, last_name, password, group_name, course in students:
+
+    for first_name, last_name, password, group_name, course_val, tg_id in students:
         login = f"{first_name} {last_name}"
-        pdf.cell(80, 10, login, border=1)
+        auth_status = "+" if tg_id else "-"
+        pdf.cell(70, 10, login, border=1)
         pdf.cell(35, 10, password, border=1)
-        pdf.cell(50, 10, group_name, border=1)
-        pdf.cell(20, 10, str(course), border=1)
+        pdf.cell(45, 10, group_name, border=1)
+        pdf.cell(15, 10, str(course_val), border=1)
+        pdf.cell(20, 10, auth_status, border=1)
         pdf.ln()
 
-    pdf.output("Files pdf/users_.pdf")
+    filename = "Files pdf/users.pdf"
+    pdf.output(filename)
 
 
 def generate_admins_pdf():
@@ -1049,3 +1092,5 @@ def add_tg_id_statsman(tg_id, name, surname, password):
 
 if __name__ == "__main__":
     init_db()
+
+generate_users_pdf("all", "all")
