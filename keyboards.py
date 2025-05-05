@@ -159,12 +159,21 @@ def kb_admin_ill_choose():
                                             KeyboardButton(text='Назад')]])
 
 
-def kb_admin_users():
-    return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Список пользователей')],
-                                           [KeyboardButton(text='Добавить ученика')],
-                                           [KeyboardButton(text='Добавить работника')],
-                                         [KeyboardButton(text="Добавить аналитика")],
-                                          [KeyboardButton(text="Назад")]])
+def kb_admin_users(watch, add_users, add_admins, add_statsman):
+    keyboard = []
+
+    if watch:
+        keyboard.append([KeyboardButton(text='Список пользователей')])
+    if add_users:
+        keyboard.append([KeyboardButton(text='Добавить ученика')])
+    if add_admins:
+        keyboard.append([KeyboardButton(text='Добавить работника')])
+    if add_statsman:
+        keyboard.append([KeyboardButton(text='Добавить аналитика')])
+
+    keyboard.append([KeyboardButton(text="Назад")])
+
+    return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
 
 
 def kb_choose_type():

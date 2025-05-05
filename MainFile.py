@@ -15,7 +15,7 @@ from db import *
 import zipfile
 from keyboards import *
 
-bot = Bot(token='6735071514:AAGb9NiT88lpF9T9TMUEtXg9kJ4zA3jZY70')
+bot = Bot(token='6735071514:AAFJz69fqsC0hf-6tWW4dSi6x5I9INEWjs0')
 dp = Dispatcher()
 save_folder = 'Spravki'
 os.makedirs(save_folder, exist_ok=True)
@@ -274,7 +274,13 @@ async def admin_menu_callback(callback: types.CallbackQuery, state: FSMContext):
             chat_id=callback.message.chat.id,
             message_id=callback.message.message_id,
             reply_markup=None)
-        await callback.message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
+        data = await state.get_data()
+        name = data.get("name")
+        surname = data.get("surname")
+        password = data.get("password")
+        permissions = get_admin_permissions(name, surname, password)
+        await callback.message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users(True,
+                                    permissions['add_users'], permissions['add_admins'], permissions['add_statsman']))
         await state.set_state(AdminStates.Users_work)
     elif data == "Входящие сообщения":
         await bot.edit_message_reply_markup(
@@ -679,7 +685,15 @@ async def choose_admin_user(message: types.Message, state: FSMContext):
         await message.answer("Список аналитиков")
         await message.answer_document(pdf_file)
     elif message.text == "Назад":
-        await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
+        data = await state.get_data()
+        name = data.get("name")
+        surname = data.get("surname")
+        password = data.get("password")
+        permissions = get_admin_permissions(name, surname, password)
+        await message.answer("Меню для работы с пользователями бота",
+                                     reply_markup=kb_admin_users(True, permissions['add_users'],
+                                                                 permissions['add_admins'],
+                                                                 permissions['add_statsman']))
         await state.set_state(AdminStates.Users_work)
 
 
@@ -693,7 +707,14 @@ async def choose_course_user(message: types.Message, state: FSMContext):
         pdf_file = FSInputFile("Files pdf/users.pdf")
         await message.answer("Список всех студентов")
         await message.answer_document(pdf_file)
-        await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
+        data = await state.get_data()
+        name = data.get("name")
+        surname = data.get("surname")
+        password = data.get("password")
+        permissions = get_admin_permissions(name, surname, password)
+        await message.message.answer("Меню для работы с пользователями бота",
+                                     reply_markup=kb_admin_users(True, permissions['add_users'],
+                                                                permissions['add_admins'], permissions['add_statsman']))
         await state.set_state(AdminStates.Users_work)
         return
     elif course == "Назад":
@@ -725,7 +746,14 @@ async def choose_group_user(message: types.Message, state: FSMContext):
     pdf_file = FSInputFile("Files pdf/users.pdf")
     await message.answer(f"Список студентов куср - {course}, группы - {group}")
     await message.answer_document(pdf_file)
-    await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
+    data = await state.get_data()
+    name = data.get("name")
+    surname = data.get("surname")
+    password = data.get("password")
+    permissions = get_admin_permissions(name, surname, password)
+    await message.message.answer("Меню для работы с пользователями бота",
+                                 reply_markup=kb_admin_users(True, permissions['add_users'],
+                                                             permissions['add_admins'], permissions['add_statsman']))
     await state.set_state(AdminStates.Users_work)
 
 
@@ -734,7 +762,15 @@ async def get_user_first_name(message: Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     if message.text == "Вернутся в меню работы с пользователями":
-        await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
+        data = await state.get_data()
+        name = data.get("name")
+        surname = data.get("surname")
+        password = data.get("password")
+        permissions = get_admin_permissions(name, surname, password)
+        await message.answer("Меню для работы с пользователями бота",
+                                     reply_markup=kb_admin_users(True, permissions['add_users'],
+                                                                 permissions['add_admins'],
+                                                                 permissions['add_statsman']))
         await state.set_state(AdminStates.Users_work)
         return
 
@@ -748,7 +784,15 @@ async def get_user_last_name(message: Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     if message.text == "Вернутся в меню работы с пользователями":
-        await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
+        data = await state.get_data()
+        name = data.get("name")
+        surname = data.get("surname")
+        password = data.get("password")
+        permissions = get_admin_permissions(name, surname, password)
+        await message.answer("Меню для работы с пользователями бота",
+                                     reply_markup=kb_admin_users(True, permissions['add_users'],
+                                                                 permissions['add_admins'],
+                                                                 permissions['add_statsman']))
         await state.set_state(AdminStates.Users_work)
         return
 
@@ -763,7 +807,15 @@ async def get_user_course(message: Message, state: FSMContext):
     log(tg_id, message.text.strip())
     course = message.text.strip()
     if course == "Вернутся в меню работы с пользователями":
-        await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
+        data = await state.get_data()
+        name = data.get("name")
+        surname = data.get("surname")
+        password = data.get("password")
+        permissions = get_admin_permissions(name, surname, password)
+        await message.answer("Меню для работы с пользователями бота",
+                                     reply_markup=kb_admin_users(True, permissions['add_users'],
+                                                                 permissions['add_admins'],
+                                                                 permissions['add_statsman']))
         await state.set_state(AdminStates.Users_work)
         return
 
@@ -778,7 +830,15 @@ async def get_user_group(message: Message, state: FSMContext):
     log(tg_id, message.text.strip())
     group = message.text.strip()
     if group == "Назад":
-        await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
+        data = await state.get_data()
+        name = data.get("name")
+        surname = data.get("surname")
+        password = data.get("password")
+        permissions = get_admin_permissions(name, surname, password)
+        await message.answer("Меню для работы с пользователями бота",
+                                     reply_markup=kb_admin_users(True, permissions['add_users'],
+                                                                 permissions['add_admins'],
+                                                                 permissions['add_statsman']))
         await state.set_state(AdminStates.Users_work)
         return
 
@@ -792,7 +852,14 @@ async def get_user_group(message: Message, state: FSMContext):
         int(data['course']))
 
     await message.answer("Пользователь успешно добавлен.")
-    await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
+    data = await state.get_data()
+    name = data.get("name")
+    surname = data.get("surname")
+    password = data.get("password")
+    permissions = get_admin_permissions(name, surname, password)
+    await message.answer("Меню для работы с пользователями бота",
+                                 reply_markup=kb_admin_users(True, permissions['add_users'],
+                                                             permissions['add_admins'], permissions['add_statsman']))
     await state.set_state(AdminStates.Users_work)
 
 
@@ -801,7 +868,15 @@ async def get_statsman_first_name(message: Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     if message.text == "Вернутся в меню работы с пользователями":
-        await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
+        data = await state.get_data()
+        name = data.get("name")
+        surname = data.get("surname")
+        password = data.get("password")
+        permissions = get_admin_permissions(name, surname, password)
+        await message.answer("Меню для работы с пользователями бота",
+                                     reply_markup=kb_admin_users(True, permissions['add_users'],
+                                                                 permissions['add_admins'],
+                                                                 permissions['add_statsman']))
         await state.set_state(AdminStates.Users_work)
         return
 
@@ -815,7 +890,15 @@ async def get_statsman_last_name(message: Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     if message.text == "Вернутся в меню работы с пользователями":
-        await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
+        data = await state.get_data()
+        name = data.get("name")
+        surname = data.get("surname")
+        password = data.get("password")
+        permissions = get_admin_permissions(name, surname, password)
+        await message.answer("Меню для работы с пользователями бота",
+                                     reply_markup=kb_admin_users(True, permissions['add_users'],
+                                                                 permissions['add_admins'],
+                                                                 permissions['add_statsman']))
         await state.set_state(AdminStates.Users_work)
         return
 
@@ -823,7 +906,13 @@ async def get_statsman_last_name(message: Message, state: FSMContext):
     data = await state.get_data()
     add_statsman(data['statsman_first_name'], data['statsman_last_name'], generate_password())
 
-    await message.answer("Аналитик добавлен в базу.", reply_markup=kb_admin_users())
+    name = data.get("name")
+    surname = data.get("surname")
+    password = data.get("password")
+    permissions = get_admin_permissions(name, surname, password)
+    await message.answer("Аналитик добавлен в базу",
+                                 reply_markup=kb_admin_users(True, permissions['add_users'],
+                                                             permissions['add_admins'], permissions['add_statsman']))
     await state.set_state(AdminStates.Users_work)
 
 
@@ -832,7 +921,15 @@ async def get_admin_first_name(message: Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     if message.text == "Вернутся в меню работы с пользователями":
-        await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
+        data = await state.get_data()
+        name = data.get("name")
+        surname = data.get("surname")
+        password = data.get("password")
+        permissions = get_admin_permissions(name, surname, password)
+        await message.answer("Меню для работы с пользователями бота",
+                                     reply_markup=kb_admin_users(True, permissions['add_users'],
+                                                                 permissions['add_admins'],
+                                                                 permissions['add_statsman']))
         await state.set_state(AdminStates.Users_work)
         return
 
@@ -846,7 +943,15 @@ async def get_admin_last_name(message: Message, state: FSMContext):
     tg_id = message.from_user.id
     log(tg_id, message.text.strip())
     if message.text == "Вернутся в меню работы с пользователями":
-        await message.answer("Меню для работы с пользователями бота", reply_markup=kb_admin_users())
+        data = await state.get_data()
+        name = data.get("name")
+        surname = data.get("surname")
+        password = data.get("password")
+        permissions = get_admin_permissions(name, surname, password)
+        await message.answer("Меню для работы с пользователями бота",
+                                     reply_markup=kb_admin_users(True, permissions['add_users'],
+                                                                 permissions['add_admins'],
+                                                                 permissions['add_statsman']))
         await state.set_state(AdminStates.Users_work)
         return
 
@@ -858,7 +963,13 @@ async def get_admin_last_name(message: Message, state: FSMContext):
         data['admin_last_name'],
         generate_password())
 
-    await message.answer("Работник добавлен в базу.", reply_markup=kb_admin_users())
+    name = data.get("name")
+    surname = data.get("surname")
+    password = data.get("password")
+    permissions = get_admin_permissions(name, surname, password)
+    await message.answer("Администратор добавлен в базу",
+                                 reply_markup=kb_admin_users(True, permissions['add_users'],
+                                                             permissions['add_admins'], permissions['add_statsman']))
     await state.set_state(AdminStates.Users_work)
 
 
