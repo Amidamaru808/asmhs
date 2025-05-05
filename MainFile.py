@@ -15,7 +15,7 @@ from db import *
 import zipfile
 from keyboards import *
 
-bot = Bot(token='6735071514:AAHE1uVzht-JYxDEHoCvd7s7nvtwJQ5Vzls')
+bot = Bot(token='6735071514:AAGb9NiT88lpF9T9TMUEtXg9kJ4zA3jZY70')
 dp = Dispatcher()
 save_folder = 'Spravki'
 os.makedirs(save_folder, exist_ok=True)
@@ -222,10 +222,12 @@ async def handle_password(message: Message, state: FSMContext):
         if check_admin_password(name, surname, password):
             tg_id = message.from_user.id
             active_admins_ids.append(tg_id)
-            await state.clear()
+            await state.update_data(password=password)
             add_tg_id_admin(tg_id, name, surname, password)
+            permissions = get_admin_permissions(name, surname, password)
             await message.answer(f'Вы авторизовались как {name} {surname}. Выберите одну из опции.',
-                                 reply_markup=kb_admin())
+                                 reply_markup=kb_admin(permissions['results'], permissions['spravki'], True,
+                                                       permissions['messages']))
             await state.set_state(AdminStates.Admin_menu)
             await message.delete()
             return
@@ -326,8 +328,14 @@ async def illness_course_choose(message: types.Message, state: FSMContext):
         await state.set_state(AdminStates.Illness_group_choose)
     if message.text == "Назад":
         await message.answer(text="Возвращение в главное меню", reply_markup=ReplyKeyboardRemove())
-        await message.answer(f'Вы авторизовались как администратор. Выберите одну из опции.',
-                             reply_markup=kb_admin())
+        data = await state.get_data()
+        name = data.get("name")
+        surname = data.get("surname")
+        password = data.get("password")
+        permissions = get_admin_permissions(name, surname, password)
+        await message.answer(f'Вы авторизовались как {name} {surname}. Выберите одну из опции.',
+                             reply_markup=kb_admin(permissions['results'], permissions['spravki'], True,
+                                                   permissions['messages']))
 
         await state.set_state(AdminStates.Admin_menu)
 
@@ -411,8 +419,14 @@ async def illness_date_choose(message: types.Message, state: FSMContext):
         zip_file = FSInputFile('Spravki/illness_photos.zip')
         await message.answer_document(zip_file)
         await message.answer(text="Возвращение в главное меню", reply_markup=ReplyKeyboardRemove())
-        await message.answer(f'Вы авторизовались как администратор. Выберите одну из опции.',
-                             reply_markup=kb_admin())
+        data = await state.get_data()
+        name = data.get("name")
+        surname = data.get("surname")
+        password = data.get("password")
+        permissions = get_admin_permissions(name, surname, password)
+        await message.answer(f'Вы авторизовались как {name} {surname}. Выберите одну из опции.',
+                             reply_markup=kb_admin(permissions['results'], permissions['spravki'], True,
+                                                   permissions['messages']))
         await state.set_state(AdminStates.Admin_menu)
     else:
         await message.answer("Неправильный формат даты!"
@@ -432,8 +446,14 @@ async def test_or_illness(message: types.Message, state: FSMContext):
         await state.set_state(AdminStates.Illness_choose_course)
     if message.text == "Назад":
         await message.answer(text="Возвращение в главное меню", reply_markup=ReplyKeyboardRemove())
-        await message.answer(f'Вы авторизовались как администратор. Выберите одну из опции.',
-                             reply_markup=kb_admin())
+        data = await state.get_data()
+        name = data.get("name")
+        surname = data.get("surname")
+        password = data.get("password")
+        permissions = get_admin_permissions(name, surname, password)
+        await message.answer(f'Вы авторизовались как {name} {surname}. Выберите одну из опции.',
+                             reply_markup=kb_admin(permissions['results'], permissions['spravki'], True,
+                                                   permissions['messages']))
         await state.set_state(AdminStates.Admin_menu)
 
 
@@ -630,8 +650,14 @@ async def users_work(message: types.Message, state: FSMContext):
         await state.set_state(AddUser.statsman_first_name)
     elif message.text == "Назад":
         await message.answer(text="Возвращение в главное меню", reply_markup=ReplyKeyboardRemove())
-        await message.answer(f'Вы авторизовались как администратор. Выберите одну из опции.',
-                             reply_markup=kb_admin())
+        data = await state.get_data()
+        name = data.get("name")
+        surname = data.get("surname")
+        password = data.get("password")
+        permissions = get_admin_permissions(name, surname, password)
+        await message.answer(f'Вы авторизовались как {name} {surname}. Выберите одну из опции.',
+                             reply_markup=kb_admin(permissions['results'], permissions['spravki'], True,
+                                                   permissions['messages']))
         await state.set_state(AdminStates.Admin_menu)
 
 
@@ -843,8 +869,14 @@ async def choose_message(message: types.Message, state: FSMContext):
     name = message.text.strip()
     if name == "Назад":
         await message.answer(text="Возвращение в главное меню", reply_markup=ReplyKeyboardRemove())
-        await message.answer(f'Вы авторизовались как администратор. Выберите одну из опции.',
-                             reply_markup=kb_admin())
+        data = await state.get_data()
+        name = data.get("name")
+        surname = data.get("surname")
+        password = data.get("password")
+        permissions = get_admin_permissions(name, surname, password)
+        await message.answer(f'Вы авторизовались как {name} {surname}. Выберите одну из опции.',
+                             reply_markup=kb_admin(permissions['results'], permissions['spravki'], True,
+                                                   permissions['messages']))
         await state.set_state(AdminStates.Admin_menu)
         return
     tg_id, messages = get_message_messages_by_name(name)
@@ -870,8 +902,14 @@ async def answer(message: types.Message, state: FSMContext):
     names = get_message_names_by_ids(ids)
     if admin_answer == "Назад":
         await message.answer(text="Возвращение в главное меню", reply_markup=ReplyKeyboardRemove())
-        await message.answer(f'Вы авторизовались как администратор. Выберите одну из опции.',
-                             reply_markup=kb_admin())
+        data = await state.get_data()
+        name = data.get("name")
+        surname = data.get("surname")
+        password = data.get("password")
+        permissions = get_admin_permissions(name, surname, password)
+        await message.answer(f'Вы авторизовались как {name} {surname}. Выберите одну из опции.',
+                             reply_markup=kb_admin(permissions['results'], permissions['spravki'], True,
+                                                   permissions['messages']))
         await state.set_state(AdminStates.Admin_menu)
         return
     if admin_answer == "Пометить как спам!":

@@ -29,7 +29,17 @@ def init_db():
                 first_name TEXT NOT NULL,
                 last_name TEXT NOT NULL,
                 password TEXT NOT NULL,
-                tg_id INTEGER NULL
+                tg_id INTEGER NULL,
+                results BOOLEAN DEFAULT 0,
+                spravki BOOLEAN DEFAULT 0,
+                messages BOOLEAN DEFAULT 0,
+                add_users BOOLEAN DEFAULT 0,
+                add_admins BOOLEAN DEFAULT 0,
+                watch_users BOOLEAN DEFAULT 0,
+                watch_admins BOOLEAN DEFAULT 0,
+                add_statsman BOOLEAN DEFAULT 0,
+                watch_statsman BOOLEAN DEFAULT 0,
+                settings BOOLEAN DEFAULT 0
             )
         ''')
 
@@ -170,13 +180,25 @@ def add_user_to_db(first_name, last_name, password, group, course):
     conn.close()
 
 
-def add_admin_to_db(first_name, last_name, password):
+def add_admin_to_db(first_name, last_name, password, results=False, spravki=False, messages=False,
+                    add_users=False, add_admins=False, watch_users=False, watch_admins=False, add_statsman=False,
+                    watch_statsman=False, settings=False):
     conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
     c.execute('''
-        INSERT INTO admins (first_name, last_name, password)
-        VALUES (?, ?, ?)
-    ''', (first_name, last_name, password))
+        INSERT INTO admins (
+            first_name, last_name, password,
+            results, spravki, messages,
+            add_users, add_admins, watch_users, watch_admins,
+            add_statsman, watch_statsman, settings
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (
+        first_name, last_name, password,
+        int(results), int(spravki),  int(messages),
+        int(add_users), int(add_admins), int(watch_users), int(watch_admins),
+        int(add_statsman), int(watch_statsman), int(settings)
+    ))
     conn.commit()
     conn.close()
 
@@ -1101,6 +1123,30 @@ def add_tg_id_statsman(tg_id, name, surname, password):
         ''', (tg_id, name, surname, password))
     conn.commit()
     conn.close()
+
+
+def get_admin_permissions(first_name, last_name, password):
+    conn = sqlite3.connect('main_database.db')
+    c = conn.cursor()
+    c.execute('''
+        SELECT 
+            results, spravki,  messages,
+            add_users, add_admins, watch_users, watch_admins,
+            add_statsman, watch_statsman, settings
+        FROM admins
+        WHERE first_name = ? AND last_name = ? AND password = ?
+    ''', (first_name, last_name, password))
+    row = c.fetchone()
+    conn.close()
+
+    if row:
+        keys = [
+            'results', 'spravki', 'messages',
+            'add_users', 'add_admins', 'watch_users', 'watch_admins',
+            'add_statsman', 'watch_statsman', 'settings'
+        ]
+        return dict(zip(keys, row))
+    return None
 
 
 if __name__ == "__main__":

@@ -66,16 +66,21 @@ def kb_main_menu():
     )
 
 
-def kb_admin():
-    return InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text='Результаты', callback_data='Результаты')],
-            [InlineKeyboardButton(text='Справки', callback_data='Справки')],
-            [InlineKeyboardButton(text='Пользователи', callback_data='Пользователи')],
-            [InlineKeyboardButton(text='Входящие сообщения', callback_data='Входящие сообщения')],
-            [InlineKeyboardButton(text='Выход', callback_data='Выход')],
-        ]
-    )
+def kb_admin(results, spravki, users, messages):
+    buttons = []
+
+    if results:
+        buttons.append([InlineKeyboardButton(text='Результаты', callback_data='Результаты')])
+    if spravki:
+        buttons.append([InlineKeyboardButton(text='Справки', callback_data='Справки')])
+    if users:
+        buttons.append([InlineKeyboardButton(text='Пользователи', callback_data='Пользователи')])
+    if messages:
+        buttons.append([InlineKeyboardButton(text='Входящие сообщения', callback_data='Входящие сообщения')])
+
+    buttons.append([InlineKeyboardButton(text='Выход', callback_data='Выход')])
+
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
 def kb_students_admins():
