@@ -281,25 +281,25 @@ kb_18_19 = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='1-2 часа'),
 
 
 kb_15_17_24_25 = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Ужасно'),
-                                           KeyboardButton(text='Плохо')],
-                                           [KeyboardButton(text='Хорошо'),
-                                           KeyboardButton(text='Отлично')]])
+                                                KeyboardButton(text='Плохо')],
+                                               [KeyboardButton(text='Хорошо'),
+                                                KeyboardButton(text='Отлично')]])
 
 
 kb_16 = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='< 40'),
-                                           KeyboardButton(text='40-60')],
-                                           [KeyboardButton(text='60-80'),
-                                           KeyboardButton(text='80-100')]])
+                                       KeyboardButton(text='40-60')],
+                                      [KeyboardButton(text='60-80'),
+                                       KeyboardButton(text='80-100')]])
 
 
 kb_21_27 = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Легко'),
-                                           KeyboardButton(text='Нормально')],
-                                           [KeyboardButton(text='Трудно'),
-                                           KeyboardButton(text='Очень тяжело')]])
+                                         KeyboardButton(text='Нормально')],
+                                         [KeyboardButton(text='Трудно'),
+                                         KeyboardButton(text='Очень тяжело')]])
 
 
 kb_29 = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Нет друзей'),
-                                           KeyboardButton(text='Мало')],
-                                           [KeyboardButton(text='Достаточно'),
-                                           KeyboardButton(text='Много')]])
+                                       KeyboardButton(text='Мало')],
+                                      [KeyboardButton(text='Достаточно'),
+                                       KeyboardButton(text='Много')]])
 
