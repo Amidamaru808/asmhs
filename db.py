@@ -1125,7 +1125,7 @@ def add_tg_id_statsman(tg_id, name, surname, password):
     conn.close()
 
 
-def get_admin_permissions(first_name, last_name, password):
+def get_admin_permissions_by_password(first_name, last_name, password):
     conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
     c.execute('''
@@ -1147,6 +1147,86 @@ def get_admin_permissions(first_name, last_name, password):
         ]
         return dict(zip(keys, row))
     return None
+
+
+def get_admin_permissions_by_adminid(first_name, last_name, admin_id):
+    conn = sqlite3.connect('main_database.db')
+    c = conn.cursor()
+    c.execute('''
+        SELECT 
+            results, spravki, messages,
+            add_users, add_admins, watch_users, watch_admins,
+            add_statsman, watch_statsman, settings
+        FROM admins
+        WHERE first_name = ? AND last_name = ? AND id = ?
+    ''', (first_name, last_name, admin_id))
+    row = c.fetchone()
+    conn.close()
+
+    if row:
+        keys = [
+            'results', 'spravki', 'messages',
+            'add_users', 'add_admins', 'watch_users', 'watch_admins',
+            'add_statsman', 'watch_statsman', 'settings'
+        ]
+        return dict(zip(keys, row))
+    return None
+
+
+def toggle_admin_permission(admin_id: int, permission_name: str):
+    conn = sqlite3.connect("main_database.db")
+    c = conn.cursor()
+
+    c.execute(f"SELECT {permission_name} FROM admins WHERE id = ?", (admin_id,))
+    current_value = c.fetchone()
+    if current_value is None:
+        conn.close()
+        return False
+
+    new_value = 0 if current_value[0] else 1
+    c.execute(f"UPDATE admins SET {permission_name} = ? WHERE id = ?", (new_value, admin_id))
+    conn.commit()
+    conn.close()
+    return True
+
+
+def get_admins_list():
+    conn = sqlite3.connect('main_database.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT first_name, last_name, id FROM admins")
+    records = cursor.fetchall()
+    conn.close()
+
+    return [[first_name, last_name, admin_id] for first_name, last_name, admin_id in records]
+
+
+def user_permission_6(permissions):
+    if not permissions:
+        return False
+
+    keys_to_check = [
+        'add_users',
+        'add_admins',
+        'watch_users',
+        'watch_admins',
+        'add_statsman',
+        'watch_statsman'
+    ]
+
+    return any(permissions.get(key) for key in keys_to_check)
+
+
+def user_permission_3(permissions):
+    if not permissions:
+        return False
+
+    keys_to_check = [
+        'watch_users',
+        'watch_admins',
+        'watch_statsman'
+    ]
+
+    return any(permissions.get(key) for key in keys_to_check)
 
 
 if __name__ == "__main__":

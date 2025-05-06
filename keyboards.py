@@ -24,6 +24,17 @@ all_groups = {
 }
 
 
+def kb_admins_list(admins_list):
+    keyboard = []
+    for admin in admins_list:
+        first_name, last_name, admin_id = admin
+        button_text = f"{first_name} {last_name} ({admin_id})"
+        keyboard.append([KeyboardButton(text=button_text)])
+
+    keyboard.append([KeyboardButton(text="Назад")])
+    return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
+
+
 def kb_names(names):
     keyboard = []
     names = names[:10]
@@ -83,15 +94,46 @@ def kb_admin(results, spravki, users, messages):
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
-def kb_students_admins():
-    return ReplyKeyboardMarkup(
-        keyboard=[
-            [KeyboardButton(text='Студенты')],
-            [KeyboardButton(text='Администраторы')],
-            [KeyboardButton(text="Аналитики")],
-            [KeyboardButton(text='Назад')]
-        ],
-    )
+def kb_user_settings(permissions: dict) -> InlineKeyboardMarkup:
+    labels = {
+        'results': 'Просмотр результатов',
+        'spravki': 'Просмотр справок',
+        'messages': 'Прием сообщений',
+        'add_users': 'Добавление учеников',
+        'add_admins': 'Добавление администраторов',
+        'watch_users': 'Просмотр учеников',
+        'watch_admins': 'Просмотр администраторов',
+        'add_statsman': 'Добавление аналитиков',
+        'watch_statsman': 'Просмотр аналитиков',
+        'settings': 'Настройки прав'
+    }
+
+    keyboard = []
+
+    for key, value in permissions.items():
+        status = "Да" if value else "Нет"
+        label = labels.get(key, key)
+        text = f"{label}: {status}"
+        callback_data = f"toggle_{key}"
+        keyboard.append([InlineKeyboardButton(text=text, callback_data=callback_data)])
+
+    keyboard.append([InlineKeyboardButton(text='Назад', callback_data='back_to_admin_list')])
+    return InlineKeyboardMarkup(inline_keyboard=keyboard)
+
+
+def kb_students_admins(watch_users, watch_admins, watch_statsman):
+    keyboard = []
+
+    if watch_users:
+        keyboard.append([KeyboardButton(text='Студенты')])
+    if watch_admins:
+        keyboard.append([KeyboardButton(text='Администраторы')])
+    if watch_statsman:
+        keyboard.append([KeyboardButton(text='Аналитики')])
+
+    keyboard.append([KeyboardButton(text='Назад')])
+
+    return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
 
 
 def kb_years():
@@ -159,7 +201,7 @@ def kb_admin_ill_choose():
                                             KeyboardButton(text='Назад')]])
 
 
-def kb_admin_users(watch, add_users, add_admins, add_statsman):
+def kb_admin_users(watch, add_users, add_admins, add_statsman, settings):
     keyboard = []
 
     if watch:
@@ -170,6 +212,8 @@ def kb_admin_users(watch, add_users, add_admins, add_statsman):
         keyboard.append([KeyboardButton(text='Добавить работника')])
     if add_statsman:
         keyboard.append([KeyboardButton(text='Добавить аналитика')])
+    if settings:
+        keyboard.append([KeyboardButton(text='Настройки пользователей')])
 
     keyboard.append([KeyboardButton(text="Назад")])
 
