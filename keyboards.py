@@ -149,10 +149,14 @@ def kb_admin_course_choose(all_cr):
 
     if all_cr:
         keyboard.append([KeyboardButton(text='Все курсы')])
-    keyboard.append([KeyboardButton(text='1')])
-    keyboard.append([KeyboardButton(text='2')])
-    keyboard.append([KeyboardButton(text='3')])
-    keyboard.append([KeyboardButton(text='4')])
+    keyboard.append([
+        KeyboardButton(text='1'),
+        KeyboardButton(text='2')
+    ])
+    keyboard.append([
+        KeyboardButton(text='3'),
+        KeyboardButton(text='4')
+    ])
     keyboard.append([KeyboardButton(text='Назад')])
 
     return ReplyKeyboardMarkup(keyboard=keyboard)

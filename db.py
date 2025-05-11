@@ -808,7 +808,6 @@ def generate_illness_stats(years):
             month = int(month) + 4
             month_counts[month] += 1
 
-
     months = [
          "Сентябрь", "Октябрь", "Ноябрь", "Декабрь", "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь"
     ]
