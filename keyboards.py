@@ -73,10 +73,12 @@ def kb_back():
     )
 
 
+#главное меню обучающихся
 def kb_main_menu():
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="Пройти тестирование о здоровье",
+
+#надпись кнопки и call back data        [InlineKeyboardButton(text="Пройти тестирование о здоровье",
                                      callback_data="Пройти тестирование о здоровье")],
             [InlineKeyboardButton(text="Прикрепить справку", callback_data="Прикрепить справку")],
             [InlineKeyboardButton(text="Отправить сообщение работнику.",
@@ -87,6 +89,8 @@ def kb_main_menu():
     )
 
 
+#главное меню админов
+#входные параметры - права админов
 def kb_admin(results, spravki, users, messages):
     buttons = []
 
@@ -104,7 +108,9 @@ def kb_admin(results, spravki, users, messages):
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
+#меню настроек прав админов
 def kb_user_settings(permissions: dict) -> InlineKeyboardMarkup:
+    #названия кнопок (перевод) 
     labels = {
         'results': 'Просмотр результатов',
         'spravki': 'Просмотр справок',
@@ -119,7 +125,8 @@ def kb_user_settings(permissions: dict) -> InlineKeyboardMarkup:
     }
 
     keyboard = []
-
+    
+    # заполнение клавиатуры
     for key, value in permissions.items():
         status = "Да" if value else "Нет"
         label = labels.get(key, key)
@@ -131,6 +138,8 @@ def kb_user_settings(permissions: dict) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
 
+#клавиатуры выбора группы пользователей
+#входные параметры права админа
 def kb_students_admins(watch_users, watch_admins, watch_statsman):
     keyboard = []
 
@@ -145,7 +154,7 @@ def kb_students_admins(watch_users, watch_admins, watch_statsman):
 
     return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
 
-
+# клавиатура выбора года
 def kb_years():
     return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='2023 - 2024'),
                                          KeyboardButton(text='2024 - 2025'),
@@ -154,6 +163,8 @@ def kb_years():
                                           KeyboardButton(text="Назад")]])
 
 
+#клавиатура выбора курса
+#входной параметры - кнопка все курсы
 def kb_admin_course_choose(all_cr):
     keyboard = []
 
@@ -172,13 +183,16 @@ def kb_admin_course_choose(all_cr):
     return ReplyKeyboardMarkup(keyboard=keyboard)
 
 
+#выбор группы, входные параметры - номер #курса и кнопка всё группы
 def kb_admin_group_choose(course, all_gr):
+    #получаем значения групп по курсу
     groups = all_groups.get(course, [])
     keyboard = []
 
     if all_gr:
         keyboard.append([KeyboardButton(text='Все группы')])
-
+    
+    #в линию выходит по 3 группы
     line = []
     for i, group_name in enumerate(groups):
         line.append(KeyboardButton(text=group_name))
@@ -192,7 +206,7 @@ def kb_admin_group_choose(course, all_gr):
 
     return ReplyKeyboardMarkup(keyboard=keyboard)
 
-
+# выбор пользователя из курса и группы
 def kb_admin_user_choose(course, group):
     users = get_users(course, group)
 
