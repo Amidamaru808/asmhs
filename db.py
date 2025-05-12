@@ -7,10 +7,11 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 from datetime import datetime
 
-
+# инициализация бд
 def init_db():
     conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
+    # таблица обучающися
     c.execute('''
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -23,6 +24,7 @@ def init_db():
             )
         ''')
 
+    # таблицы администраторов
     c.execute('''
             CREATE TABLE IF NOT EXISTS admins (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -54,6 +56,7 @@ def init_db():
             )
         ''')
 
+    #таблица заболеваемости
     c.execute('''
            CREATE TABLE IF NOT EXISTS messages (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -65,6 +68,7 @@ def init_db():
            )
        ''')
 
+    #таблица ответов
     c.execute('''
            CREATE TABLE IF NOT EXISTS reply (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -75,6 +79,7 @@ def init_db():
            )
        ''')
 
+    #таблица статистикво
     c.execute('''
             CREATE TABLE IF NOT EXISTS statsmans (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -85,6 +90,7 @@ def init_db():
             )
         ''')
 
+    #таблица ответов на питание
     c.execute('''
             CREATE TABLE IF NOT EXISTS food_answers (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -101,6 +107,7 @@ def init_db():
             )
         ''')
 
+    #таблица ответов на боли
     c.execute('''
             CREATE TABLE IF NOT EXISTS pain_answers (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -117,6 +124,7 @@ def init_db():
             )
         ''')
 
+    #таблица ответов на физ сотсояние
     c.execute('''
             CREATE TABLE IF NOT EXISTS physical_answers (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -132,6 +140,7 @@ def init_db():
             )
         ''')
 
+    #таблица ответов на распорядок дня
     c.execute('''
             CREATE TABLE IF NOT EXISTS daytime_answers (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -147,6 +156,7 @@ def init_db():
             )
        ''')
 
+    #таблица ответов на психологическое состояние
     c.execute('''
             CREATE TABLE IF NOT EXISTS psycho_answers (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -168,7 +178,7 @@ def init_db():
     conn.commit()
     conn.close()
 
-
+# добавление обучающегося в БД
 def add_user_to_db(first_name, last_name, password, group, course):
     conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
@@ -179,7 +189,7 @@ def add_user_to_db(first_name, last_name, password, group, course):
     conn.commit()
     conn.close()
 
-
+#добавление адмна в БД (права установка, если нет то нет прав)
 def add_admin_to_db(first_name, last_name, password, results=False, spravki=False, messages=False,
                     add_users=False, add_admins=False, watch_users=False, watch_admins=False, add_statsman=False,
                     watch_statsman=False, settings=False):
@@ -202,7 +212,7 @@ def add_admin_to_db(first_name, last_name, password, results=False, spravki=Fals
     conn.commit()
     conn.close()
 
-
+#добавление болезни в БД
 def add_illness(name, group, course, ill_date, send_date):
     conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
@@ -217,7 +227,7 @@ def add_illness(name, group, course, ill_date, send_date):
     conn.close()
     return illness_id
 
-
+#проверка пользователя в БД
 def check_user_in_db(first_name, last_name):
     conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
@@ -228,7 +238,7 @@ def check_user_in_db(first_name, last_name):
     conn.close()
     return user
 
-
+# проверка пароля
 def check_password(name, surname, password):
     conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
@@ -242,7 +252,7 @@ def check_password(name, surname, password):
     else:
         return False
 
-
+# проверка админа в бд
 def check_admin_in_db(first_name, last_name):
     conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
@@ -253,7 +263,7 @@ def check_admin_in_db(first_name, last_name):
     conn.close()
     return admin
 
-
+#проверка пароля админа
 def check_admin_password(first_name, last_name, password):
     conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
@@ -268,13 +278,13 @@ def check_admin_password(first_name, last_name, password):
     else:
         return False
 
-
+#загрузка вопросов из json файла
 def load_questions(file_path='TestQuestions.json'):
     with open(file_path, 'r', encoding='utf-8') as file:
         questions = json.load(file)
     return questions
 
-
+# сохранение ответов на вопросы раздел питание
 def save_food_answers(tg_id, name, course, group, answer_1, answer_2, answer_3, answer_4, answer_5, answer_6):
     conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
@@ -287,7 +297,7 @@ def save_food_answers(tg_id, name, course, group, answer_1, answer_2, answer_3, 
     conn.commit()
     conn.close()
 
-
+# сохранение ответов на вопросы раздел боли
 def save_pain_answers(tg_id, name, course, group, answer_7, answer_8, answer_9, answer_10, answer_11, answer_12):
     conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
@@ -300,7 +310,7 @@ def save_pain_answers(tg_id, name, course, group, answer_7, answer_8, answer_9, 
     conn.commit()
     conn.close()
 
-
+# сохранение ответов на вопросы раздел физическое состояние
 def save_physical_answers(tg_id, name, course, group, answer_13, answer_14, answer_15, answer_16, answer_17):
     conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
@@ -313,7 +323,7 @@ def save_physical_answers(tg_id, name, course, group, answer_13, answer_14, answ
     conn.commit()
     conn.close()
 
-
+# сохранение ответов на вопросы раздел распорядок дня
 def save_daytime_answers(tg_id, name, course, group, answer_18, answer_19, answer_20, answer_21, answer_22):
     conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
@@ -326,7 +336,7 @@ def save_daytime_answers(tg_id, name, course, group, answer_18, answer_19, answe
     conn.commit()
     conn.close()
 
-
+# сохранение ответов на вопросы раздел психическое состояние
 def save_psycho_answers(tg_id, name, course, group, answer_23, answer_24, answer_25, answer_26, answer_27, answer_28,
                         answer_29, answer_30):
     conn = sqlite3.connect('main_database.db')
@@ -341,7 +351,7 @@ def save_psycho_answers(tg_id, name, course, group, answer_23, answer_24, answer
     conn.commit()
     conn.close()
 
-
+#формирование pdf отчета все курсы все группы все пользователи
 def pdf_report():
     filename = "Files pdf/Answers_Report.pdf"
 
