@@ -587,24 +587,29 @@ async def illness_date_choose(message: types.Message, state: FSMContext):
         await message.answer("Неправильный формат даты!"
                              "Укажите дату начала и конца болезни в формате XX.XX.XXXX - XX.XX.XXXX")
 
-
+# состояние выбора тестирования или болезней
 @dp.message(AdminStates.Test_or_illness)
 async def test_or_illness(message: types.Message, state: FSMContext):
     tg_id = message.from_user.id # tg id сохраняем
     log(tg_id, message.text.strip()) # логирование действия
+    # обработка тестрования
     if message.text == "Тестирование":
         await message.answer("Раздел просмотра аналтики тестирования. Выберите курс.",
                              reply_markup=kb_admin_course_choose(True))
         await state.set_state(AdminStates.Course_choose)
+    #обработка болезней
     elif message.text == "Болезни":
         await message.answer("Раздел просмотра аналтики болезней.", reply_markup=kb_admin_ill_choose())
         await state.set_state(AdminStates.Illness_choose_course)
+    #обработка назад
     if message.text == "Назад":
         await message.answer(text="Возвращение в главное меню", reply_markup=ReplyKeyboardRemove())
+        # берем прееменные из прошлых состояний
         data = await state.get_data()
         name = data.get("name")
         surname = data.get("surname")
         password = data.get("password")
+        #права администратора + установка меню клавиатуру + переход в состояние меню
         permissions = get_admin_permissions_by_password(name, surname, password)
         await message.answer(f'Вы авторизовались как {name} {surname}. Выберите одну из опции.',
                              reply_markup=kb_admin(permissions['results'], permissions['spravki'], True,
@@ -612,28 +617,34 @@ async def test_or_illness(message: types.Message, state: FSMContext):
         await state.set_state(AdminStates.Admin_menu)
 
 
+#состояние выбора курса болезней
 @dp.message(AdminStates.Illness_choose_course)
 async def illness_choose_course(message: types.Message, state: FSMContext):
     tg_id = message.from_user.id # tg id сохраняем
     log(tg_id, message.text.strip()) # логирование действия
     if message.text == "Статистика по месяцам за год все курсы":
+        # если все курсы то и все группы, поэтому переход сразу к состоянию выбора года
         await message.answer("Выберите учбеный год", reply_markup=kb_years())
         await state.set_state(AdminStates.Illness_choose_year)
     if message.text == "Статистика по месяцам за год 1 курс":
         await state.update_data(ill_course=1)
         await message.answer("Выберите группу", reply_markup=kb_admin_group_choose(1, True))
+        #состояние выбора группы
         await state.set_state(AdminStates.Illness_choose_course_group)
     if message.text == "Статистика по месяцам за год 2 курс":
         await state.update_data(ill_course=2)
         await message.answer("Выберите группу", reply_markup=kb_admin_group_choose(2, True))
+        # состояние выбора группы
         await state.set_state(AdminStates.Illness_choose_course_group)
     if message.text == "Статистика по месяцам за год 3 курс":
         await state.update_data(ill_course=3)
         await message.answer("Выберите группу", reply_markup=kb_admin_group_choose(3, True))
+        # состояние выбора группы
         await state.set_state(AdminStates.Illness_choose_course_group)
     if message.text == "Статистика по месяцам за год 4 курс":
         await state.update_data(ill_course=4)
         await message.answer("Выберите группу", reply_markup=kb_admin_group_choose(4, True))
+        # состояние выбора группы
         await state.set_state(AdminStates.Illness_choose_course_group)
     if message.text == "Назад":
         await message.answer("Раздел просмотра информации о пользователях.", reply_markup=kb_choose_type())
