@@ -9,7 +9,9 @@ from datetime import datetime
 
 # инициализация бд
 def init_db():
+    #подключение к БД
     conn = sqlite3.connect('main_database.db')
+    # с - курсор БД для изменения БД
     c = conn.cursor()
     # таблица обучающися
     c.execute('''
@@ -353,11 +355,12 @@ def save_psycho_answers(tg_id, name, course, group, answer_23, answer_24, answer
 
 #формирование pdf отчета все курсы все группы все пользователи
 def pdf_report():
+    #  имя файла
     filename = "Files pdf/Answers_Report.pdf"
-
+    # открываем вопросы из json файла
     with open('TestQuestions.json', 'r', encoding='utf-8') as file:
         questions = json.load(file)
-
+    #подключение к БД
     conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
     survey_data = []
@@ -378,6 +381,7 @@ def pdf_report():
         'psycho_answers': 'Вопросы про психологическое состояние'
     }
 
+    #формирование pdf файла,задаем параметры - шрифт, страница
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
