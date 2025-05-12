@@ -2,6 +2,7 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMar
 from db import get_users
 from datetime import datetime
 
+# словарь всех групп, ключ - курс 
 all_groups = {
     1: ["ИД 23.1/Б3-24", "ИД 23.1/Б4-24", "ИД 23.1/Б1-24", "ИД 30.1/Б4-24", "ИД 30.1/Б3-24", "ИДc 23.1/Б3-24",
         "УД 21.1/Б3-24", "УД 21.1/Б6-24", "УД 21.1/Б13-24", "УД 25.1/Б1-24", "УД 29.1/Б1-24", "НД 36.1/Б1-24",
@@ -24,19 +25,26 @@ all_groups = {
 }
 
 
+#клавиатура список админов
 def kb_admins_list(admins_list):
+    # кнопки (пустой список) 
     keyboard = []
     for admin in admins_list:
         first_name, last_name, admin_id = admin
         button_text = f"{first_name} {last_name} ({admin_id})"
-        keyboard.append([KeyboardButton(text=button_text)])
+ 
+#кнопка - имя фамилия id в БД
+keyboard.append([KeyboardButton(text=button_text)])
 
-    keyboard.append([KeyboardButton(text="Назад")])
+  
+#последняя кнопка - назад keyboard.append([KeyboardButton(text="Назад")])
     return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
 
 
+#клавиатура с именами обучающихся
 def kb_names(names):
     keyboard = []
+    # максимум 10 кнопок
     names = names[:10]
     for i in range(0, len(names), 2):
         row = [KeyboardButton(text=name) for name in names[i:i + 2]]
@@ -47,6 +55,7 @@ def kb_names(names):
     return ReplyKeyboardMarkup(keyboard=keyboard)
 
 
+#клавиатура 1 кнопка
 def kb_back_users():
     return ReplyKeyboardMarkup(
         keyboard=[
@@ -55,6 +64,7 @@ def kb_back_users():
     )
 
 
+# клавиатура 1 кнопка
 def kb_back():
     return ReplyKeyboardMarkup(
         keyboard=[
