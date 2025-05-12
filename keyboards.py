@@ -33,11 +33,12 @@ def kb_admins_list(admins_list):
         first_name, last_name, admin_id = admin
         button_text = f"{first_name} {last_name} ({admin_id})"
  
-#кнопка - имя фамилия id в БД
-keyboard.append([KeyboardButton(text=button_text)])
+    #кнопка - имя фамилия id в БД
+    keyboard.append([KeyboardButton(text=button_text)])
 
   
-#последняя кнопка - назад keyboard.append([KeyboardButton(text="Назад")])
+    #последняя кнопка - назад
+    keyboard.append([KeyboardButton(text="Назад")])
     return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
 
 
@@ -78,7 +79,8 @@ def kb_main_menu():
     return InlineKeyboardMarkup(
         inline_keyboard=[
 
-#надпись кнопки и call back data        [InlineKeyboardButton(text="Пройти тестирование о здоровье",
+            #надпись кнопки и call back data
+            [InlineKeyboardButton(text="Пройти тестирование о здоровье",
                                      callback_data="Пройти тестирование о здоровье")],
             [InlineKeyboardButton(text="Прикрепить справку", callback_data="Прикрепить справку")],
             [InlineKeyboardButton(text="Отправить сообщение работнику.",

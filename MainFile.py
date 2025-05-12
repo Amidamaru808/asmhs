@@ -514,44 +514,51 @@ async def illness_user_choose(message: types.Message, state: FSMContext):
     tg_id = message.from_user.id # tg id сохраняем
     log(tg_id, message.text.strip()) # логирование действия
     user_message = message.text.strip()
+    #обработка все пользователи
     if user_message == "Все пользователи":
         await message.answer("Выбраны все пользователи. Введите дату в формает XX.XX.XXXX или же диапозон дат в формает"
                              "XX.XX.XXXX - XX.XX.XXXX")
         await state.update_data(illness_users="all")
         await state.set_state(AdminStates.Illness_date_choose)
         return
+    # обработка назад
     if message.text == "Назад":
         await message.answer("Раздел просмотра справок от обучающихся. Справки каких курсов вы хотите просмотреть?",
                              reply_markup=kb_admin_course_choose(True))
         await state.set_state(AdminStates.Illness_course_choose)
+    #обработка имени пользователя
     else:
-        await message.answer(f"Выбран{user_message}. Введите дату в формает XX.XX.XXXX или же диапозон дат в формаете"
-                             "XX.XX.XXXX - XX.XX.XXXX")
+        await message.answer(f"Выбран{user_message}. Введите дату в формает XX.XX.XXXX - XX.XX.XXXX")
         await state.update_data(illness_users=user_message)
         await state.set_state(AdminStates.Illness_date_choose)
 
 
+ #состояние выбора даты
 @dp.message(AdminStates.Illness_date_choose)
 async def illness_date_choose(message: types.Message, state: FSMContext):
     tg_id = message.from_user.id # tg id сохраняем
     log(tg_id, message.text.strip()) # логирование действия
     user_message = message.text.strip()
+    #обработка назад
     if user_message == "Назад":
         await message.answer("Раздел просмотра справок от обучающихся. Справки каких курсов вы хотите просмотреть?",
                              reply_markup=kb_admin_course_choose(True))
         await state.set_state(AdminStates.Illness_course_choose)
         return
+    # проверка на длину 23 символа (XX.XX.XXXX - XX.XX.XXXX)
     if len(user_message) == 23:
+        # получаем переменные из других состояний
         data = await state.get_data()
         course = data.get("illness_course")
         group = data.get("illness_group")
         name = data.get("illness_users")
+        #получаем список id справок, даты которых записаны в БД
         ids = get_illness_ids(str(course), str(group), str(name), user_message)
         await message.answer(f"Архив .zip со справками по заданным параметрам. {ids}")
-
+        #удаление старого архива со справками
         if os.path.exists('Spravki/illness_photos.zip'):
             os.remove('Spravki/illness_photos.zip')
-
+        #формируем архив со всеми справками
         with zipfile.ZipFile('Spravki/illness_photos.zip', "w") as zipf:
             for doc_id in ids:
                 filename = f"{doc_id}.jpg"
@@ -560,17 +567,22 @@ async def illness_date_choose(message: types.Message, state: FSMContext):
                     zipf.write(filepath, arcname=filename)
 
         zip_file = FSInputFile('Spravki/illness_photos.zip')
+        #отправляем архив в чат, удалем клавиатуру, возвращение в меню
         await message.answer_document(zip_file)
         await message.answer(text="Возвращение в главное меню", reply_markup=ReplyKeyboardRemove())
+        #получаем данные администратора для получения прав
         data = await state.get_data()
         name = data.get("name")
         surname = data.get("surname")
         password = data.get("password")
+        #получаем права администратора
         permissions = get_admin_permissions_by_password(name, surname, password)
+        #сообщение и клавиатура главное меню
         await message.answer(f'Вы авторизовались как {name} {surname}. Выберите одну из опции.',
                              reply_markup=kb_admin(permissions['results'], permissions['spravki'], True,
                                                    permissions['messages']))
         await state.set_state(AdminStates.Admin_menu)
+    # обработка если формат даты неверный
     else:
         await message.answer("Неправильный формат даты!"
                              "Укажите дату начала и конца болезни в формате XX.XX.XXXX - XX.XX.XXXX")
