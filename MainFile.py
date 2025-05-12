@@ -650,67 +650,87 @@ async def illness_choose_course(message: types.Message, state: FSMContext):
         await message.answer("Раздел просмотра информации о пользователях.", reply_markup=kb_choose_type())
         await state.set_state(AdminStates.Test_or_illness)
 
-
+#состояние выбора группы болезней
 @dp.message(AdminStates.Illness_choose_course_group)
 async def illness_choose_year_course(message: types.Message, state: FSMContext):
     tg_id = message.from_user.id # tg id сохраняем
     log(tg_id, message.text.strip()) # логирование действия
     group = message.text.strip()
+    #обработка назад
     if group == "Назад":
         await message.answer("Раздел просмотра аналтики болезней.", reply_markup=kb_admin_ill_choose())
         await state.set_state(AdminStates.Illness_choose_course)
         return
+    #сохраняем группу переходим к выбору даты
     await state.update_data(group=group)
     await message.answer("Выберите учбеный год", reply_markup=kb_years())
     await state.set_state(AdminStates.Illness_choose_year_course)
 
 
+#выбор даты болезней по курсам и группам
 @dp.message(AdminStates.Illness_choose_year_course)
 async def illness_choose_year_course(message: types.Message, state: FSMContext):
     tg_id = message.from_user.id # tg id сохраняем
     log(tg_id, message.text.strip()) # логирование действия
+    #обработка года - 2023-2024
     if message.text == "2023 - 2024":
+        #получаем данные - курс, группа
         data = await state.get_data()
         course_num = data.get('ill_course')
         group = data.get('group')
         group_name = group.replace("/", "_")
+        #формируем отчет по номеру курса,группе и дате
         generate_illness_stats_by_course(course_num, str(group), "2023 - 2024")
+        #отправляем сообщеие + отправление pdf отчета
         pdf_file = FSInputFile(f'Files pdf/illness_stats_course_{course_num}_{group_name}_2023-2024.pdf')
         await message.answer(f"Статистика заболеваний по месяцам за год курс - {course_num}, группа - {group}"
                              f"  2023 - 2024")
         await message.answer_document(pdf_file)
+    #обработка года
     if message.text == "2024 - 2025":
+        #получаем данные - курс, группа
         data = await state.get_data()
         course_num = data.get('ill_course')
         group = data.get('group')
         group_name = group.replace("/", "_")
+        #формируем отчет по номеру курса,группе и дате
         generate_illness_stats_by_course(course_num, str(group), "2024 - 2025")
+        #отправляем сообщеие + отправление pdf отчета
         pdf_file = FSInputFile(f'Files pdf/illness_stats_course_{course_num}_{group_name}_2024-2025.pdf')
         await message.answer(f"Статистика заболеваний по месяцам за год {course_num} курс 2024 - 2025")
         await message.answer_document(pdf_file)
+    #обработка года
     if message.text == "2025 - 2026":
+        #получаем данные - курс, группа
         data = await state.get_data()
         course_num = data.get('ill_course')
         group = data.get('group')
         group_name = group.replace("/", "_")
+        #формируем отчет по номеру курса,группе и дате
         generate_illness_stats_by_course(course_num, str(group), "2025 - 2026")
+        #отправляем сообщеие + отправление pdf отчета
         pdf_file = FSInputFile(f'Files pdf/illness_stats_course_{course_num}_{group_name}_2025-2026.pdf')
         await message.answer(f"Статистика заболеваний по месяцам за год {course_num} курс 2025 - 2026")
         await message.answer_document(pdf_file)
+    #обработка года
     if message.text == "2026 - 2027":
+        #получаем данные - курс, группа
         data = await state.get_data()
         course_num = data.get('ill_course')
         group = data.get('group')
         group_name = group.replace("/", "_")
+        #формируем отчет по номеру курса,группе и дате
         generate_illness_stats_by_course(course_num, str(group), "2026 - 2027")
+        #отправляем сообщеие + отправление pdf отчета
         pdf_file = FSInputFile(f'Files pdf/illness_stats_course_{course_num}_{group_name}_2026-2027.pdf')
         await message.answer(f"Статистика заболеваний по месяцам за год {course_num} курс 2026 - 2027")
         await message.answer_document(pdf_file)
+    #обработка назад
     if message.text == "Назад":
         await message.answer("Раздел просмотра аналтики болезней.", reply_markup=kb_admin_ill_choose())
         await state.set_state(AdminStates.Illness_choose_course)
 
-
+# состояние выбора года болезни все курсы все группы
 @dp.message(AdminStates.Illness_choose_year)
 async def illness_choose_year(message: types.Message, state: FSMContext):
     tg_id = message.from_user.id # tg id сохраняем
