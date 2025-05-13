@@ -14,6 +14,7 @@ def init_db():
     # с - курсор БД для изменения БД
     c = conn.cursor()
     # таблица обучающися
+
     c.execute('''
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,

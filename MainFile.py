@@ -1347,6 +1347,7 @@ async def answer(message: types.Message, state: FSMContext):
                                                    permissions['messages']))
         await state.set_state(AdminStates.Admin_menu)
         return
+
     if admin_answer == "Пометить как спам!":
         add_reply(tg_id_user, tg_id_admin, "Помечено как спам!", "no")
         set_answered_messages(tg_id_user)
