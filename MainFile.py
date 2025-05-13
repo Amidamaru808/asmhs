@@ -132,6 +132,7 @@ def load_questions():
 # загрузка вопросов в переменную
 questions = load_questions()
 # инициализация базы данных
+init_db()
 # список активных администраторов (в сети)
 active_admins_ids = []
 

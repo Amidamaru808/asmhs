@@ -1,4 +1,4 @@
-import psycopg2
+import sqlite3
 import json
 from fpdf import FPDF
 import random
@@ -7,39 +7,195 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 from datetime import datetime
 
+# инициализация бд
+def init_db():
+    #подключение к БД
+    conn = sqlite3.connect('main_database.db')
+    # с - курсор БД для изменения БД
+    c = conn.cursor()
+    # таблица обучающися
+    c.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                first_name TEXT NOT NULL,
+                last_name TEXT NOT NULL,
+                password TEXT NOT NULL,
+                "group" TEXT NOT NULL,
+                course INTEGER NOT NULL,
+                tg_id INTEGER NULL
+            )
+        ''')
+
+    # таблицы администраторов
+    c.execute('''
+            CREATE TABLE IF NOT EXISTS admins (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                first_name TEXT NOT NULL,
+                last_name TEXT NOT NULL,
+                password TEXT NOT NULL,
+                tg_id INTEGER NULL,
+                results BOOLEAN DEFAULT 0,
+                spravki BOOLEAN DEFAULT 0,
+                messages BOOLEAN DEFAULT 0,
+                add_users BOOLEAN DEFAULT 0,
+                add_admins BOOLEAN DEFAULT 0,
+                watch_users BOOLEAN DEFAULT 0,
+                watch_admins BOOLEAN DEFAULT 0,
+                add_statsman BOOLEAN DEFAULT 0,
+                watch_statsman BOOLEAN DEFAULT 0,
+                settings BOOLEAN DEFAULT 0
+            )
+        ''')
+
+    c.execute('''
+            CREATE TABLE IF NOT EXISTS illnesses (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                "group" TEXT NOT NULL,
+                course INTEGER NOT NULL,
+                ill_date TEXT NOT NULL,
+                send_date TEXT NOT NULL
+            )
+        ''')
+
+    #таблица заболеваемости
+    c.execute('''
+           CREATE TABLE IF NOT EXISTS messages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                tg_id INTEGER NOT NULL,
+                message_text TEXT NOT NULL,
+                time TEXT NOT NULL,
+                answered TEXT NOT NULL
+           )
+       ''')
+
+    #таблица ответов
+    c.execute('''
+           CREATE TABLE IF NOT EXISTS reply (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id_tg_user INTEGER,
+                id_tg_admin INTEGER,
+                answer TEXT,
+                watched TEXT
+           )
+       ''')
+
+    #таблица статистикво
+    c.execute('''
+            CREATE TABLE IF NOT EXISTS statsmans (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                first_name TEXT NOT NULL,
+                last_name TEXT NOT NULL,
+                password TEXT NOT NULL,
+                tg_id INTEGER  NULL
+            )
+        ''')
+
+    #таблица ответов на питание
+    c.execute('''
+            CREATE TABLE IF NOT EXISTS food_answers (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tg_id integer,
+                name TEXT,
+                course TEXT,
+                "group" TEXT,
+                answer_1 TEXT,
+                answer_2 TEXT,
+                answer_3 TEXT,
+                answer_4 TEXT,
+                answer_5 TEXT,
+                answer_6 TEXT
+            )
+        ''')
+
+    #таблица ответов на боли
+    c.execute('''
+            CREATE TABLE IF NOT EXISTS pain_answers (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tg_id integer,
+                name TEXT,
+                course TEXT,
+                "group" TEXT,
+                answer_7 TEXT,
+                answer_8 TEXT,
+                answer_9 TEXT,
+                answer_10 TEXT,
+                answer_11 TEXT,
+                answer_12 TEXT
+            )
+        ''')
+
+    #таблица ответов на физ сотсояние
+    c.execute('''
+            CREATE TABLE IF NOT EXISTS physical_answers (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tg_id integer,
+                name TEXT,
+                course TEXT,
+                "group" TEXT,
+                answer_13 TEXT,
+                answer_14 TEXT,
+                answer_15 TEXT,
+                answer_16 TEXT,
+                answer_17 TEXT
+            )
+        ''')
+
+    #таблица ответов на распорядок дня
+    c.execute('''
+            CREATE TABLE IF NOT EXISTS daytime_answers (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tg_id integer,
+                name TEXT,
+                course TEXT,
+                "group" TEXT,
+                answer_18 TEXT,
+                answer_19 TEXT,
+                answer_20 TEXT,
+                answer_21 TEXT,
+                answer_22 TEXT
+            )
+       ''')
+
+    #таблица ответов на психологическое состояние
+    c.execute('''
+            CREATE TABLE IF NOT EXISTS psycho_answers (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tg_id integer,
+                name TEXT,
+                course TEXT,
+                "group" TEXT,
+                answer_23 TEXT,
+                answer_24 TEXT,
+                answer_25 TEXT,
+                answer_26 TEXT,
+                answer_27 TEXT,
+                answer_28 TEXT,
+                answer_29 TEXT,
+                answer_30 TEXT
+            )
+       ''')
+
+    conn.commit()
+    conn.close()
 
 # добавление обучающегося в БД
 def add_user_to_db(first_name, last_name, password, group, course):
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
-
     c.execute('''
         INSERT INTO users (first_name, last_name, password, "group", course)
-        VALUES (%s, %s, %s, %s, %s)
+        VALUES (?, ?, ?, ?, ?)
     ''', (first_name, last_name, password, group, course))
-
     conn.commit()
-
-    c.close()
     conn.close()
 
-
+#добавление адмна в БД (права установка, если нет то нет прав)
 def add_admin_to_db(first_name, last_name, password, results=False, spravki=False, messages=False,
                     add_users=False, add_admins=False, watch_users=False, watch_admins=False, add_statsman=False,
                     watch_statsman=False, settings=False):
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
     c.execute('''
         INSERT INTO admins (
@@ -48,29 +204,23 @@ def add_admin_to_db(first_name, last_name, password, results=False, spravki=Fals
             add_users, add_admins, watch_users, watch_admins,
             add_statsman, watch_statsman, settings
         )
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         first_name, last_name, password,
-        results, spravki,  messages,
-        add_users, add_admins, watch_users, watch_admins,
-        add_statsman, watch_statsman, settings
+        int(results), int(spravki),  int(messages),
+        int(add_users), int(add_admins), int(watch_users), int(watch_admins),
+        int(add_statsman), int(watch_statsman), int(settings)
     ))
     conn.commit()
     conn.close()
 
 #добавление болезни в БД
 def add_illness(name, group, course, ill_date, send_date):
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
     c.execute('''
         INSERT INTO illnesses (name, "group", course, ill_date, send_date)
-        VALUES (%s, %s, %s, %s, %s)
+        VALUES (?, ?, ?, ?, ?)
     ''', (name, group, course, ill_date, send_date))
 
     illness_id = c.lastrowid
@@ -79,19 +229,12 @@ def add_illness(name, group, course, ill_date, send_date):
     conn.close()
     return illness_id
 
-
 #проверка пользователя в БД
 def check_user_in_db(first_name, last_name):
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
     c.execute('''
-        SELECT * FROM users WHERE first_name = %s AND last_name = %s
+        SELECT * FROM users WHERE first_name = ? AND last_name = ?
     ''', (first_name, last_name))
     user = c.fetchone()
     conn.close()
@@ -99,16 +242,10 @@ def check_user_in_db(first_name, last_name):
 
 # проверка пароля
 def check_password(name, surname, password):
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
     c.execute('''
-        SELECT password FROM users WHERE first_name = %s AND last_name = %s
+        SELECT password FROM users WHERE first_name = ? AND last_name = ?
     ''', (name, surname))
     stored_password = c.fetchone()
     conn.close()
@@ -119,16 +256,10 @@ def check_password(name, surname, password):
 
 # проверка админа в бд
 def check_admin_in_db(first_name, last_name):
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
     c.execute('''
-        SELECT * FROM admins WHERE first_name = %s AND last_name = %s
+        SELECT * FROM admins WHERE first_name = ? AND last_name = ?
     ''', (first_name, last_name))
     admin = c.fetchone()
     conn.close()
@@ -136,16 +267,10 @@ def check_admin_in_db(first_name, last_name):
 
 #проверка пароля админа
 def check_admin_password(first_name, last_name, password):
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
     c.execute('''
-        SELECT password FROM admins WHERE first_name = %s AND last_name = %s
+        SELECT password FROM admins WHERE first_name = ? AND last_name = ?
     ''', (first_name, last_name))
     result = c.fetchone()
     conn.close()
@@ -163,76 +288,52 @@ def load_questions(file_path='TestQuestions.json'):
 
 # сохранение ответов на вопросы раздел питание
 def save_food_answers(tg_id, name, course, group, answer_1, answer_2, answer_3, answer_4, answer_5, answer_6):
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
-    c.execute('DELETE FROM food_answers WHERE tg_id = %s', (tg_id,))
+    c.execute('DELETE FROM food_answers WHERE tg_id = ?', (tg_id,))
     c.execute('''
         INSERT INTO food_answers (tg_id, name, course, "group", answer_1, answer_2, answer_3, answer_4, answer_5, 
         answer_6)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (tg_id, name, course, group, answer_1, answer_2, answer_3, answer_4, answer_5, answer_6))
     conn.commit()
     conn.close()
 
 # сохранение ответов на вопросы раздел боли
 def save_pain_answers(tg_id, name, course, group, answer_7, answer_8, answer_9, answer_10, answer_11, answer_12):
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
-    c.execute('DELETE FROM pain_answers WHERE tg_id = %s', (tg_id,))
+    c.execute('DELETE FROM pain_answers WHERE tg_id = ?', (tg_id,))
     c.execute('''
         INSERT INTO pain_answers (tg_id, name, course, "group", answer_7, answer_8, answer_9, answer_10, answer_11,
          answer_12)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (tg_id, name, course, group, answer_7, answer_8, answer_9, answer_10, answer_11, answer_12))
     conn.commit()
     conn.close()
 
 # сохранение ответов на вопросы раздел физическое состояние
 def save_physical_answers(tg_id, name, course, group, answer_13, answer_14, answer_15, answer_16, answer_17):
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
-    c.execute('DELETE FROM physical_answers WHERE tg_id = %s', (tg_id,))
+    c.execute('DELETE FROM physical_answers WHERE tg_id = ?', (tg_id,))
     c.execute('''
         INSERT INTO physical_answers (tg_id, name, course, "group", answer_13, answer_14, answer_15, answer_16,
          answer_17)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (tg_id, name, course, group, answer_13, answer_14, answer_15, answer_16, answer_17))
     conn.commit()
     conn.close()
 
 # сохранение ответов на вопросы раздел распорядок дня
 def save_daytime_answers(tg_id, name, course, group, answer_18, answer_19, answer_20, answer_21, answer_22):
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
-    c.execute('DELETE FROM daytime_answers WHERE tg_id = %s', (tg_id,))
+    c.execute('DELETE FROM daytime_answers WHERE tg_id = ?', (tg_id,))
     c.execute('''
         INSERT INTO daytime_answers (tg_id, name, course, "group", answer_18, answer_19, answer_20, answer_21,
          answer_22)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (tg_id, name, course, group, answer_18, answer_19, answer_20, answer_21, answer_22))
     conn.commit()
     conn.close()
@@ -240,19 +341,13 @@ def save_daytime_answers(tg_id, name, course, group, answer_18, answer_19, answe
 # сохранение ответов на вопросы раздел психическое состояние
 def save_psycho_answers(tg_id, name, course, group, answer_23, answer_24, answer_25, answer_26, answer_27, answer_28,
                         answer_29, answer_30):
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
-    c.execute('DELETE FROM psycho_answers WHERE tg_id = %s', (tg_id,))
+    c.execute('DELETE FROM psycho_answers WHERE tg_id = ?', (tg_id,))
     c.execute('''
         INSERT INTO psycho_answers (tg_id, name, course, "group", answer_23, answer_24, answer_25, answer_26, answer_27,
          answer_28, answer_29, answer_30)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (tg_id, name, course, group, answer_23, answer_24, answer_25, answer_26, answer_27, answer_28, answer_29,
           answer_30))
     conn.commit()
@@ -266,13 +361,7 @@ def pdf_report():
     with open('TestQuestions.json', 'r', encoding='utf-8') as file:
         questions = json.load(file)
     #подключение к БД
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
     survey_data = []
 
@@ -411,13 +500,7 @@ def pdf_report_course(course, group):
         questions = json.load(f)
     filename = f"Files pdf/Statistic_{str(course).replace('/', '_')}" \
                f"_{group.replace('/', '_') if group != 'all' else 'all'}.pdf"
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
     survey_data = []
 
@@ -441,10 +524,10 @@ def pdf_report_course(course, group):
     par = []
 
     if course != "all":
-        filt.append("course = %s")
+        filt.append("course = ?")
         par.append(course)
     if group != "all":
-        filt.append('"group" = %s')
+        filt.append('"group" = ?')
         par.append(group)
 
     where_clause = "WHERE " + " AND ".join(filt) if filt else ""
@@ -543,10 +626,10 @@ def pdf_report_course(course, group):
             params = []
 
             if course != "all":
-                filters.append("course = %s")
+                filters.append("course = ?")
                 params.append(course)
             if group != "all":
-                filters.append('"group" = %s')
+                filters.append('"group" = ?')
                 params.append(group)
 
             where = "WHERE " + " AND ".join(filters) if filters else ""
@@ -586,13 +669,7 @@ def generate_password():
 
 
 def generate_users_pdf(course, group):
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
 
     query = 'SELECT first_name, last_name, password, "group", course, tg_id FROM users'
@@ -600,11 +677,11 @@ def generate_users_pdf(course, group):
     params = []
 
     if course.lower() != "all":
-        conditions.append('course = %s')
+        conditions.append('course = ?')
         params.append(course)
 
     if group.lower() != "all":
-        conditions.append('"group" = %s')
+        conditions.append('"group" = ?')
         params.append(group)
 
     if conditions:
@@ -678,13 +755,7 @@ def generate_users_pdf(course, group):
 
 
 def generate_admins_pdf():
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
     c.execute('SELECT first_name, last_name, password FROM admins')
     admins = c.fetchall()
@@ -708,13 +779,7 @@ def generate_admins_pdf():
 
 
 def generate_statsmans_pdf():
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
     c.execute('SELECT first_name, last_name, password FROM statsmans')
     statsmans = c.fetchall()
@@ -739,13 +804,7 @@ def generate_statsmans_pdf():
 
 
 def generate_illness_stats(years):
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
     c.execute('SELECT ill_date FROM illnesses')
     dates = c.fetchall()
@@ -787,19 +846,13 @@ def generate_illness_stats(years):
 
 
 def generate_illness_stats_by_course(course, group, years):
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
 
     if group == "all":
-        c.execute('SELECT ill_date FROM illnesses WHERE course = %s', (course,))
+        c.execute('SELECT ill_date FROM illnesses WHERE course = ?', (course,))
     else:
-        c.execute('SELECT ill_date FROM illnesses WHERE course = %s AND "group" = %s', (course, group))
+        c.execute('SELECT ill_date FROM illnesses WHERE course = ? AND "group" = ?', (course, group))
 
     dates = c.fetchall()
     conn.close()
@@ -846,28 +899,22 @@ def generate_illness_stats_by_course(course, group, years):
 
 
 def get_illness_ids(course, group, name, date_range):
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect("main_database.db")
     c = conn.cursor()
 
     query = 'SELECT id, name, "group", course, ill_date FROM illnesses WHERE 1=1'
     params = []
 
     if str(course).lower() != "all":
-        query += " AND course = %s"
+        query += " AND course = ?"
         params.append(course)
 
     if str(group).lower() != "all":
-        query += ' AND "group" = %s'
+        query += ' AND "group" = ?'
         params.append(group)
 
     if str(name).lower() != "all":
-        query += " AND name = %s"
+        query += " AND name = ?"
         params.append(name)
 
     c.execute(query, params)
@@ -893,17 +940,11 @@ def get_illness_ids(course, group, name, date_range):
 
 
 def get_users(course, group):
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect("main_database.db")
     c = conn.cursor()
 
     c.execute(
-        '''SELECT first_name, last_name FROM users WHERE course = %s AND "group" = %s''',
+        '''SELECT first_name, last_name FROM users WHERE course = ? AND "group" = ?''',
         (course, group)
     )
     users = c.fetchall()
@@ -914,83 +955,56 @@ def get_users(course, group):
 
 
 def add_message_db(name, tg_id, message_text):
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect("main_database.db")
     c = conn.cursor()
     time_now = datetime.now().strftime("%d.%m %H.%M.%S  %Y")
     c.execute('''
         INSERT INTO messages (name, tg_id, message_text, time, answered)
-        VALUES (%s, %s, %s, %s, %s)
+        VALUES (?, ?, ?, ?, ?)
     ''', (name, tg_id, message_text, time_now, "нет"))
     conn.commit()
     conn.close()
 
 
 def get_message_ids_not_answered():
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
-    c.execute("SELECT id FROM messages WHERE answered = %s", ("нет",))
+    c.execute('SELECT rowid FROM messages WHERE answered = "нет"')
     ids = [row[0] for row in c.fetchall()]
     conn.close()
     return ids
 
 
 def get_message_names_by_ids(ids):
-    if not ids:
-        return []
-
-    where_in = ','.join(['%s'] * len(ids))
+    where_in = ','.join('?' for _ in ids)
     query = f'''
-        SELECT name, tg_id 
-        FROM messages 
-        WHERE id IN ({where_in})
-    '''
+            SELECT name, tg_id 
+            FROM messages 
+            WHERE rowid IN ({where_in})
+        '''
 
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
     c.execute(query, ids)
     results = c.fetchall()
     conn.close()
 
-    tg_ids = set()
+    ids = set()
     names = []
 
     for name, tg_id in results:
-        if tg_id not in tg_ids:
+        if tg_id not in ids:
             names.append(name)
-            tg_ids.add(tg_id)
+            ids.add(tg_id)
 
     return names
 
 
 def get_message_messages_by_name(name):
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect("main_database.db")
     c = conn.cursor()
 
-    c.execute("SELECT tg_id, message_text, time FROM messages WHERE name = %s", (name,))
+    c.execute("SELECT tg_id, message_text, time FROM messages WHERE name = ?", (name,))
     messages = c.fetchall()
     conn.close()
 
@@ -1006,18 +1020,12 @@ def get_message_messages_by_name(name):
 
 
 def add_reply(id_tg_user, id_tg_admin, answer, watched):
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect("main_database.db")
     c = conn.cursor()
 
     c.execute('''
         INSERT INTO reply (id_tg_user, id_tg_admin, answer, watched)
-        VALUES (%s, %s, %s, %s)
+        VALUES (?, ?, ?, ?)
     ''', (id_tg_user, id_tg_admin, answer, watched))
 
     conn.commit()
@@ -1025,19 +1033,13 @@ def add_reply(id_tg_user, id_tg_admin, answer, watched):
 
 
 def set_answered_messages(tg_id):
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect("main_database.db")
     c = conn.cursor()
 
     c.execute('''
         UPDATE messages
         SET answered = 'yes'
-        WHERE tg_id = %s
+        WHERE tg_id = ?
     ''', (tg_id,))
 
     conn.commit()
@@ -1045,19 +1047,13 @@ def set_answered_messages(tg_id):
 
 
 def get_reply_no_watched(tg_id):
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect("main_database.db")
     c = conn.cursor()
 
     c.execute('''
         SELECT answer
         FROM reply
-        WHERE id_tg_user = %s AND watched = 'нет'
+        WHERE id_tg_user = ? AND watched = 'нет'
     ''', (tg_id,))
 
     answers = [row[0] for row in c.fetchall()]
@@ -1065,7 +1061,7 @@ def get_reply_no_watched(tg_id):
     c.execute('''
             UPDATE reply
             SET watched = 'yes'
-            WHERE id_tg_user = %s AND watched = 'нет'
+            WHERE id_tg_user = ? AND watched = 'нет'
         ''', (tg_id,))
 
     conn.commit()
@@ -1074,33 +1070,21 @@ def get_reply_no_watched(tg_id):
 
 
 def add_statsman(first_name, last_name, password):
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect("main_database.db")
     c = conn.cursor()
     c.execute('''
         INSERT INTO statsmans (first_name, last_name, password)
-        VALUES (%s, %s, %s)
+        VALUES (?, ?, ?)
     ''', (first_name, last_name, password))
     conn.commit()
     conn.close()
 
 
 def check_statsman_in_db(first_name, last_name):
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect("main_database.db")
     c = conn.cursor()
     c.execute('''
-        SELECT * FROM statsmans WHERE first_name = %s AND last_name = %s
+        SELECT * FROM statsmans WHERE first_name = ? AND last_name = ?
     ''', (first_name, last_name))
     result = c.fetchone()
     conn.close()
@@ -1108,16 +1092,10 @@ def check_statsman_in_db(first_name, last_name):
 
 
 def check_statsman_password(first_name, last_name, password):
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect("main_database.db")
     c = conn.cursor()
     c.execute('''
-        SELECT password FROM statsmans WHERE first_name = %s AND last_name = %s
+        SELECT password FROM statsmans WHERE first_name = ? AND last_name = ?
     ''', (first_name, last_name))
     result = c.fetchone()
     conn.close()
@@ -1125,67 +1103,43 @@ def check_statsman_password(first_name, last_name, password):
 
 
 def add_tg_id_user(tg_id, name, surname, password):
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect("main_database.db")
     cursor = conn.cursor()
     cursor.execute('''
         UPDATE users
-        SET tg_id = %s
-        WHERE first_name = %s AND last_name = %s AND password = %s
+        SET tg_id = ?
+        WHERE first_name = ? AND last_name = ? AND password = ?
     ''', (tg_id, name, surname, password))
     conn.commit()
     conn.close()
 
 
 def add_tg_id_admin(tg_id, name, surname, password):
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect("main_database.db")
     cursor = conn.cursor()
     cursor.execute('''
         UPDATE admins
-        SET tg_id = %s
-        WHERE first_name = %s AND last_name = %s AND password = %s
+        SET tg_id = ?
+        WHERE first_name = ? AND last_name = ? AND password = ?
     ''', (tg_id, name, surname, password))
     conn.commit()
     conn.close()
 
 
 def add_tg_id_statsman(tg_id, name, surname, password):
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect("main_database.db")
     cursor = conn.cursor()
     cursor.execute('''
             UPDATE statsmans
-            SET tg_id = %s
-            WHERE first_name = %s AND last_name = %s AND password = %s
+            SET tg_id = ?
+            WHERE first_name = ? AND last_name = ? AND password = ?
         ''', (tg_id, name, surname, password))
     conn.commit()
     conn.close()
 
 
 def get_admin_permissions_by_password(first_name, last_name, password):
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
     c.execute('''
         SELECT 
@@ -1193,7 +1147,7 @@ def get_admin_permissions_by_password(first_name, last_name, password):
             add_users, add_admins, watch_users, watch_admins,
             add_statsman, watch_statsman, settings
         FROM admins
-        WHERE first_name = %s AND last_name = %s AND password = %s
+        WHERE first_name = ? AND last_name = ? AND password = ?
     ''', (first_name, last_name, password))
     row = c.fetchone()
     conn.close()
@@ -1209,13 +1163,7 @@ def get_admin_permissions_by_password(first_name, last_name, password):
 
 
 def get_admin_permissions_by_adminid(first_name, last_name, admin_id):
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect('main_database.db')
     c = conn.cursor()
     c.execute('''
         SELECT 
@@ -1223,7 +1171,7 @@ def get_admin_permissions_by_adminid(first_name, last_name, admin_id):
             add_users, add_admins, watch_users, watch_admins,
             add_statsman, watch_statsman, settings
         FROM admins
-        WHERE first_name = %s AND last_name = %s AND id = %s
+        WHERE first_name = ? AND last_name = ? AND id = ?
     ''', (first_name, last_name, admin_id))
     row = c.fetchone()
     conn.close()
@@ -1239,36 +1187,24 @@ def get_admin_permissions_by_adminid(first_name, last_name, admin_id):
 
 
 def toggle_admin_permission(admin_id: int, permission_name: str):
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect("main_database.db")
     c = conn.cursor()
 
-    c.execute(f"SELECT {permission_name} FROM admins WHERE id = %s", (admin_id,))
+    c.execute(f"SELECT {permission_name} FROM admins WHERE id = ?", (admin_id,))
     current_value = c.fetchone()
     if current_value is None:
         conn.close()
         return False
 
-    new_value = False if current_value[0] else True
-    c.execute(f"UPDATE admins SET {permission_name} = %s WHERE id = %s", (new_value, admin_id))
+    new_value = 0 if current_value[0] else 1
+    c.execute(f"UPDATE admins SET {permission_name} = ? WHERE id = ?", (new_value, admin_id))
     conn.commit()
     conn.close()
     return True
 
 
 def get_admins_list():
-    conn = psycopg2.connect(
-        dbname="main_database",
-        user="postgres",
-        password="54321",
-        host="localhost",
-        port="5432"
-    )
+    conn = sqlite3.connect('main_database.db')
     cursor = conn.cursor()
     cursor.execute("SELECT first_name, last_name, id FROM admins")
     records = cursor.fetchall()
@@ -1305,3 +1241,6 @@ def user_permission_3(permissions):
 
     return any(permissions.get(key) for key in keys_to_check)
 
+
+if __name__ == "__main__":
+    init_db()

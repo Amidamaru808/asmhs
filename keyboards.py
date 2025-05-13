@@ -32,8 +32,9 @@ def kb_admins_list(admins_list):
     for admin in admins_list:
         first_name, last_name, admin_id = admin
         button_text = f"{first_name} {last_name} ({admin_id})"
-        #кнопка - имя фамилия id в БД
-        keyboard.append([KeyboardButton(text=button_text)])
+ 
+    #кнопка - имя фамилия id в БД
+    keyboard.append([KeyboardButton(text=button_text)])
 
   
     #последняя кнопка - назад
