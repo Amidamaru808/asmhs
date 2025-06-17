@@ -156,10 +156,10 @@ def kb_students_admins(watch_users, watch_admins, watch_statsman):
 
 # клавиатура выбора года
 def kb_years():
-    return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='2023 - 2024'),
-                                         KeyboardButton(text='2024 - 2025'),
-                                         KeyboardButton(text="2025 - 2026"),
-                                         KeyboardButton(text="2026 - 2027"),
+    return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='2021 - 2022'),
+                                         KeyboardButton(text='2022 - 2023'),
+                                         KeyboardButton(text="2023 - 2024"),
+                                         KeyboardButton(text="2024 - 2025"),
                                           KeyboardButton(text="Назад")]])
 
 
@@ -249,9 +249,9 @@ def kb_admin_users(watch, add_users, add_admins, add_statsman, settings):
 
 
 def kb_choose_type():
-    return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Тестирование'),
-                                         KeyboardButton(text="Болезни"),
-                                          KeyboardButton(text="Назад")]])
+    return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Тестирование')],
+                                         [KeyboardButton(text="Болезни")],
+                                          [KeyboardButton(text="Назад")]])
 
 
 def kb_statsman_menu():

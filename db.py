@@ -9,7 +9,7 @@ from datetime import datetime
 
 # инициализация бд
 def init_db():
-    #подключение к БД
+    #подключение к Б
     conn = sqlite3.connect('main_database.db')
     # с - курсор БД для изменения БД
     c = conn.cursor()
@@ -1245,3 +1245,137 @@ def user_permission_3(permissions):
 
 if __name__ == "__main__":
     init_db()
+
+
+
+# login = ""
+# group = "ИД 23.1/Б3-21"
+# course = 4
+# tg_id = 9
+# line_1 = ['1', '2', '3', '4']
+# line_2 = [ '1 раз в день', '2 раза в день', '3 раза в день', '4 раза в день']
+# line_3 = ['Да', 'Нет']
+# line_4 = ['Да', 'Нет']
+# line_5 = ['Каждый День', '3-4 раза в неделю', '1-2 раза в неделю', 'Не занимаюсь']
+# line_6 = ['0.5 литров', '1 литров', '1.5 литров', '2 литров']
+# line_7 = ['Никогда', 'Редко', 'Часто', 'Очень часто']
+# line_8 = ['Никогда', 'Редко', 'Часто', 'Очень часто']
+# line_9 = ['Никогда', 'Редко', 'Часто', 'Очень часто']
+# line_10 = ['Да', 'Нет']
+# line_11 = ['Никогда', 'Редко', 'Часто', 'Очень часто']
+# line_12 = ['0 - 1 раз', '1 - 2 раза', '3 - 4 раза', '5 и более раз']
+# line_13 = ['Каждый День', '3-4 раза в неделю', '1-2 раза в неделю', 'Не занимаюсь']
+# line_14 = ['Да', 'Нет']
+# line_15 = ['Ужасно', 'Плохо', 'Хорошо', 'Отлично']
+# line_16 = ['< 40', '40-60', '60-80', '80-100']
+# line_17 = ['Ужасно', 'Плохо', 'Хорошо', 'Отлично']
+# line_18 = ['1-2 часа', '3-4 часа', '5-6 часов', '7 и более часов']
+# line_19 = ['1-2 часа', '3-4 часа', '5-6 часов', '7 и более часов']
+# line_20 = ['Никогда', 'Редко', 'Часто', 'Очень часто']
+# line_21 = ['Легко', 'Нормально', 'Трудно', 'Очень тяжело']
+# line_22 = ['Никогда', 'Редко', 'Часто', 'Очень часто']
+# line_23 = ['Никогда', 'Редко', 'Часто', 'Очень часто']
+# line_24 = ['Ужасно', 'Плохо', 'Хорошо', 'Отлично']
+# line_25 = ['Ужасно', 'Плохо', 'Хорошо', 'Отлично']
+# line_26 = ['Никогда', 'Редко', 'Часто', 'Очень часто']
+# line_27 = ['Легко', 'Нормально', 'Трудно', 'Очень тяжело']
+# line_28 = ['Никогда', 'Редко', 'Часто', 'Очень часто']
+# line_29 = ['Нет друзей', 'Мало', 'Достаточно', 'Много']
+# line_30 = ['1', '2', '3', '4']
+# random_line_1 = random.choice(line_1)
+# random_line_2 = random.choice(line_2)
+# random_line_3 = random.choice(line_3)
+# random_line_4 = random.choice(line_4)
+# random_line_5 = random.choice(line_5)
+# random_line_6 = random.choice(line_6)
+# random_line_7 = random.choice(line_7)
+# random_line_8 = random.choice(line_8)
+# random_line_9 = random.choice(line_9)
+# random_line_10 = random.choice(line_10)
+# random_line_11 = random.choice(line_11)
+# random_line_12 = random.choice(line_12)
+# random_line_13 = random.choice(line_13)
+# random_line_14 = random.choice(line_14)
+# random_line_15 = random.choice(line_15)
+# random_line_16 = random.choice(line_16)
+# random_line_17 = random.choice(line_17)
+# random_line_18 = random.choice(line_18)
+# random_line_19 = random.choice(line_19)
+# random_line_20 = random.choice(line_20)
+# random_line_21 = random.choice(line_21)
+# random_line_22 = random.choice(line_22)
+# random_line_23 = random.choice(line_23)
+# random_line_24 = random.choice(line_24)
+# random_line_25 = random.choice(line_25)
+# random_line_26 = random.choice(line_26)
+# random_line_27 = random.choice(line_27)
+# random_line_28 = random.choice(line_28)
+# random_line_29 = random.choice(line_29)
+# random_line_30 = random.choice(line_30)
+#
+# # Передаем случайные значения в функции
+# save_food_answers(
+#     tg_id,
+#     login,
+#     course,
+#     group,
+#     random_line_1,
+#     random_line_2,
+#     random_line_3,
+#     random_line_4,
+#     random_line_5,
+#     random_line_6
+# )
+#
+# save_pain_answers(
+#     tg_id,
+#     login,
+#     course,
+#     group,
+#     random_line_7,
+#     random_line_8,
+#     random_line_9,
+#     random_line_10,
+#     random_line_11,
+#     random_line_12
+# )
+#
+# save_physical_answers(
+#     tg_id,
+#     login,
+#     course,
+#     group,
+#     random_line_13,
+#     random_line_14,
+#     random_line_15,
+#     random_line_16,
+#     random_line_17
+# )
+#
+# save_daytime_answers(
+#     tg_id,
+#     login,
+#     course,
+#     group,
+#     random_line_18,
+#     random_line_19,
+#     random_line_20,
+#     random_line_21,
+#     random_line_22
+# )
+#
+# save_psycho_answers(
+#     tg_id,
+#     login,
+#     course,
+#     group,
+#     random_line_23,
+#     random_line_24,
+#     random_line_25,
+#     random_line_26,
+#     random_line_27,
+#     random_line_28,
+#     random_line_29,
+#     random_line_30
+# )
+#add_illness("Иван Иванов", "ИД 23.1/Б3-24", 1, "01.05.2025 - 05.05.2025", "2025-05-11")

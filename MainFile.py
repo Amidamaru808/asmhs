@@ -18,13 +18,14 @@ from keyboards import *
 bot = Bot(token='6735071514:AAFJz69fqsC0hf-6tWW4dSi6x5I9INEWjs0')
 dp = Dispatcher()
 # дополнительные папки для хранения файлов
-save_folder = 'Spravki'
+save_folder = '/data/Spravki'
 os.makedirs(save_folder, exist_ok=True)
-pdf_folder = 'Files pdf'
+pdf_folder = '/data/Files pdf'
 os.makedirs(pdf_folder, exist_ok=True)
-png_folder = 'Files png'
+png_folder = '/data/Files png'
 os.makedirs(png_folder, exist_ok=True)
-
+logs_folder = '/data/Logs'
+os.makedirs(logs_folder, exist_ok=True)
 
 # класс состояний авторизаций
 class Autorization(StatesGroup):
@@ -141,7 +142,8 @@ active_admins_ids = []
 # входные параметры - телеграм id пользователя и запись действия
 def log(tg_id, action):
     now = datetime.now().strftime("%d.%m.%Y %H:%M:%S") # текущее время в момент записи
-    with open(f"User logs/{tg_id}_log.txt", "a", encoding="utf-8") as txt:
+
+    with open(f"/data/Logs/{tg_id}_log.txt", "a", encoding="utf-8") as txt:
         txt.write(f"[{now}] {action}\n")
 
 
@@ -198,46 +200,49 @@ async def start_autorization(message: Message, state: FSMContext):
 
 @dp.message(Autorization.Login)
 async def handle_name(message: Message, state: FSMContext):
-    full_name = message.text.strip() # переменной присваивается логин пользователя
-    tg_id = message.from_user.id    # телеграм id пользователя
-    log(tg_id, full_name)           #логирование
-    try:
-        name, surname = full_name.split()   # разделение логина на имя и фамилию
-    except ValueError:
-        await message.answer('Неверный логин.') #ошибка если не верный формат логина
-        return
+    if message.text:
+        full_name = message.text.strip()
+        tg_id = message.from_user.id
+        log(tg_id, full_name)
+        try:
+            name, surname = full_name.split()
+        except ValueError:
+            await message.answer('Неверный логин.')
+            return
 
-    #проверка пользователей в БД по имени и фамилии
-    user = check_user_in_db(name, surname)
-    admin = check_admin_in_db(name, surname)
-    statsman = check_statsman_in_db(name, surname)
 
-    if user:
-        user_id, _, _, _, group, course, _ = user
-        # сохранения переменных в data, для использования между состояниями
-        await state.update_data(user_id=user_id, name=name, surname=surname, group=group, course=course)
-    elif admin or statsman:
-        # сохранения переменных в data, для использования между состояниями
-        await state.update_data(name=name, surname=surname)
+        user = check_user_in_db(name, surname)
+        admin = check_admin_in_db(name, surname)
+        statsman = check_statsman_in_db(name, surname)
 
-    # раздел в случае если логины совпадают у разных пользователей то переходим к проверке пароля
-    if user and admin and statsman:
-        await message.answer('Введите пароль.')
-    elif user and admin:
-        await message.answer('Введите пароль.')
-    elif statsman and user:
-        await message.answer('Введите пароль.')
-    elif admin and statsman:
-        await message.answer('Введите пароль.')
-    elif user or admin or statsman:
-        await message.answer('Введите пароль.')
+        if user:
+            user_id, _, _, _, group, course, _ = user
+            # сохранения переменных в data, для использования между состояниями
+            await state.update_data(user_id=user_id, name=name, surname=surname, group=group, course=course)
+        elif admin or statsman:
+            # сохранения переменных в data, для использования между состояниями
+            await state.update_data(name=name, surname=surname)
+
+        # раздел в случае если логины совпадают у разных пользователей то переходим к проверке пароля
+        if user and admin and statsman:
+            await message.answer('Введите пароль.')
+        elif user and admin:
+            await message.answer('Введите пароль.')
+        elif statsman and user:
+            await message.answer('Введите пароль.')
+        elif admin and statsman:
+            await message.answer('Введите пароль.')
+        elif user or admin or statsman:
+            await message.answer('Введите пароль.')
+        else:
+            await message.answer('Неверный логин.')
+            await state.set_state(Autorization.Login)
+            return
+
+        # смена состояния
+        await state.set_state(Autorization.Password)
     else:
-        await message.answer('Неверный логин.')
-        await state.set_state(Autorization.Login)
-        return
-
-    # смена состояния
-    await state.set_state(Autorization.Password)
+        await message.answer("Некорректный формат логина")
 
 
 # состояние проверки пароля
@@ -259,9 +264,7 @@ async def handle_password(message: Message, state: FSMContext):
 
         if student_password == password:
             await state.update_data(user_id=user_id, name=name, surname=surname, group=group, course=course)
-            # связываем пользователя с телеграм id в бд
             add_tg_id_user(tg_id, name, surname, password)
-            # переход в главное меню пользователя, установка клавиатуры
             await message.answer(f'Вы авторизовались как {name} {surname}. Выберите одну из опции.',
                                  reply_markup=kb_main_menu())
 
@@ -276,19 +279,14 @@ async def handle_password(message: Message, state: FSMContext):
     if admin:
         if check_admin_password(name, surname, password):
             tg_id = message.from_user.id
-            # добавляем администратора в список активных администраторов (которые в сети)
             active_admins_ids.append(tg_id)
             await state.update_data(password=password)
-            # связываем телеграм id с админом в бд
             add_tg_id_admin(tg_id, name, surname, password)
-            # проверяем права администраторв
             permissions = get_admin_permissions_by_password(name, surname, password)
-            # в зависимости от прав устанавливаем переменную которая определяет клавиатуру админа
             if user_permission_6(permissions):
                 work_with_users = True
             else:
                 work_with_users = False
-            #переход в главное меню администратора, установка клавиатуры
             await message.answer(f'Вы авторизовались как {name} {surname}. Выберите одну из опции.',
                                  reply_markup=kb_admin(permissions['results'], permissions['spravki'], work_with_users,
                                                        permissions['messages']))
@@ -413,8 +411,8 @@ async def illness_course_choose(message: types.Message, state: FSMContext):
     # обработка выбора "Все курсы"
     if message.text == "Все курсы":
         # сообщение
-        await message.answer("Выбраны все курсы, все группы и все пользователи."
-                             "Введите дату в формает XX.XX.XXXX или же диапозон дат в формает"
+        await message.answer("Выбраны все курсы, все группы и все пользователи.\n"
+                             "Введите диапозон дат в формате"
                              "XX.XX.XXXX - XX.XX.XXXX")
         # сохранение выбора курса, группы и пользователей (все курсы = все группы = все пользователи)
         await state.update_data(illness_course="all")
@@ -501,6 +499,13 @@ async def illness_group_choose(message: types.Message, state: FSMContext):
                              reply_markup=kb_admin_course_choose(True))
         await state.set_state(AdminStates.Illness_course_choose)
         return
+
+    all_group_values = sum(all_groups.values(), [])
+
+    if group not in all_group_values:
+        await message.answer("Такой группы нет! Выберите из списка на клавиатуре")
+        return
+
     # обработка выора группы
     await message.answer(f"{group}", reply_markup=kb_admin_user_choose(course, group))
     # сохраняем группу в data
@@ -554,19 +559,22 @@ async def illness_date_choose(message: types.Message, state: FSMContext):
         name = data.get("illness_users")
         #получаем список id справок, даты которых записаны в БД
         ids = get_illness_ids(str(course), str(group), str(name), user_message)
-        await message.answer(f"Архив .zip со справками по заданным параметрам. {ids}")
+        await message.answer(f"Архив .zip со справками по заданным параметрам.\n"
+                             f"Куср - {course}\n"
+                             f"Группа - {group}\n"
+                             f"Обучающийся - {name}")
         #удаление старого архива со справками
-        if os.path.exists('Spravki/illness_photos.zip'):
-            os.remove('Spravki/illness_photos.zip')
+        if os.path.exists('/data/Spravki/illness_photos.zip'):
+            os.remove('/data/Spravki/illness_photos.zip')
         #формируем архив со всеми справками
-        with zipfile.ZipFile('Spravki/illness_photos.zip', "w") as zipf:
+        with zipfile.ZipFile('/data/Spravki/illness_photos.zip', "w") as zipf:
             for doc_id in ids:
                 filename = f"{doc_id}.jpg"
-                filepath = os.path.join("Spravki", filename)
+                filepath = os.path.join("/data/Spravki", filename)
                 if os.path.exists(filepath):
                     zipf.write(filepath, arcname=filename)
 
-        zip_file = FSInputFile('Spravki/illness_photos.zip')
+        zip_file = FSInputFile('/data/Spravki/illness_photos.zip')
         #отправляем архив в чат, удалем клавиатуру, возвращение в меню
         await message.answer_document(zip_file)
         await message.answer(text="Возвращение в главное меню", reply_markup=ReplyKeyboardRemove())
@@ -661,6 +669,13 @@ async def illness_choose_year_course(message: types.Message, state: FSMContext):
         await message.answer("Раздел просмотра аналтики болезней.", reply_markup=kb_admin_ill_choose())
         await state.set_state(AdminStates.Illness_choose_course)
         return
+
+    all_group_values = sum(all_groups.values(), [])
+
+    if group not in all_group_values:
+        await message.answer("Такой группы нет! Выберите из списка на клавиатуре")
+        return
+
     #сохраняем группу переходим к выбору даты
     await state.update_data(group=group)
     await message.answer("Выберите учбеный год", reply_markup=kb_years())
@@ -673,6 +688,34 @@ async def illness_choose_year_course(message: types.Message, state: FSMContext):
     tg_id = message.from_user.id # tg id сохраняем
     log(tg_id, message.text.strip()) # логирование действия
     #обработка года - 2023-2024
+    if message.text == "2021 - 2022":
+        #получаем данные - курс, группа
+        data = await state.get_data()
+        course_num = data.get('ill_course')
+        group = data.get('group')
+        group_name = group.replace("/", "_")
+        #формируем отчет по номеру курса,группе и дате
+        generate_illness_stats_by_course(course_num, str(group), "2021 - 2022")
+        #отправляем сообщеие + отправление pdf отчета
+        pdf_file = FSInputFile(f'Files pdf/illness_stats_course_{course_num}_{group_name}_2021-2022.pdf')
+        await message.answer(f"Статистика заболеваний по месяцам \n год: 2021 - 2022 \n"
+                             f"курс: {course_num},\n группа: {group}")
+        await message.answer_document(pdf_file)
+    #обработка года
+    if message.text == "2022 - 2023":
+        #получаем данные - курс, группа
+        data = await state.get_data()
+        course_num = data.get('ill_course')
+        group = data.get('group')
+        group_name = group.replace("/", "_")
+        #формируем отчет по номеру курса,группе и дате
+        generate_illness_stats_by_course(course_num, str(group), "2022 - 2023")
+        #отправляем сообщеие + отправление pdf отчета
+        pdf_file = FSInputFile(f'Files pdf/illness_stats_course_{course_num}_{group_name}_2022-2023.pdf')
+        await message.answer(f"Статистика заболеваний по месяцам \n год: 2022 - 2023 \n"
+                             f"курс: {course_num},\n группа: {group}")
+        await message.answer_document(pdf_file)
+    #обработка года
     if message.text == "2023 - 2024":
         #получаем данные - курс, группа
         data = await state.get_data()
@@ -683,8 +726,8 @@ async def illness_choose_year_course(message: types.Message, state: FSMContext):
         generate_illness_stats_by_course(course_num, str(group), "2023 - 2024")
         #отправляем сообщеие + отправление pdf отчета
         pdf_file = FSInputFile(f'Files pdf/illness_stats_course_{course_num}_{group_name}_2023-2024.pdf')
-        await message.answer(f"Статистика заболеваний по месяцам за год курс - {course_num}, группа - {group}"
-                             f"  2023 - 2024")
+        await message.answer(f"Статистика заболеваний по месяцам \n год: 2023 - 2024 \n"
+                             f"курс: {course_num},\n группа: {group}")
         await message.answer_document(pdf_file)
     #обработка года
     if message.text == "2024 - 2025":
@@ -697,33 +740,8 @@ async def illness_choose_year_course(message: types.Message, state: FSMContext):
         generate_illness_stats_by_course(course_num, str(group), "2024 - 2025")
         #отправляем сообщеие + отправление pdf отчета
         pdf_file = FSInputFile(f'Files pdf/illness_stats_course_{course_num}_{group_name}_2024-2025.pdf')
-        await message.answer(f"Статистика заболеваний по месяцам за год {course_num} курс 2024 - 2025")
-        await message.answer_document(pdf_file)
-    #обработка года
-    if message.text == "2025 - 2026":
-        #получаем данные - курс, группа
-        data = await state.get_data()
-        course_num = data.get('ill_course')
-        group = data.get('group')
-        group_name = group.replace("/", "_")
-        #формируем отчет по номеру курса,группе и дате
-        generate_illness_stats_by_course(course_num, str(group), "2025 - 2026")
-        #отправляем сообщеие + отправление pdf отчета
-        pdf_file = FSInputFile(f'Files pdf/illness_stats_course_{course_num}_{group_name}_2025-2026.pdf')
-        await message.answer(f"Статистика заболеваний по месяцам за год {course_num} курс 2025 - 2026")
-        await message.answer_document(pdf_file)
-    #обработка года
-    if message.text == "2026 - 2027":
-        #получаем данные - курс, группа
-        data = await state.get_data()
-        course_num = data.get('ill_course')
-        group = data.get('group')
-        group_name = group.replace("/", "_")
-        #формируем отчет по номеру курса,группе и дате
-        generate_illness_stats_by_course(course_num, str(group), "2026 - 2027")
-        #отправляем сообщеие + отправление pdf отчета
-        pdf_file = FSInputFile(f'Files pdf/illness_stats_course_{course_num}_{group_name}_2026-2027.pdf')
-        await message.answer(f"Статистика заболеваний по месяцам за год {course_num} курс 2026 - 2027")
+        await message.answer(f"Статистика заболеваний по месяцам \n год: 2024 - 2025 \n"
+                             f"курс: {course_num},\n группа: {group}")
         await message.answer_document(pdf_file)
     #обработка назад
     if message.text == "Назад":
@@ -772,19 +790,19 @@ async def course_choose(message: types.Message, state: FSMContext):
     elif message.text == "1":
         await state.update_data(test_course="1")
         await state.set_state(AdminStates.Group_choose)
-        await message.answer("выбран 1 курс выберите группу", reply_markup=kb_admin_group_choose(1, True))
+        await message.answer("Выбран 1 курс выберите группу", reply_markup=kb_admin_group_choose(1, True))
     elif message.text == "2":
         await state.update_data(test_course="2")
         await state.set_state(AdminStates.Group_choose)
-        await message.answer("выбран 2 курс выберите группу", reply_markup=kb_admin_group_choose(1, True))
+        await message.answer("Выбран 2 курс выберите группу", reply_markup=kb_admin_group_choose(1, True))
     elif message.text == "3":
         await state.update_data(test_course="3")
         await state.set_state(AdminStates.Group_choose)
-        await message.answer("выбран 3 курс выберите группу", reply_markup=kb_admin_group_choose(1, True))
+        await message.answer("Выбран 3 курс выберите группу", reply_markup=kb_admin_group_choose(1, True))
     elif message.text == "4":
         await state.update_data(test_course="4")
         await state.set_state(AdminStates.Group_choose)
-        await message.answer("выбран 4 курс выберите группу", reply_markup=kb_admin_group_choose(1, True))
+        await message.answer("Выбран 4 курс выберите группу", reply_markup=kb_admin_group_choose(1, True))
     elif message.text == "Назад":
         await state.set_state(AdminStates.Test_or_illness)
         await message.answer("Раздел просмотра информации о пользователях.", reply_markup=kb_choose_type())
@@ -809,12 +827,21 @@ async def group_choose(message: types.Message, state: FSMContext):
         await state.set_state(AdminStates.Course_choose)
         return
 
+    all_group_values = sum(all_groups.values(), [])
+
+    if group not in all_group_values:
+        await message.answer("Такой группы нет! Выберите из списка на клавиатуре")
+        return
+
     data = await state.get_data()
     course = data.get("test_course")
     pdf_report_course(course, group)
     group_label = group.replace("/", "_")
     pdf_file = FSInputFile(f"Files pdf/Statistic_{course}_{group_label}.pdf")
-    await message.answer("Отчет по первому курсу")
+    await message.answer(f"Отчет по тестированию\n"
+                         f"Курс: {course}\n"
+                         f"Группа: {group}")
+
     await message.answer_document(pdf_file)
 
 
@@ -1358,7 +1385,7 @@ async def answer(message: types.Message, state: FSMContext):
 
     add_reply(tg_id_user, tg_id_admin, admin_answer, "нет")
     set_answered_messages(tg_id_user)
-    await bot.send_message(tg_id_user,  "вам пришло сообщение от администратора. Проверьте сообщения.")
+    await bot.send_message(tg_id_user,  "Вам пришло сообщение от администратора. Проверьте сообщения.")
     names_new = get_message_names_by_ids(ids)
     await message.answer("Выберите cообщение от пользователя", reply_markup=kb_names(names_new))
     await state.set_state(AdminStates.Choose_message)
@@ -1404,7 +1431,7 @@ async def handle_main_menu(callback: types.CallbackQuery, state: FSMContext):
         if not messages:
             await callback.message.answer("У вас нет новых сообщений!")
         else:
-            await callback.message.answer(f"Просмотр входящих сообщений {len(messages)}.")
+            await callback.message.answer(f"Просмотр входящих сообщений.")
             for msg in messages:
                 await callback.message.answer(msg)
     elif action == "Выход":
@@ -1505,8 +1532,8 @@ async def statsman_menu(message: types.Message, state: FSMContext):
 
 @dp.message(StatsmanStates.Course_choose)
 async def statsman_course_choose(message: types.Message, state: FSMContext):
-    tg_id = message.from_user.id  # tg id сохраняем
-    log(tg_id, message.text.strip())  # логирование действия
+    tg_id = message.from_user.id
+    log(tg_id, message.text.strip())
     if message.text == "Все курсы":
         pdf_report()
         pdf_file = FSInputFile("Files pdf/Answers_Report.pdf")
@@ -1519,15 +1546,15 @@ async def statsman_course_choose(message: types.Message, state: FSMContext):
     elif message.text == "2":
         await state.update_data(test_course="2")
         await state.set_state(StatsmanStates.Group_choose)
-        await message.answer("выбран 2 курс выберите группу", reply_markup=kb_admin_group_choose(1, True))
+        await message.answer("выбран 2 курс выберите группу", reply_markup=kb_admin_group_choose(2, True))
     elif message.text == "3":
         await state.update_data(test_course="3")
         await state.set_state(StatsmanStates.Group_choose)
-        await message.answer("выбран 3 курс выберите группу", reply_markup=kb_admin_group_choose(1, True))
+        await message.answer("выбран 3 курс выберите группу", reply_markup=kb_admin_group_choose(3, True))
     elif message.text == "4":
         await state.update_data(test_course="4")
         await state.set_state(StatsmanStates.Group_choose)
-        await message.answer("выбран 4 курс выберите группу", reply_markup=kb_admin_group_choose(1, True))
+        await message.answer("выбран 4 курс выберите группу", reply_markup=kb_admin_group_choose(4, True))
     elif message.text == "Назад":
         await state.set_state(StatsmanStates.Statsman_menu)
         await message.answer("меню статсман", reply_markup=kb_statsman_menu())
